@@ -1,200 +1,174 @@
-suggestions.style.display = 'none';
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-                return;
+    <title>UZMAP</title>
 
-            }
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"
+    >
 
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 
-            const query =
-                text.toLowerCase();
-
-
-            const results =
-                cities.filter(city =>
-
-                    city.name
-                        .toLowerCase()
-                        .includes(query)
-
-                );
-
-
-            if (results.length === 0) {
-
-                suggestions.style.display = 'none';
-
-                return;
-
-            }
-
-
-            results.forEach(city => {
-
-                const item =
-                    document.createElement('div');
-
-
-                item.className =
-                    'suggestion';
-
-
-                item.innerHTML = `
-
-                    <div class="city-name">
-                        🇺🇿 ${city.name}
-                    </div>
-
-                    <div class="city-region">
-                        ${city.region}
-                    </div>
-
-                `;
-
-
-                item.addEventListener(
-                    'click',
-                    () => selectCity(city)
-                );
-
-
-                suggestions.appendChild(item);
-
-            });
-
-
-            suggestions.style.display = 'block';
-
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: Arial, sans-serif;
         }
 
+        #map {
+            width: 100%;
+            height: 100%;
+        }
 
-        // ==========================================
-        // ВЫБОР ГОРОДА
-        // ==========================================
+        .logo {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 1000;
 
-        function selectCity(city) {
+            background: white;
+            padding: 10px 16px;
+            border-radius: 10px;
 
-            searchInput.value =
-                city.name;
+            font-size: 21px;
+            font-weight: bold;
 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
 
-            suggestions.style.display =
-                'none';
+        .search {
+            position: absolute;
+            top: 15px;
+            left: 150px;
+            z-index: 1000;
 
+            width: 300px;
+            padding: 12px 15px;
 
-            map.flyTo({
+            border: none;
+            border-radius: 10px;
 
-                center: [
-                    city.lng,
-                    city.lat
+            font-size: 15px;
+
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="logo">
+    🇺🇿 UZMAP
+</div>
+
+<input
+    id="search"
+    class="search"
+    type="text"
+    placeholder="🔍 Найти город..."
+>
+
+<div id="map"></div>
+
+<script>
+
+const cities = {
+    "ташкент": [69.2401, 41.2995],
+    "самарканд": [66.9597, 39.6542],
+    "бухара": [64.4286, 39.7747],
+    "хива": [60.3638, 41.3775],
+    "наманган": [71.6683, 41.0011],
+    "андижан": [72.3442, 40.7821],
+    "фергана": [71.7864, 40.3864]
+};
+
+const map = new maplibregl.Map({
+
+    container: "map",
+
+    style: {
+        version: 8,
+
+        sources: {
+            osm: {
+                type: "raster",
+
+                tiles: [
+                    "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
                 ],
 
-                zoom: 12,
+                tileSize: 256,
 
-                speed: 1.2,
+                attribution: "© OpenStreetMap contributors"
+            }
+        },
 
-                curve: 1.4
+        layers: [
+            {
+                id: "osm",
+                type: "raster",
+                source: "osm"
+            }
+        ]
+    },
 
-            });
+    center: [64.5853, 41.3775],
 
+    zoom: 5
+});
 
-            markers[city.name]
-                .togglePopup();
+map.addControl(
+    new maplibregl.NavigationControl(),
+    "top-right"
+);
 
+const tashkentMarker = new maplibregl.Marker()
+    .setLngLat(cities["ташкент"])
+    .setPopup(
+        new maplibregl.Popup()
+            .setHTML(
+                "<h3>🇺🇿 Ташкент</h3><p>Столица Узбекистана</p>"
+            )
+    )
+    .addTo(map);
+
+document
+    .getElementById("search")
+    .addEventListener("keydown", function(event) {
+
+        if (event.key !== "Enter") {
+            return;
         }
 
+        const query = this.value
+            .trim()
+            .toLowerCase();
 
-        // ==========================================
-        // ПОИСК ПРИ ВВОДЕ
-        // ==========================================
+        if (!cities[query]) {
+            alert("Город пока не найден");
+            return;
+        }
 
-        searchInput.addEventListener(
-            'input',
-            event => {
+        map.flyTo({
+            center: cities[query],
+            zoom: 12,
+            speed: 1.2
+        });
 
-                showSuggestions(
-                    event.target.value
-                );
+        new maplibregl.Marker()
+            .setLngLat(cities[query])
+            .addTo(map);
+    });
 
-            }
-        );
-
-
-        // ==========================================
-        // КНОПКА ПОИСКА
-        // ==========================================
-
-        searchButton.addEventListener(
-            'click',
-            () => {
-
-                const text =
-                    searchInput.value.trim();
-
-
-                if (!text) {
-                    return;
-                }
-
-
-                const city =
-                    cities.find(city =>
-
-                        city.name
-                            .toLowerCase()
-                            === text.toLowerCase()
-
-                    );
-
-
-                if (city) {
-
-                    selectCity(city);
-
-                }
-
-            }
-        );
-
-
-        // ==========================================
-        // ENTER
-        // ==========================================
-
-        searchInput.addEventListener(
-            'keydown',
-            event => {
-
-                if (event.key === 'Enter') {
-
-                    searchButton.click();
-
-                }
-
-            }
-        );
-
-
-        // ==========================================
-        // ЗАКРЫВАЕМ ПОДСКАЗКИ
-        // ==========================================
-
-        document.addEventListener(
-            'click',
-            event => {
-
-                if (
-                    !event.target.closest('.search-box')
-                ) {
-
-                    suggestions.style.display =
-                        'none';
-
-                }
-
-            }
-        );
-
-    </script>
+</script>
 
 </body>
 </html>
