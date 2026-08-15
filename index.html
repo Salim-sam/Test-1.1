@@ -10,8 +10,10 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>UZMAP</title>
+    <title>UZMAP — Карта Узбекистана</title>
 
+
+    <!-- MAPLIBRE -->
 
     <link
         rel="stylesheet"
@@ -29,25 +31,37 @@
             box-sizing: border-box;
         }
 
+
         html,
         body {
+
             margin: 0;
             padding: 0;
+
             width: 100%;
             height: 100%;
+
             font-family: Arial, sans-serif;
+
         }
+
 
         #map {
+
             width: 100%;
             height: 100%;
+
         }
 
 
-        /* ЛОГОТИП */
+        /* ==============================
+           ЛОГОТИП
+        ============================== */
 
         .logo {
+
             position: absolute;
+
             top: 15px;
             left: 15px;
 
@@ -60,15 +74,22 @@
             border-radius: 10px;
 
             font-size: 21px;
+
             font-weight: bold;
 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            box-shadow:
+                0 2px 10px
+                rgba(0, 0, 0, 0.2);
+
         }
 
 
-        /* ПОИСК */
+        /* ==============================
+           ПОИСК
+        ============================== */
 
         .search-box {
+
             position: absolute;
 
             top: 15px;
@@ -86,11 +107,15 @@
 
             overflow: hidden;
 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            box-shadow:
+                0 2px 10px
+                rgba(0, 0, 0, 0.2);
+
         }
 
 
         .search-input {
+
             flex: 1;
 
             border: none;
@@ -100,10 +125,12 @@
             padding: 13px 15px;
 
             font-size: 15px;
+
         }
 
 
         .search-button {
+
             border: none;
 
             background: white;
@@ -113,17 +140,23 @@
             font-size: 18px;
 
             cursor: pointer;
+
         }
 
 
         .search-button:hover {
+
             background: #f2f2f2;
+
         }
 
 
-        /* СТАТУС */
+        /* ==============================
+           СТАТУС
+        ============================== */
 
         .status {
+
             position: absolute;
 
             top: 70px;
@@ -137,24 +170,32 @@
 
             border-radius: 8px;
 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+            box-shadow:
+                0 2px 10px
+                rgba(0, 0, 0, 0.15);
 
             font-size: 14px;
 
             display: none;
+
         }
 
 
-        /* POPUP */
+        /* ==============================
+           POPUP
+        ============================== */
 
         .region-title {
+
             margin: 0 0 8px;
 
             font-size: 18px;
+
         }
 
 
         .region-text {
+
             margin: 0;
 
             color: #555;
@@ -162,26 +203,40 @@
             font-size: 13px;
 
             line-height: 1.4;
+
         }
 
+
+        /* ==============================
+           МОБИЛЬНЫЙ ЭКРАН
+        ============================== */
 
         @media (max-width: 700px) {
 
             .logo {
+
                 top: 10px;
                 left: 10px;
+
             }
 
+
             .search-box {
+
                 top: 65px;
                 left: 10px;
 
-                width: calc(100% - 20px);
+                width:
+                    calc(100% - 20px);
+
             }
 
+
             .status {
+
                 top: 120px;
                 left: 10px;
+
             }
 
         }
@@ -194,10 +249,20 @@
 <body>
 
 
+<!-- ==============================
+     ЛОГОТИП
+============================== -->
+
 <div class="logo">
+
     🇺🇿 UZMAP
+
 </div>
 
+
+<!-- ==============================
+     ПОИСК
+============================== -->
 
 <div class="search-box">
 
@@ -209,21 +274,32 @@
         autocomplete="off"
     >
 
+
     <button
         id="searchButton"
         class="search-button"
     >
+
         🔍
+
     </button>
 
 </div>
 
+
+<!-- ==============================
+     СТАТУС
+============================== -->
 
 <div
     id="status"
     class="status"
 ></div>
 
+
+<!-- ==============================
+     КАРТА
+============================== -->
 
 <div id="map"></div>
 
@@ -232,16 +308,18 @@
 
 
 /* =====================================================
-   КАРТА
+   СОЗДАЁМ КАРТУ
 ===================================================== */
 
 const map = new maplibregl.Map({
 
     container: "map",
 
+
     style: {
 
         version: 8,
+
 
         sources: {
 
@@ -249,13 +327,16 @@ const map = new maplibregl.Map({
 
                 type: "raster",
 
+
                 tiles: [
 
                     "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
 
                 ],
 
+
                 tileSize: 256,
+
 
                 attribution:
                     "© OpenStreetMap contributors"
@@ -263,6 +344,7 @@ const map = new maplibregl.Map({
             }
 
         },
+
 
         layers: [
 
@@ -280,15 +362,23 @@ const map = new maplibregl.Map({
 
     },
 
+
     center: [
+
         64.5853,
         41.3775
+
     ],
+
 
     zoom: 5
 
 });
 
+
+/* =====================================================
+   КНОПКИ КАРТЫ
+===================================================== */
 
 map.addControl(
 
@@ -305,7 +395,7 @@ map.addControl(
 
 let currentMarker = null;
 
-let selectedRegionName = "";
+let selectedFeatureId = null;
 
 
 /* =====================================================
@@ -313,21 +403,62 @@ let selectedRegionName = "";
 ===================================================== */
 
 const status =
-    document.getElementById("status");
+    document.getElementById(
+        "status"
+    );
 
 
-function showStatus(text) {
+function showStatus(message) {
 
-    status.textContent = text;
+    status.textContent =
+        message;
 
-    status.style.display = "block";
+    status.style.display =
+        "block";
 
 }
 
 
 function hideStatus() {
 
-    status.style.display = "none";
+    status.style.display =
+        "none";
+
+}
+
+
+/* =====================================================
+   НАЗВАНИЕ ОБЛАСТИ
+===================================================== */
+
+function getRegionName(properties) {
+
+    if (!properties) {
+
+        return "Область Узбекистана";
+
+    }
+
+
+    return (
+
+        properties.shapeName ||
+
+        properties.NAME_1 ||
+
+        properties.name ||
+
+        properties.NAME ||
+
+        properties.NAME_1_RU ||
+
+        properties.region ||
+
+        properties.Region ||
+
+        "Область Узбекистана"
+
+    );
 
 }
 
@@ -336,27 +467,18 @@ function hideStatus() {
    ЗАГРУЗКА КАРТЫ
 ===================================================== */
 
-map.on("load", async function () {
+map.on(
+
+    "load",
+
+    async function () {
 
 
-    /* =================================================
-       СКРЫВАЕМ ДРУГИЕ СТРАНЫ
-    ================================================= */
+        /* =================================================
+           1. СТРАНЫ, КОТОРЫЕ ОСТАВЛЯЕМ
+        ================================================= */
 
-    try {
-
-        const response = await fetch(
-
-            "https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson"
-
-        );
-
-
-        const countries =
-            await response.json();
-
-
-        const allowed = [
+        const allowedCountries = [
 
             "UZB",
             "KAZ",
@@ -368,443 +490,662 @@ map.on("load", async function () {
         ];
 
 
-        const hidden = {
+        /* =================================================
+           2. СКРЫВАЕМ ОСТАЛЬНЫЕ СТРАНЫ
+        ================================================= */
 
-            type: "FeatureCollection",
+        try {
 
-            features:
-                countries.features.filter(
 
-                    feature => {
+            const countriesResponse =
+                await fetch(
 
-                        const code =
-                            feature.properties[
-                                "ISO3166-1-Alpha-3"
-                            ];
+                    "https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson"
 
-                        return !allowed.includes(
-                            code
+                );
+
+
+            const countries =
+                await countriesResponse.json();
+
+
+            const hiddenCountries = {
+
+                type:
+                    "FeatureCollection",
+
+
+                features:
+
+                    countries.features.filter(
+
+                        function(feature) {
+
+
+                            const code =
+
+                                feature
+                                    .properties
+                                    [
+                                        "ISO3166-1-Alpha-3"
+                                    ];
+
+
+                            return !
+
+                                allowedCountries
+                                    .includes(
+                                        code
+                                    );
+
+                        }
+
+                    )
+
+            };
+
+
+            map.addSource(
+
+                "hidden-countries",
+
+                {
+
+                    type:
+                        "geojson",
+
+                    data:
+                        hiddenCountries
+
+                }
+
+            );
+
+
+            map.addLayer({
+
+                id:
+                    "hidden-countries",
+
+                type:
+                    "fill",
+
+                source:
+                    "hidden-countries",
+
+                paint: {
+
+                    "fill-color":
+                        "#ffffff",
+
+                    "fill-opacity":
+                        1
+
+                }
+
+            });
+
+
+            console.log(
+                "Страны загружены"
+            );
+
+
+        }
+
+
+        catch (error) {
+
+
+            console.error(
+
+                "Ошибка стран:",
+
+                error
+
+            );
+
+        }
+
+
+        /* =================================================
+           3. ЗАГРУЖАЕМ НАШ СОБСТВЕННЫЙ GEOJSON
+        ================================================= */
+
+        try {
+
+
+            const regionsResponse =
+                await fetch(
+
+                    "./uzbekistan-regions.geojson"
+
+                );
+
+
+            if (!regionsResponse.ok) {
+
+                throw new Error(
+
+                    "Файл uzbekistan-regions.geojson не найден"
+
+                );
+
+            }
+
+
+            const regions =
+                await regionsResponse.json();
+
+
+            console.log(
+                "GeoJSON областей:",
+                regions
+            );
+
+
+            /* =================================================
+               4. ДАЁМ КАЖДОЙ ОБЛАСТИ УНИКАЛЬНЫЙ ID
+            ================================================= */
+
+            regions.features.forEach(
+
+                function(feature, index) {
+
+                    feature.id =
+                        index;
+
+                }
+
+            );
+
+
+            /* =================================================
+               5. ДОБАВЛЯЕМ SOURCE
+            ================================================= */
+
+            map.addSource(
+
+                "uzbekistan-regions",
+
+                {
+
+                    type:
+                        "geojson",
+
+                    data:
+                        regions
+
+                }
+
+            );
+
+
+            /* =================================================
+               6. ОСНОВНАЯ ЗАЛИВКА
+            ================================================= */
+
+            map.addLayer({
+
+                id:
+                    "uzbekistan-regions-fill",
+
+                type:
+                    "fill",
+
+                source:
+                    "uzbekistan-regions",
+
+
+                paint: {
+
+
+                    "fill-color": [
+
+                        "case",
+
+
+                        [
+
+                            "boolean",
+
+                            [
+
+                                "feature-state",
+
+                                "selected"
+
+                            ],
+
+                            false
+
+                        ],
+
+
+                        "#36a852",
+
+
+                        "#dcefd5"
+
+                    ],
+
+
+                    "fill-opacity": [
+
+                        "case",
+
+
+                        [
+
+                            "boolean",
+
+                            [
+
+                                "feature-state",
+
+                                "selected"
+
+                            ],
+
+                            false
+
+                        ],
+
+
+                        0.75,
+
+
+                        0.55
+
+                    ]
+
+                }
+
+            });
+
+
+            /* =================================================
+               7. ГРАНИЦЫ ОБЛАСТЕЙ
+            ================================================= */
+
+            map.addLayer({
+
+                id:
+                    "uzbekistan-regions-border",
+
+                type:
+                    "line",
+
+                source:
+                    "uzbekistan-regions",
+
+
+                paint: {
+
+                    "line-color":
+                        "#555555",
+
+                    "line-width":
+                        1.5,
+
+                    "line-opacity":
+                        0.9
+
+                }
+
+            });
+
+
+            /* =================================================
+               8. НАЗВАНИЯ ОБЛАСТЕЙ
+            ================================================= */
+
+            map.addLayer({
+
+                id:
+                    "uzbekistan-regions-labels",
+
+                type:
+                    "symbol",
+
+                source:
+                    "uzbekistan-regions",
+
+
+                layout: {
+
+
+                    "text-field": [
+
+                        "coalesce",
+
+                        [
+                            "get",
+                            "shapeName"
+                        ],
+
+                        [
+                            "get",
+                            "NAME_1"
+                        ],
+
+                        [
+                            "get",
+                            "name"
+                        ],
+
+                        [
+                            "get",
+                            "NAME"
+                        ],
+
+                        "Область"
+
+                    ],
+
+
+                    "text-size":
+                        12,
+
+
+                    "text-anchor":
+                        "center",
+
+
+                    "text-allow-overlap":
+                        false
+
+                },
+
+
+                paint: {
+
+                    "text-color":
+                        "#333333",
+
+                    "text-halo-color":
+                        "#ffffff",
+
+                    "text-halo-width":
+                        1.5
+
+                }
+
+            });
+
+
+            /* =================================================
+               9. КЛИК ПО ОБЛАСТИ
+            ================================================= */
+
+            map.on(
+
+                "click",
+
+                "uzbekistan-regions-fill",
+
+                function(event) {
+
+
+                    if (
+                        !event.features ||
+                        !event.features.length
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    const feature =
+                        event.features[0];
+
+
+                    const regionId =
+                        feature.id;
+
+
+                    const regionName =
+                        getRegionName(
+                            feature.properties
+                        );
+
+
+                    console.log(
+
+                        "Нажата область:",
+
+                        regionName
+
+                    );
+
+
+                    /* =========================================
+                       УБИРАЕМ ПРЕДЫДУЩУЮ ПОДСВЕТКУ
+                    ========================================= */
+
+                    if (
+                        selectedFeatureId !== null
+                    ) {
+
+
+                        map.setFeatureState(
+
+                            {
+
+                                source:
+                                    "uzbekistan-regions",
+
+                                id:
+                                    selectedFeatureId
+
+                            },
+
+
+                            {
+
+                                selected:
+                                    false
+
+                            }
+
                         );
 
                     }
 
-                )
 
-        };
+                    /* =========================================
+                       ПОДСВЕЧИВАЕМ НОВУЮ ОБЛАСТЬ
+                    ========================================= */
 
+                    selectedFeatureId =
+                        regionId;
 
-        map.addSource(
 
-            "hidden-countries",
+                    map.setFeatureState(
 
-            {
+                        {
 
-                type: "geojson",
+                            source:
+                                "uzbekistan-regions",
 
-                data: hidden
+                            id:
+                                regionId
 
-            }
+                        },
 
-        );
 
+                        {
 
-        map.addLayer({
+                            selected:
+                                true
 
-            id: "hidden-countries",
+                        }
 
-            type: "fill",
+                    );
 
-            source: "hidden-countries",
 
-            paint: {
+                    /* =========================================
+                       ПОКАЗЫВАЕМ КУРСОР
+                    ========================================= */
 
-                "fill-color": "#ffffff",
+                    map.getCanvas()
+                        .style
+                        .cursor =
+                        "pointer";
 
-                "fill-opacity": 1
 
-            }
+                    /* =========================================
+                       POPUP
+                    ========================================= */
 
-        });
+                    new maplibregl.Popup({
 
+                        offset:
+                            15
 
-    }
+                    })
 
-    catch (error) {
+                    .setLngLat(
 
-        console.error(
-            "Countries error:",
-            error
-        );
+                        event.lngLat
 
-    }
+                    )
 
+                    .setHTML(`
 
-    /* =================================================
-       ЗАГРУЖАЕМ ОБЛАСТИ
-    ================================================= */
+                        <h3 class="region-title">
 
-    try {
+                            🇺🇿 ${regionName}
 
-        const apiResponse = await fetch(
+                        </h3>
 
-            "https://www.geoboundaries.org/api/current/gbOpen/UZB/ADM1/"
 
-        );
+                        <p class="region-text">
 
+                            Административная
+                            область Узбекистана
 
-        const apiData =
-            await apiResponse.json();
+                        </p>
 
+                    `)
 
-        const geojsonResponse =
-            await fetch(
-                apiData.gjDownloadURL
-            );
+                    .addTo(map);
 
 
-        const regions =
-            await geojsonResponse.json();
+                    /* =========================================
+                       ПРИБЛИЖЕНИЕ
+                    ========================================= */
 
+                    map.flyTo({
 
-        /* =================================================
-           SOURCE
-        ================================================= */
+                        center: [
 
-        map.addSource(
+                            event.lngLat.lng,
 
-            "regions",
+                            event.lngLat.lat
 
-            {
+                        ],
 
-                type: "geojson",
 
-                data: regions
+                        zoom: Math.max(
 
-            }
+                            map.getZoom(),
 
-        );
+                            6.5
 
+                        ),
 
-        /* =================================================
-           ОСНОВНАЯ ЗАЛИВКА
-        ================================================= */
 
-        map.addLayer({
+                        speed:
+                            0.8,
 
-            id: "regions",
 
-            type: "fill",
+                        curve:
+                            1.2
 
-            source: "regions",
+                    });
 
-            paint: {
-
-                "fill-color": "#dcefd5",
-
-                "fill-opacity": 0.65
-
-            }
-
-        });
-
-
-        /* =================================================
-           ГРАНИЦЫ
-        ================================================= */
-
-        map.addLayer({
-
-            id: "region-borders",
-
-            type: "line",
-
-            source: "regions",
-
-            paint: {
-
-                "line-color": "#555555",
-
-                "line-width": 1.5
-
-            }
-
-        });
-
-
-        /* =================================================
-           СЛОЙ ПОДСВЕТКИ
-        ================================================= */
-
-        map.addLayer({
-
-            id: "region-selected",
-
-            type: "fill",
-
-            source: "regions",
-
-            paint: {
-
-                "fill-color": "#4CAF50",
-
-                "fill-opacity": 0.55
-
-            },
-
-            filter: [
-
-                "==",
-
-                "$type",
-
-                "Polygon"
-
-            ]
-
-        });
-
-
-        /* =================================================
-           ПОДПИСИ
-        ================================================= */
-
-        map.addLayer({
-
-            id: "region-labels",
-
-            type: "symbol",
-
-            source: "regions",
-
-            layout: {
-
-                "text-field": [
-
-                    "coalesce",
-
-                    ["get", "shapeName"],
-
-                    ["get", "NAME_1"],
-
-                    ["get", "name"],
-
-                    "Область"
-
-                ],
-
-                "text-size": 12,
-
-                "text-anchor": "center"
-
-            },
-
-            paint: {
-
-                "text-color": "#333333",
-
-                "text-halo-color": "#ffffff",
-
-                "text-halo-width": 1.5
-
-            }
-
-        });
-
-
-        /* =================================================
-           ВАЖНО:
-           КЛИК СОЗДАЁМ ПОСЛЕ СОЗДАНИЯ СЛОЯ
-        ================================================= */
-
-        map.on(
-
-            "click",
-
-            "regions",
-
-            function(event) {
-
-
-                if (
-                    !event.features ||
-                    !event.features.length
-                ) {
-
-                    return;
 
                 }
 
+            );
 
-                const feature =
-                    event.features[0];
 
+            /* =================================================
+               10. НАВЕДЕНИЕ
+            ================================================= */
 
-                const props =
-                    feature.properties || {};
+            map.on(
 
+                "mouseenter",
 
-                const name =
+                "uzbekistan-regions-fill",
 
-                    props.shapeName ||
+                function() {
 
-                    props.NAME_1 ||
+                    map.getCanvas()
+                        .style
+                        .cursor =
+                        "pointer";
 
-                    props.name ||
+                }
 
-                    props.NAME ||
+            );
 
-                    "Область Узбекистана";
 
+            map.on(
 
-                selectedRegionName =
-                    name;
+                "mouseleave",
 
+                "uzbekistan-regions-fill",
 
-                /* =====================================
-                   ПОДСВЕТКА
-                ===================================== */
+                function() {
 
-                map.setFilter(
+                    map.getCanvas()
+                        .style
+                        .cursor =
+                        "";
 
-                    "region-selected",
+                }
 
-                    [
+            );
 
-                        "==",
 
-                        "shapeName",
+            console.log(
 
-                        name
+                "✅ UZMAP: области готовы"
 
-                    ]
+            );
 
-                );
 
+        }
 
-                /* =====================================
-                   КУРСОР
-                ===================================== */
 
-                map.getCanvas().style.cursor =
-                    "pointer";
+        catch (error) {
 
 
-                /* =====================================
-                   ПРИБЛИЖЕНИЕ
-                ===================================== */
+            console.error(
 
-                map.flyTo({
+                "❌ Ошибка загрузки областей:",
 
-                    center: [
-                        event.lngLat.lng,
-                        event.lngLat.lat
-                    ],
+                error
 
-                    zoom: Math.max(
-                        map.getZoom(),
-                        6.5
-                    ),
+            );
 
-                    speed: 0.8,
 
-                    curve: 1.2
+            showStatus(
 
-                });
+                "⚠️ Не удалось загрузить области"
 
+            );
 
-                /* =====================================
-                   POPUP
-                ===================================== */
-
-                new maplibregl.Popup({
-
-                    offset: 15
-
-                })
-
-                .setLngLat(
-                    event.lngLat
-                )
-
-                .setHTML(`
-
-                    <h3 class="region-title">
-                        🇺🇿 ${name}
-                    </h3>
-
-                    <p class="region-text">
-                        Административная
-                        область Узбекистана
-                    </p>
-
-                `)
-
-                .addTo(map);
-
-
-                console.log(
-                    "Выбрана область:",
-                    name
-                );
-
-            }
-
-        );
-
-
-        /* =================================================
-           НАВЕДЕНИЕ
-        ================================================= */
-
-        map.on(
-
-            "mouseenter",
-
-            "regions",
-
-            function() {
-
-                map.getCanvas().style.cursor =
-                    "pointer";
-
-            }
-
-        );
-
-
-        map.on(
-
-            "mouseleave",
-
-            "regions",
-
-            function() {
-
-                map.getCanvas().style.cursor =
-                    "";
-
-            }
-
-        );
-
-
-        console.log(
-            "UZMAP: области готовы"
-        );
+        }
 
 
     }
 
-    catch (error) {
-
-        console.error(
-            "Region error:",
-            error
-        );
-
-    }
-
-});
+);
 
 
 /* =====================================================
@@ -823,6 +1164,10 @@ const searchButton =
     );
 
 
+/* =====================================================
+   ФУНКЦИЯ ПОИСКА
+===================================================== */
+
 async function searchLocation() {
 
 
@@ -831,7 +1176,9 @@ async function searchLocation() {
 
 
     if (!query) {
+
         return;
+
     }
 
 
@@ -841,6 +1188,7 @@ async function searchLocation() {
 
 
     try {
+
 
         const url =
 
@@ -868,7 +1216,7 @@ async function searchLocation() {
         if (!response.ok) {
 
             throw new Error(
-                "Search error"
+                "Ошибка поиска"
             );
 
         }
@@ -880,9 +1228,11 @@ async function searchLocation() {
 
         if (!results.length) {
 
+
             showStatus(
                 "❌ Ничего не найдено"
             );
+
 
             return;
 
@@ -893,13 +1243,17 @@ async function searchLocation() {
             results[0];
 
 
-        const lat =
+        const latitude =
             Number(place.lat);
 
 
-        const lon =
+        const longitude =
             Number(place.lon);
 
+
+        /* =============================================
+           УДАЛЯЕМ СТАРЫЙ МАРКЕР
+        ============================================= */
 
         if (currentMarker) {
 
@@ -908,57 +1262,94 @@ async function searchLocation() {
         }
 
 
+        /* =============================================
+           СОЗДАЁМ POPUP
+        ============================================= */
+
+        const popup =
+            new maplibregl.Popup({
+
+                offset:
+                    25
+
+            })
+
+            .setHTML(`
+
+                <h3 class="region-title">
+
+                    📍 ${
+                        place.name ||
+                        "Найденное место"
+                    }
+
+                </h3>
+
+
+                <p class="region-text">
+
+                    ${
+                        place.display_name ||
+                        ""
+                    }
+
+                </p>
+
+            `);
+
+
+        /* =============================================
+           МАРКЕР
+        ============================================= */
+
         currentMarker =
 
             new maplibregl.Marker()
 
                 .setLngLat([
-                    lon,
-                    lat
+
+                    longitude,
+
+                    latitude
+
                 ])
 
                 .setPopup(
-
-                    new maplibregl.Popup({
-                        offset: 25
-                    })
-
-                    .setHTML(`
-
-                        <h3 class="region-title">
-
-                            📍 ${place.name ||
-                            "Место"}
-
-                        </h3>
-
-                        <p class="region-text">
-
-                            ${place.display_name ||
-                            ""}
-
-                        </p>
-
-                    `)
-
+                    popup
                 )
 
                 .addTo(map);
 
 
+        /* =============================================
+           ПЕРЕМЕЩАЕМ КАРТУ
+        ============================================= */
+
         map.flyTo({
 
             center: [
-                lon,
-                lat
+
+                longitude,
+
+                latitude
+
             ],
 
-            zoom: 16,
+            zoom:
+                16,
 
-            speed: 1.2
+            speed:
+                1.2,
+
+            curve:
+                1.4
 
         });
 
+
+        /* =============================================
+           ОТКРЫВАЕМ POPUP
+        ============================================= */
 
         currentMarker.togglePopup();
 
@@ -969,16 +1360,24 @@ async function searchLocation() {
 
 
         setTimeout(
+
             hideStatus,
+
             2500
+
         );
 
 
     }
 
+
     catch (error) {
 
-        console.error(error);
+
+        console.error(
+            error
+        );
+
 
         showStatus(
             "⚠️ Ошибка поиска"
@@ -989,6 +1388,10 @@ async function searchLocation() {
 }
 
 
+/* =====================================================
+   КНОПКА ПОИСКА
+===================================================== */
+
 searchButton.addEventListener(
 
     "click",
@@ -998,11 +1401,16 @@ searchButton.addEventListener(
 );
 
 
+/* =====================================================
+   ENTER
+===================================================== */
+
 searchInput.addEventListener(
 
     "keydown",
 
     function(event) {
+
 
         if (
             event.key === "Enter"
@@ -1016,8 +1424,8 @@ searchInput.addEventListener(
 
 );
 
-</script>
 
+</script>
 
 </body>
 
