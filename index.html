@@ -33,15 +33,20 @@
             height: 100%;
         }
 
-        /* Логотип */
+        /* =========================
+           ЛОГОТИП
+        ========================= */
 
         .logo {
             position: absolute;
+
             top: 15px;
             left: 15px;
+
             z-index: 1000;
 
             background: white;
+
             padding: 10px 16px;
 
             border-radius: 10px;
@@ -52,7 +57,10 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
 
-        /* Поиск */
+
+        /* =========================
+           ПОИСК
+        ========================= */
 
         .search-box {
             position: absolute;
@@ -75,16 +83,19 @@
             overflow: hidden;
         }
 
+
         .search-input {
             flex: 1;
 
             border: none;
+
             outline: none;
 
             padding: 13px 15px;
 
             font-size: 15px;
         }
+
 
         .search-button {
             border: none;
@@ -98,11 +109,15 @@
             cursor: pointer;
         }
 
+
         .search-button:hover {
             background: #f2f2f2;
         }
 
-        /* Сообщение */
+
+        /* =========================
+           СТАТУС
+        ========================= */
 
         .status {
             position: absolute;
@@ -125,13 +140,17 @@
             display: none;
         }
 
-        /* Карточка результата */
+
+        /* =========================
+           POPUP
+        ========================= */
 
         .result-title {
             margin: 0 0 8px;
 
             font-size: 17px;
         }
+
 
         .result-address {
             margin: 0;
@@ -143,7 +162,10 @@
             line-height: 1.4;
         }
 
-        /* Мобильный экран */
+
+        /* =========================
+           МОБИЛЬНЫЙ ЭКРАН
+        ========================= */
 
         @media (max-width: 700px) {
 
@@ -172,377 +194,567 @@
 
 <body>
 
-    <!-- Логотип -->
 
-    <div class="logo">
-        🇺🇿 UZMAP
-    </div>
+<!-- =========================
+     ЛОГОТИП
+========================= -->
 
-
-    <!-- Поиск -->
-
-    <div class="search-box">
-
-        <input
-            id="searchInput"
-            class="search-input"
-            type="text"
-            placeholder="🔍 Найти адрес или место..."
-            autocomplete="off"
-        >
-
-        <button
-            id="searchButton"
-            class="search-button"
-        >
-            🔍
-        </button>
-
-    </div>
+<div class="logo">
+    🇺🇿 UZMAP
+</div>
 
 
-    <!-- Статус -->
+<!-- =========================
+     ПОИСК
+========================= -->
 
-    <div
-        id="status"
-        class="status"
-    ></div>
+<div class="search-box">
+
+    <input
+        id="searchInput"
+        class="search-input"
+        type="text"
+        placeholder="🔍 Найти адрес или место..."
+        autocomplete="off"
+    >
+
+    <button
+        id="searchButton"
+        class="search-button"
+    >
+        🔍
+    </button>
+
+</div>
 
 
-    <!-- Карта -->
+<!-- =========================
+     СТАТУС
+========================= -->
 
-    <div id="map"></div>
+<div
+    id="status"
+    class="status"
+></div>
 
 
-    <script>
+<!-- =========================
+     КАРТА
+========================= -->
 
-        // =========================================
-        // КАРТА
-        // =========================================
+<div id="map"></div>
 
-        const map = new maplibregl.Map({
 
-            container: "map",
+<script>
 
-            style: {
 
-                version: 8,
+/* =====================================================
+   СОЗДАЁМ КАРТУ
+===================================================== */
 
-                sources: {
+const map = new maplibregl.Map({
 
-                    osm: {
+    container: "map",
 
-                        type: "raster",
+    style: {
 
-                        tiles: [
-                            "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-                        ],
-                      tileSize: 256,
+        version: 8,
 
-                        attribution:
-                            "© OpenStreetMap contributors"
+        sources: {
+
+            osm: {
+
+                type: "raster",
+
+                tiles: [
+                    "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+                ],
+
+                tileSize: 256,
+
+                attribution:
+                    "© OpenStreetMap contributors"
+            }
+
+        },
+
+        layers: [
+
+            {
+                id: "osm",
+
+                type: "raster",
+
+                source: "osm"
+            }
+
+        ]
+
+    },
+
+
+    center: [
+        64.5853,
+        41.3775
+    ],
+
+
+    zoom: 5
+
+});
+
+
+/* =====================================================
+   КНОПКИ + / -
+===================================================== */
+
+map.addControl(
+
+    new maplibregl.NavigationControl(),
+
+    "top-right"
+
+);
+
+
+/* =====================================================
+   ТЕКУЩИЙ МАРКЕР
+===================================================== */
+
+let currentMarker = null;
+
+
+/* =====================================================
+   СТАТУС
+===================================================== */
+
+const status =
+    document.getElementById("status");
+
+
+function showStatus(message) {
+
+    status.textContent = message;
+
+    status.style.display = "block";
+
+}
+
+
+function hideStatus() {
+
+    status.style.display = "none";
+
+}
+
+
+/* =====================================================
+   МАСКИРУЕМ ВСЕ СТРАНЫ, КРОМЕ УЗБЕКИСТАНА
+   И ЕГО СОСЕДЕЙ
+===================================================== */
+
+map.on("load", async function () {
+
+
+    try {
+
+
+        const response = await fetch(
+            "https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson"
+        );
+
+
+        const countries =
+            await response.json();
+
+
+        /* =============================================
+           ISO-КОДЫ РАЗРЕШЁННЫХ СТРАН
+
+           UZB — Узбекистан
+           KAZ — Казахстан
+           KGZ — Кыргызстан
+           TJK — Таджикистан
+           AFG — Афганистан
+           TKM — Туркменистан
+        ============================================= */
+
+        const allowedCountries = [
+            "UZB",
+            "KAZ",
+            "KGZ",
+            "TJK",
+            "AFG",
+            "TKM"
+        ];
+
+
+        /* =============================================
+           ОСТАВЛЯЕМ ТОЛЬКО ОСТАЛЬНЫЕ СТРАНЫ
+           ДЛЯ БЕЛОЙ МАСКИ
+        ============================================= */
+
+        const hiddenCountries = {
+
+            type: "FeatureCollection",
+
+            features:
+                countries.features.filter(
+                    feature => {
+
+                        const code =
+                            feature.properties[
+                                "ISO3166-1-Alpha-3"
+                            ];
+
+                        return !allowedCountries.includes(
+                            code
+                        );
+
                     }
-                },
+                )
 
-                layers: [
+        };
 
-                    {
-                        id: "osm",
 
-                        type: "raster",
+        /* =============================================
+           ДОБАВЛЯЕМ ИСТОЧНИК МАСКИ
+        ============================================= */
 
-                        source: "osm"
-                    }
+        map.addSource(
+            "hidden-countries",
+            {
+                type: "geojson",
+                data: hiddenCountries
+            }
+        );
 
-                ]
-            },
 
-            center: [
-                64.5853,
-                41.3775
-            ],
+        /* =============================================
+           БЕЛАЯ МАСКА
+        ============================================= */
 
-            zoom: 5
+        map.addLayer({
+
+            id: "hidden-countries-fill",
+
+            type: "fill",
+
+            source: "hidden-countries",
+
+            paint: {
+
+                "fill-color": "#ffffff",
+
+                "fill-opacity": 1
+
+            }
+
         });
 
-        // =========================================
-        // КНОПКИ КАРТЫ
-        // =========================================
 
-        map.addControl(
+        /* =============================================
+           ГРАНИЦЫ СКРЫТЫХ СТРАН
+        ============================================= */
 
-            new maplibregl.NavigationControl(),
+        map.addLayer({
 
-            "top-right"
+            id: "hidden-countries-border",
 
+            type: "line",
+
+            source: "hidden-countries",
+
+            paint: {
+
+                "line-color": "#ffffff",
+
+                "line-width": 1
+
+            }
+
+        });
+
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Ошибка загрузки границ:",
+            error
         );
 
+    }
 
-        // =========================================
-        // ЭЛЕМЕНТЫ
-        // =========================================
-
-        const searchInput =
-            document.getElementById("searchInput");
-
-        const searchButton =
-            document.getElementById("searchButton");
-
-        const status =
-            document.getElementById("status");
+});
 
 
-        // =========================================
-        // ТЕКУЩИЙ МАРКЕР
-        // =========================================
+/* =====================================================
+   ПОИСК
+===================================================== */
 
-        let currentMarker = null;
+const searchInput =
+    document.getElementById(
+        "searchInput"
+    );
 
 
-        // =========================================
-        // ПОКАЗЫВАЕМ СТАТУС
-        // =========================================
+const searchButton =
+    document.getElementById(
+        "searchButton"
+    );
 
-        function showStatus(message) {
 
-            status.textContent = message;
+/* =====================================================
+   REAL NOMINATIM SEARCH
+===================================================== */
 
-            status.style.display = "block";
+async function searchLocation() {
+
+
+    const query =
+        searchInput.value.trim();
+
+
+    if (!query) {
+
+        return;
+
+    }
+
+
+    showStatus(
+        "🔎 Ищем..."
+    );
+
+
+    try {
+
+
+        const url =
+            "https://nominatim.openstreetmap.org/search"
+            + "?q="
+            + encodeURIComponent(query)
+            + "&format=jsonv2"
+            + "&limit=5"
+            + "&countrycodes=uz"
+            + "&addressdetails=1"
+            + "&accept-language=ru,uz,en";
+
+
+        const response =
+            await fetch(url);
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Ошибка сервера"
+            );
 
         }
 
 
-        function hideStatus() {
+        const results =
+            await response.json();
 
-            status.style.display = "none";
+
+        /* =============================================
+           НИЧЕГО НЕ НАЙДЕНО
+        ============================================= */
+
+        if (
+            results.length === 0
+        ) {
+
+            showStatus(
+                "❌ Ничего не найдено"
+            );
+
+            return;
 
         }
 
 
-        // =========================================
-        // РЕАЛЬНЫЙ ПОИСК
-        // =========================================
+        /* =============================================
+           ПЕРВЫЙ РЕЗУЛЬТАТ
+        ============================================= */
 
-        async function searchLocation() {
+        const place =
+            results[0];
 
-            const query =
-                searchInput.value.trim();
 
+        const latitude =
+            Number(place.lat);
 
-            if (!query) {
 
-                return;
+        const longitude =
+            Number(place.lon);
 
-            }
 
+        /* =============================================
+           УДАЛЯЕМ ПРЕДЫДУЩИЙ МАРКЕР
+        ============================================= */
 
-            showStatus("🔎 Ищем...");
+        if (currentMarker) {
 
-
-            try {
-
-                const url =
-                    "https://nominatim.openstreetmap.org/search"
-                    + "?q=" + encodeURIComponent(query)
-                    + "&format=jsonv2"
-                    + "&limit=5"
-                    + "&countrycodes=uz"
-                    + "&addressdetails=1"
-                    + "&accept-language=ru,uz,en";
-
-
-                const response =
-                    await fetch(url);
-
-
-                if (!response.ok) {
-
-                    throw new Error(
-                        "Ошибка сервера"
-                    );
-
-                }
-
-
-                const results =
-                    await response.json();
-
-
-                // =================================
-                // НИЧЕГО НЕ НАЙДЕНО
-                // =================================
-
-                if (results.length === 0) {
-
-                    showStatus(
-                        "❌ Ничего не найдено"
-                    );
-
-                    return;
-
-                }
-
-
-                // =================================
-                // БЕРЁМ ЛУЧШИЙ РЕЗУЛЬТАТ
-                // =================================
-
-                const place =
-                    results[0];
-
-
-                const latitude =
-                    Number(place.lat);
-
-
-                const longitude =
-                    Number(place.lon);
-
-
-                // =================================
-                // УДАЛЯЕМ СТАРЫЙ МАРКЕР
-                // =================================
-
-                if (currentMarker) {
-
-                    currentMarker.remove();
-
-                }
-
-
-                // =================================
-                // СОЗДАЁМ КАРТОЧКУ
-                // =================================
-
-                const name =
-                    place.name ||
-                    "Найденное место";
-
-
-                const address =
-                    place.display_name ||
-                    "";
-
-
-                const popup =
-                    new maplibregl.Popup({offset: 25
-                    })
-                    .setHTML(`
-
-                        <h3 class="result-title">
-                            📍 ${name}
-                        </h3>
-
-                        <p class="result-address">
-                            ${address}
-                        </p>
-
-                    `);
-
-
-                // =================================
-                // СОЗДАЁМ МАРКЕР
-                // =================================
-
-                currentMarker =
-
-                    new maplibregl.Marker()
-
-                        .setLngLat([
-                            longitude,
-                            latitude
-                        ])
-
-                        .setPopup(popup)
-
-                        .addTo(map);
-
-
-                // =================================
-                // ПЕРЕМЕЩАЕМ КАРТУ
-                // =================================
-
-                map.flyTo({
-
-                    center: [
-                        longitude,
-                        latitude
-                    ],
-
-                    zoom: 16,
-
-                    speed: 1.2,
-
-                    curve: 1.4
-
-                });
-
-
-                // =================================
-                // ОТКРЫВАЕМ КАРТОЧКУ
-                // =================================
-
-                currentMarker.togglePopup();
-
-
-                showStatus(
-                    "✅ Найдено"
-                );
-
-
-                setTimeout(
-                    hideStatus,
-                    2500
-                );
-
-
-            } catch (error) {
-
-                console.error(error);
-
-                showStatus(
-                    "⚠️ Ошибка поиска"
-                );
-
-            }
+            currentMarker.remove();
 
         }
 
 
-        // =========================================
-        // КНОПКА
-        // =========================================
+        /* =============================================
+           НАЗВАНИЕ
+        ============================================= */
 
-        searchButton.addEventListener(
+        const name =
+            place.name ||
+            "Найденное место";
 
-            "click",
 
-            searchLocation
+        const address =
+            place.display_name ||
+            "";
 
+
+        /* =============================================
+           POPUP
+        ============================================= */
+
+        const popup =
+            new maplibregl.Popup({
+
+                offset: 25
+
+            })
+
+            .setHTML(`
+
+                <h3 class="result-title">
+                    📍 ${name}
+                </h3>
+
+                <p class="result-address">
+                    ${address}
+                </p>
+
+            `);
+
+
+        /* =============================================
+           МАРКЕР
+        ============================================= */
+
+        currentMarker =
+
+            new maplibregl.Marker()
+
+                .setLngLat([
+
+                    longitude,
+                    latitude
+
+                ])
+
+                .setPopup(popup)
+
+                .addTo(map);
+
+
+        /* =============================================
+           ПЕРЕМЕЩЕНИЕ
+        ============================================= */
+
+        map.flyTo({
+
+            center: [
+
+                longitude,
+                latitude
+
+            ],
+
+            zoom: 16,
+
+            speed: 1.2,
+
+            curve: 1.4
+
+        });
+
+
+        /* =============================================
+           ОТКРЫВАЕМ POPUP
+        ============================================= */
+
+        currentMarker.togglePopup();
+
+
+        showStatus(
+            "✅ Найдено"
         );
 
 
-        // =========================================
-        // ENTER
-        // =========================================
-
-        searchInput.addEventListener(
-
-            "keydown",
-
-            function(event) {
-
-                if (event.key === "Enter") {
-
-                    searchLocation();
-
-                }
-
-            }
-
+        setTimeout(
+            hideStatus,
+            2500
         );
 
-    </script>
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        showStatus(
+            "⚠️ Ошибка поиска"
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   КНОПКА ПОИСКА
+===================================================== */
+
+searchButton.addEventListener(
+
+    "click",
+
+    searchLocation
+
+);
+
+
+/* =====================================================
+   ENTER
+===================================================== */
+
+searchInput.addEventListener(
+
+    "keydown",
+
+    function(event) {
+
+        if (
+            event.key === "Enter"
+        ) {
+
+            searchLocation();
+
+        }
+
+    }
+
+);
+
+
+</script>
+
 
 </body>
 </html>
