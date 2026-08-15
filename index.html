@@ -33,6 +33,7 @@
             height: 100%;
         }
 
+
         /* =========================
            ЛОГОТИП
         ========================= */
@@ -195,18 +196,10 @@
 <body>
 
 
-<!-- =========================
-     ЛОГОТИП
-========================= -->
-
 <div class="logo">
     🇺🇿 UZMAP
 </div>
 
-
-<!-- =========================
-     ПОИСК
-========================= -->
 
 <div class="search-box">
 
@@ -228,19 +221,11 @@
 </div>
 
 
-<!-- =========================
-     СТАТУС
-========================= -->
-
 <div
     id="status"
     class="status"
 ></div>
 
-
-<!-- =========================
-     КАРТА
-========================= -->
 
 <div id="map"></div>
 
@@ -292,12 +277,10 @@ const map = new maplibregl.Map({
 
     },
 
-
     center: [
         64.5853,
         41.3775
     ],
-
 
     zoom: 5
 
@@ -305,7 +288,7 @@ const map = new maplibregl.Map({
 
 
 /* =====================================================
-   КНОПКИ + / -
+   КНОПКИ КАРТЫ
 ===================================================== */
 
 map.addControl(
@@ -318,7 +301,7 @@ map.addControl(
 
 
 /* =====================================================
-   ТЕКУЩИЙ МАРКЕР
+   МАРКЕР ПОИСКА
 ===================================================== */
 
 let currentMarker = null;
@@ -349,50 +332,39 @@ function hideStatus() {
 
 
 /* =====================================================
-   МАСКИРУЕМ ВСЕ СТРАНЫ, КРОМЕ УЗБЕКИСТАНА
-   И ЕГО СОСЕДЕЙ
+   ПОСЛЕ ЗАГРУЗКИ КАРТЫ
 ===================================================== */
 
 map.on("load", async function () {
 
 
+    /* =================================================
+       1. СКРЫВАЕМ ДРУГИЕ СТРАНЫ
+    ================================================= */
+
     try {
 
-
-        const response = await fetch(
-            "https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson"
-        );
+        const countriesResponse =
+            await fetch(
+                "https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson"
+            );
 
 
         const countries =
-            await response.json();
+            await countriesResponse.json();
 
-
-        /* =============================================
-           ISO-КОДЫ РАЗРЕШЁННЫХ СТРАН
-
-           UZB — Узбекистан
-           KAZ — Казахстан
-           KGZ — Кыргызстан
-           TJK — Таджикистан
-           AFG — Афганистан
-           TKM — Туркменистан
-        ============================================= */
 
         const allowedCountries = [
+
             "UZB",
             "KAZ",
             "KGZ",
             "TJK",
             "AFG",
             "TKM"
+
         ];
 
-
-        /* =============================================
-           ОСТАВЛЯЕМ ТОЛЬКО ОСТАЛЬНЫЕ СТРАНЫ
-           ДЛЯ БЕЛОЙ МАСКИ
-        ============================================= */
 
         const hiddenCountries = {
 
@@ -407,6 +379,7 @@ map.on("load", async function () {
                                 "ISO3166-1-Alpha-3"
                             ];
 
+
                         return !allowedCountries.includes(
                             code
                         );
@@ -417,10 +390,6 @@ map.on("load", async function () {
         };
 
 
-        /* =============================================
-           ДОБАВЛЯЕМ ИСТОЧНИК МАСКИ
-        ============================================= */
-
         map.addSource(
             "hidden-countries",
             {
@@ -429,10 +398,6 @@ map.on("load", async function () {
             }
         );
 
-
-        /* =============================================
-           БЕЛАЯ МАСКА
-        ============================================= */
 
         map.addLayer({
 
@@ -452,10 +417,6 @@ map.on("load", async function () {
 
         });
 
-
-        /* =============================================
-           ГРАНИЦЫ СКРЫТЫХ СТРАН
-        ============================================= */
 
         map.addLayer({
 
@@ -481,7 +442,177 @@ map.on("load", async function () {
     catch (error) {
 
         console.error(
-            "Ошибка загрузки границ:",
+            "Ошибка границ стран:",
+            error
+        );
+
+    }
+
+
+    /* =================================================
+       2. ГРАНИЦЫ ОБЛАСТЕЙ УЗБЕКИСТАНА
+    ================================================= */
+
+    try {
+
+
+        /*
+         * Получаем актуальный адрес GeoJSON
+         * ADM1 через API geoBoundaries.
+         */
+
+        const apiResponse =
+            await fetch(
+                "https://www.geoboundaries.org/api/current/gbOpen/UZB/ADM1/"
+            );
+
+
+        const apiData =
+            await apiResponse.json();
+
+
+        /*
+         * Ссылка на GeoJSON
+         */
+
+        const geojsonUrl =
+            apiData.gjDownloadURL;
+
+
+        /*
+         * Загружаем границы областей
+         */
+
+        const regionsResponse =
+            await fetch(
+                geojsonUrl
+            );
+
+
+        const regions =
+            await regionsResponse.json();
+
+
+        /*
+         * Добавляем источник
+         */
+
+        map.addSource(
+
+            "uzbekistan-regions",
+
+            {
+                type: "geojson",
+
+                data: regions
+            }
+
+        );
+
+
+        /* =================================================
+           3. ЦВЕТ УЗБЕКИСТАНА
+        ================================================= */
+
+        map.addLayer({
+
+            id: "uzbekistan-regions-fill",
+
+            type: "fill",
+
+            source: "uzbekistan-regions",
+
+            paint: {
+
+                "fill-color": "#dcefd5",
+
+                "fill-opacity": 0.55
+
+            }
+
+        });
+
+
+        /* =================================================
+           4. ГРАНИЦЫ ОБЛАСТЕЙ
+        ================================================= */
+
+        map.addLayer({
+
+            id: "uzbekistan-regions-border",
+
+            type: "line",
+
+            source: "uzbekistan-regions",
+
+            paint: {
+
+                "line-color": "#6b6b6b",
+
+                "line-width": 1.5,
+
+                "line-opacity": 0.9
+
+            }
+
+        });
+
+
+        /* =================================================
+           5. ПОДПИСИ ОБЛАСТЕЙ
+        ================================================= */
+
+        map.addLayer({
+
+            id: "uzbekistan-regions-labels",
+
+            type: "symbol",
+
+            source: "uzbekistan-regions",
+
+            layout: {
+
+                "text-field": [
+                    "get",
+                    "shapeName"
+                ],
+
+                "text-size": 12,
+
+                "text-font": [
+                    "Open Sans Regular"
+                ],
+
+                "text-anchor": "center",
+
+                "text-allow-overlap": false
+
+            },
+
+            paint: {
+
+                "text-color": "#333333",
+
+                "text-halo-color": "#ffffff",
+
+                "text-halo-width": 1.5
+
+            }
+
+        });
+
+
+        console.log(
+            "Области Узбекистана загружены"
+        );
+
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Ошибка загрузки областей:",
             error
         );
 
@@ -505,10 +636,6 @@ const searchButton =
         "searchButton"
     );
 
-
-/* =====================================================
-   REAL NOMINATIM SEARCH
-===================================================== */
 
 async function searchLocation() {
 
@@ -560,10 +687,6 @@ async function searchLocation() {
             await response.json();
 
 
-        /* =============================================
-           НИЧЕГО НЕ НАЙДЕНО
-        ============================================= */
-
         if (
             results.length === 0
         ) {
@@ -577,10 +700,6 @@ async function searchLocation() {
         }
 
 
-        /* =============================================
-           ПЕРВЫЙ РЕЗУЛЬТАТ
-        ============================================= */
-
         const place =
             results[0];
 
@@ -593,20 +712,12 @@ async function searchLocation() {
             Number(place.lon);
 
 
-        /* =============================================
-           УДАЛЯЕМ ПРЕДЫДУЩИЙ МАРКЕР
-        ============================================= */
-
         if (currentMarker) {
 
             currentMarker.remove();
 
         }
 
-
-        /* =============================================
-           НАЗВАНИЕ
-        ============================================= */
 
         const name =
             place.name ||
@@ -617,10 +728,6 @@ async function searchLocation() {
             place.display_name ||
             "";
 
-
-        /* =============================================
-           POPUP
-        ============================================= */
 
         const popup =
             new maplibregl.Popup({
@@ -642,10 +749,6 @@ async function searchLocation() {
             `);
 
 
-        /* =============================================
-           МАРКЕР
-        ============================================= */
-
         currentMarker =
 
             new maplibregl.Marker()
@@ -661,10 +764,6 @@ async function searchLocation() {
 
                 .addTo(map);
 
-
-        /* =============================================
-           ПЕРЕМЕЩЕНИЕ
-        ============================================= */
 
         map.flyTo({
 
@@ -684,10 +783,6 @@ async function searchLocation() {
         });
 
 
-        /* =============================================
-           ОТКРЫВАЕМ POPUP
-        ============================================= */
-
         currentMarker.togglePopup();
 
 
@@ -697,8 +792,11 @@ async function searchLocation() {
 
 
         setTimeout(
+
             hideStatus,
+
             2500
+
         );
 
 
