@@ -3,245 +3,344 @@
 
 <head>
 
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>UZMAP — Карта Узбекистана</title>
+<title>UZMAP — Карта Узбекистана</title>
 
+<link
+rel="stylesheet"
+href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"
+>
 
-    <!-- MAPLIBRE -->
+<script
+src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js">
+</script>
 
-    <link
-        rel="stylesheet"
-        href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"
-    >
+<style>
 
-    <script
-        src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"
-    ></script>
+* {
+    box-sizing: border-box;
+}
 
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    font-family: Arial, sans-serif;
+}
 
-    <style>
+#map {
+    width: 100%;
+    height: 100%;
+}
 
-        * {
-            box-sizing: border-box;
-        }
+/* ЛОГОТИП */
 
+.logo {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    z-index: 1000;
 
-        html,
-        body {
+    background: white;
+    padding: 10px 16px;
 
-            margin: 0;
-            padding: 0;
+    border-radius: 10px;
 
-            width: 100%;
-            height: 100%;
+    font-size: 21px;
+    font-weight: bold;
 
-            font-family: Arial, sans-serif;
+    box-shadow:
+        0 2px 10px rgba(0,0,0,0.2);
+}
 
-        }
+/* ПОИСК */
 
+.search-box {
+    position: absolute;
 
-        #map {
+    top: 15px;
+    left: 150px;
 
-            width: 100%;
-            height: 100%;
+    z-index: 1000;
 
-        }
+    width: 400px;
 
+    display: flex;
 
-        /* ==============================
-           ЛОГОТИП
-        ============================== */
+    background: white;
 
-        .logo {
+    border-radius: 10px;
 
-            position: absolute;
+    overflow: hidden;
 
-            top: 15px;
-            left: 15px;
+    box-shadow:
+        0 2px 10px rgba(0,0,0,0.2);
+}
 
-            z-index: 1000;
+.search-input {
+    flex: 1;
 
-            background: white;
+    border: none;
+    outline: none;
 
-            padding: 10px 16px;
+    padding: 13px 15px;
 
-            border-radius: 10px;
+    font-size: 15px;
+}
 
-            font-size: 21px;
+.search-button {
+    border: none;
 
-            font-weight: bold;
+    background: white;
 
-            box-shadow:
-                0 2px 10px
-                rgba(0, 0, 0, 0.2);
+    padding: 0 16px;
 
-        }
+    font-size: 18px;
 
+    cursor: pointer;
+}
 
-        /* ==============================
-           ПОИСК
-        ============================== */
+.search-button:hover {
+    background: #f2f2f2;
+}
 
-        .search-box {
+/* СТАТУС */
 
-            position: absolute;
+.status {
+    position: absolute;
 
-            top: 15px;
-            left: 150px;
+    top: 70px;
+    left: 150px;
 
-            z-index: 1000;
+    z-index: 1000;
 
-            width: 400px;
+    background: white;
 
-            display: flex;
+    padding: 10px 14px;
 
-            background: white;
+    border-radius: 8px;
 
-            border-radius: 10px;
+    box-shadow:
+        0 2px 10px rgba(0,0,0,0.15);
 
-            overflow: hidden;
+    font-size: 14px;
 
-            box-shadow:
-                0 2px 10px
-                rgba(0, 0, 0, 0.2);
+    display: none;
+}
 
-        }
+/* ПАНЕЛЬ */
 
+.region-panel {
+    position: fixed;
 
-        .search-input {
+    top: 0;
+    right: 0;
 
-            flex: 1;
+    width: 380px;
+    height: 100vh;
 
-            border: none;
+    z-index: 2000;
 
-            outline: none;
+    background:
+        rgba(255,255,255,0.98);
 
-            padding: 13px 15px;
+    box-shadow:
+        -5px 0 20px rgba(0,0,0,0.18);
 
-            font-size: 15px;
+    transform:
+        translateX(100%);
 
-        }
+    transition:
+        transform 0.3s ease;
 
+    overflow-y: auto;
+}
 
-        .search-button {
+.region-panel.open {
+    transform:
+        translateX(0);
+}
 
-            border: none;
+.region-header {
+    padding: 25px 22px 20px;
 
-            background: white;
+    border-bottom:
+        1px solid #e5e5e5;
 
-            padding: 0 16px;
+    position: relative;
+}
 
-            font-size: 18px;
+.region-country {
+    font-size: 13px;
 
-            cursor: pointer;
+    color: #777;
 
-        }
+    margin-bottom: 8px;
+}
 
+.region-name {
+    margin: 0;
 
-        .search-button:hover {
+    font-size: 26px;
 
-            background: #f2f2f2;
+    line-height: 1.2;
 
-        }
+    color: #222;
+}
 
+.close-panel {
+    position: absolute;
 
-        /* ==============================
-           СТАТУС
-        ============================== */
+    top: 18px;
+    right: 18px;
 
-        .status {
+    width: 36px;
+    height: 36px;
 
-            position: absolute;
+    border: none;
 
-            top: 70px;
-            left: 150px;
+    border-radius: 50%;
 
-            z-index: 1000;
+    background: #f1f1f1;
 
-            background: white;
+    font-size: 24px;
 
-            padding: 10px 14px;
+    line-height: 36px;
 
-            border-radius: 8px;
+    cursor: pointer;
+}
 
-            box-shadow:
-                0 2px 10px
-                rgba(0, 0, 0, 0.15);
+.close-panel:hover {
+    background: #e5e5e5;
+}
 
-            font-size: 14px;
+.region-content {
+    padding: 20px 22px;
+}
 
-            display: none;
+.region-card {
+    background: #f7f8f9;
 
-        }
+    border-radius: 12px;
 
+    padding: 15px;
 
-        /* ==============================
-           POPUP
-        ============================== */
+    margin-bottom: 12px;
+}
 
-        .region-title {
+.region-card-title {
+    font-size: 12px;
 
-            margin: 0 0 8px;
+    color: #777;
 
-            font-size: 18px;
+    margin-bottom: 6px;
+}
 
-        }
+.region-card-value {
+    font-size: 18px;
 
+    font-weight: 600;
 
-        .region-text {
+    color: #222;
+}
+    .cities-title {
+    margin-top: 25px;
+    margin-bottom: 12px;
 
-            margin: 0;
+    font-size: 18px;
+    font-weight: bold;
+}
 
-            color: #555;
+.cities-list {
+    display: flex;
 
-            font-size: 13px;
+    flex-wrap: wrap;
 
-            line-height: 1.4;
+    gap: 8px;
+}
 
-        }
+.city {
+    background: #f0f1f2;
 
+    padding: 8px 11px;
 
-        /* ==============================
-           МОБИЛЬНЫЙ ЭКРАН
-        ============================== */
+    border-radius: 8px;
 
-        @media (max-width: 700px) {
+    font-size: 14px;
+}
 
-            .logo {
+.attribution-info {
+    margin-top: 30px;
 
-                top: 10px;
-                left: 10px;
+    padding-top: 15px;
 
-            }
+    border-top:
+        1px solid #e5e5e5;
 
+    font-size: 11px;
 
-            .search-box {
+    color: #888;
 
-                top: 65px;
-                left: 10px;
+    line-height: 1.5;
+}
 
-                width:
-                    calc(100% - 20px);
 
-            }
+/* МОБИЛЬНАЯ ВЕРСИЯ */
 
+@media (max-width: 700px) {
 
-            .status {
+    .logo {
+        top: 10px;
+        left: 10px;
+    }
 
-                top: 120px;
-                left: 10px;
+    .search-box {
+        top: 65px;
+        left: 10px;
 
-            }
+        width:
+            calc(100% - 20px);
+    }
 
-        }
+    .status {
+        top: 120px;
+        left: 10px;
+    }
 
-    </style>
+    .region-panel {
+
+        top: auto;
+        bottom: 0;
+
+        right: 0;
+
+        width: 100%;
+        height: 70vh;
+
+        border-radius:
+            20px 20px 0 0;
+
+        transform:
+            translateY(100%);
+    }
+
+    .region-panel.open {
+        transform:
+            translateY(0);
+    }
+
+    .region-name {
+        font-size: 23px;
+    }
+
+}
+
+</style>
 
 </head>
 
@@ -249,20 +348,14 @@
 <body>
 
 
-<!-- ==============================
-     ЛОГОТИП
-============================== -->
+<!-- ЛОГОТИП -->
 
 <div class="logo">
-
     🇺🇿 UZMAP
-
 </div>
 
 
-<!-- ==============================
-     ПОИСК
-============================== -->
+<!-- ПОИСК -->
 
 <div class="search-box">
 
@@ -274,22 +367,17 @@
         autocomplete="off"
     >
 
-
     <button
         id="searchButton"
         class="search-button"
     >
-
         🔍
-
     </button>
 
 </div>
 
 
-<!-- ==============================
-     СТАТУС
-============================== -->
+<!-- СТАТУС -->
 
 <div
     id="status"
@@ -297,17 +385,150 @@
 ></div>
 
 
-<!-- ==============================
-     КАРТА
-============================== -->
+<!-- КАРТА -->
 
 <div id="map"></div>
 
 
+<!-- ПАНЕЛЬ ОБЛАСТИ -->
+
+<aside
+    id="regionPanel"
+    class="region-panel"
+>
+
+
+    <div class="region-header">
+
+
+        <button
+            id="closePanel"
+            class="close-panel"
+        >
+            ×
+        </button>
+
+
+        <div class="region-country">
+            🇺🇿 УЗБЕКИСТАН
+        </div>
+
+
+        <h1
+            id="regionName"
+            class="region-name"
+        >
+            Область
+        </h1>
+
+
+    </div>
+
+
+    <div class="region-content">
+
+
+        <!-- ЦЕНТР -->
+
+        <div class="region-card">
+
+            <div class="region-card-title">
+                📍 Административный центр
+            </div>
+
+            <div
+                id="regionCapital"
+                class="region-card-value"
+            >
+                —
+            </div>
+
+        </div>
+
+
+        <!-- НАСЕЛЕНИЕ -->
+
+        <div class="region-card">
+
+            <div class="region-card-title">
+                👥 Население
+            </div>
+
+            <div
+                id="regionPopulation"
+                class="region-card-value"
+            >
+                Данные уточняются
+            </div>
+
+        </div>
+
+
+        <!-- ПЛОЩАДЬ -->
+
+        <div class="region-card">
+
+            <div class="region-card-title">
+                📐 Площадь
+            </div>
+
+            <div
+                id="regionArea"
+                class="region-card-value"
+            >
+                Данные уточняются
+            </div>
+
+        </div>
+
+
+        <!-- ГОРОДА -->
+
+        <div class="cities-title">
+            🏙 Крупные города
+        </div>
+
+
+        <div
+            id="regionCities"
+            class="cities-list"
+        >
+
+            <div class="city">
+                Данные уточняются
+            </div>
+
+        </div>
+
+
+        <!-- ИНФОРМАЦИЯ -->
+
+        <div class="attribution-info">
+
+            Границы административных
+            единиц используются для
+            картографического отображения.
+
+            <br><br>
+
+            Карта:
+            © OpenStreetMap contributors
+
+            <br>
+
+            Административные границы:
+            SimpleMaps, CC BY 4.0
+
+        </div>
+
+
+    </div>
+
+</aside>
+
+
 <script>
-
-
-/* =====================================================
+    /* =====================================================
    СОЗДАЁМ КАРТУ
 ===================================================== */
 
@@ -315,11 +536,9 @@ const map = new maplibregl.Map({
 
     container: "map",
 
-
     style: {
 
         version: 8,
-
 
         sources: {
 
@@ -327,16 +546,11 @@ const map = new maplibregl.Map({
 
                 type: "raster",
 
-
                 tiles: [
-
                     "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-
                 ],
 
-
                 tileSize: 256,
-
 
                 attribution:
                     "© OpenStreetMap contributors"
@@ -345,31 +559,24 @@ const map = new maplibregl.Map({
 
         },
 
-
         layers: [
 
             {
-
                 id: "osm",
 
                 type: "raster",
 
                 source: "osm"
-
             }
 
         ]
 
     },
 
-
     center: [
-
         64.5853,
         41.3775
-
     ],
-
 
     zoom: 5
 
@@ -377,7 +584,7 @@ const map = new maplibregl.Map({
 
 
 /* =====================================================
-   КНОПКИ КАРТЫ
+   НАВИГАЦИЯ
 ===================================================== */
 
 map.addControl(
@@ -396,6 +603,420 @@ map.addControl(
 let currentMarker = null;
 
 let selectedFeatureId = null;
+
+
+/* =====================================================
+   ЭЛЕМЕНТЫ ПАНЕЛИ
+===================================================== */
+
+const regionPanel =
+    document.getElementById(
+        "regionPanel"
+    );
+
+
+const closePanel =
+    document.getElementById(
+        "closePanel"
+    );
+
+
+const regionName =
+    document.getElementById(
+        "regionName"
+    );
+
+
+const regionCapital =
+    document.getElementById(
+        "regionCapital"
+    );
+
+
+const regionPopulation =
+    document.getElementById(
+        "regionPopulation"
+    );
+
+
+const regionArea =
+    document.getElementById(
+        "regionArea"
+    );
+
+
+const regionCities =
+    document.getElementById(
+        "regionCities"
+    );
+
+
+/* =====================================================
+   ДАННЫЕ ОБЛАСТЕЙ
+===================================================== */
+
+const regionData = {
+
+    "Tashkent": {
+
+        capital: "Нурафшон",
+
+        population: "Данные уточняются",
+
+        area: "Данные уточняются",
+
+        cities: [
+            "Чирчик",
+            "Ангрен",
+            "Алмалык",
+            "Бекабад"
+        ]
+
+    },
+
+
+    "Toshkent": {
+
+        capital: "Нурафшон",
+
+        population: "Данные уточняются",
+
+        area: "Данные уточняются",
+
+        cities: [
+            "Чирчик",
+            "Ангрен",
+            "Алмалык",
+            "Бекабад"
+        ]
+
+    },
+
+
+    "Samarkand": {
+
+        capital: "Самарканд",
+
+        population: "Данные уточняются",
+
+        area: "Данные уточняются",
+
+        cities: [
+            "Самарканд",
+            "Каттакурган",
+            "Ургут"
+        ]
+
+    },
+
+
+    "Samarqand": {
+
+        capital: "Самарканд",
+
+        population: "Данные уточняются",
+
+        area: "Данные уточняются",
+
+        cities: [
+            "Самарканд",
+            "Каттакурган",
+            "Ургут"
+        ]
+
+    },
+
+
+    "Bukhara": {
+
+        capital: "Бухара",
+
+        population: "Данные уточняются",
+
+        area: "Данные уточняются",
+
+        cities: [
+            "Бухара",
+            "Каган",
+            "Гиждуван"
+        ]
+
+    },
+
+
+    "Buxoro": {
+
+        capital: "Бухара",
+
+        population: "Данные уточняются",
+
+        area: "Данные уточняются",
+
+        cities: [
+            "Бухара",
+            "Каган",
+            "Гиждуван"
+        ]
+
+    },
+
+
+    "Fergana": {
+
+        capital: "Фергана",
+
+        population: "Данные уточняются",
+
+        area: "Данные уточняются",
+
+        cities: [
+            "Фергана",
+            "Кувасай",
+            "Коканд",
+            "Маргилан"
+        ]
+
+    },
+
+
+    "Namangan": {
+
+        capital: "Наманган",
+
+        population: "Данные уточняются",
+
+        area: "Данные уточняются",
+
+        cities: [
+            "Наманган",
+            "Чуст",
+            "Касансай"
+        ]
+
+    },
+
+
+    "Andijan": {
+
+        capital: "Андижан",
+
+        population: "Данные уточняются",
+
+        area: "Данные уточняются",
+
+        cities: [
+            "Андижан",
+            "Асака",
+            "Шахрихан"
+        ]
+
+    },
+
+
+    "Qashqadaryo": {
+
+        capital: "Карши",
+
+        population: "Данные уточняются",
+
+        area: "Данные уточняются",
+
+        cities: [
+            "Карши",
+            "Шахрисабз",
+            "Китаб"
+        ]
+
+    },
+
+
+    "Kashkadarya": {
+
+        capital: "Карши",
+
+        population: "Данные уточняются",
+
+        area: "Данные уточняются",
+
+        cities: [
+            "Карши",
+            "Шахрисабз",
+            "Китаб"
+        ]
+
+    },
+
+
+    "Surxondaryo": {
+
+        capital: "Термез",
+
+        population: "Данные уточняются",
+
+        area: "Данные уточняются",
+
+        cities: [
+            "Термез",
+            "Денау",
+            "Шерабад"
+        ]
+
+    },
+
+
+    "Surkhandarya": {
+
+        capital: "Термез",
+
+        population: "Данные уточняются",
+
+        area: "Данные уточняются",
+
+        cities: [
+            "Термез",
+            "Денау",
+            "Шерабад"
+        ]
+
+    },
+
+
+    "Navoi": {
+
+        capital: "Навои",
+
+        population: "Данные уточняются",
+
+        area: "Данные уточняются",
+
+        cities: [
+            "Навои",
+            "Зарафшан",
+            "Учкудук"
+        ]
+
+    },
+
+
+    "Navoiy": {
+
+        capital: "Навои",
+
+        population: "Данные уточняются",
+
+        area: "Данные уточняются",
+
+        cities: [
+            "Навои",
+            "Зарафшан",
+            "Учкудук"
+        ]
+
+    },
+
+
+    "Khorezm": {
+
+        capital: "Ургенч",
+
+        population: "Данные уточняются",
+
+        area: "Данные уточняются",
+
+        cities: [
+            "Ургенч",
+            "Хива",
+            "Шават"
+        ]
+
+    },
+
+
+    "Xorazm": {
+
+        capital: "Ургенч",
+
+        population: "Данные уточняются",
+
+        area: "Данные уточняются",
+
+        cities: [
+            "Ургенч",
+            "Хива",
+            "Шават"
+        ]
+
+    },
+
+
+    "Jizzakh": {
+
+        capital: "Джизак",
+
+        population: "Данные уточняются",
+
+        area: "Данные уточняются",
+
+        cities: [
+            "Джизак",
+            "Галляарал",
+            "Даштобод"
+        ]
+
+    },
+
+
+    "Sirdaryo": {
+
+        capital: "Гулистан",
+
+        population: "Данные уточняются",
+
+        area: "Данные уточняются",
+
+        cities: [
+            "Гулистан",
+            "Ширин",
+            "Янгиер"
+        ]
+
+    },
+
+
+    "Karakalpakstan": {
+
+        capital: "Нукус",
+
+        population: "Данные уточняются",
+
+        area: "Данные уточняются",
+
+        cities: [
+            "Нукус",
+            "Ходжейли",
+            "Муйнак"
+        ]
+
+    },
+
+
+    "Qoraqalpog'iston": {
+
+        capital: "Нукус",
+
+        population: "Данные уточняются",
+
+        area: "Данные уточняются",
+
+        cities: [
+            "Нукус",
+            "Ходжейли",
+            "Муйнак"
+        ]
+
+    }
+
+};
 
 
 /* =====================================================
@@ -464,6 +1085,217 @@ function getRegionName(properties) {
 
 
 /* =====================================================
+   ПОИСК ДАННЫХ ОБЛАСТИ
+===================================================== */
+
+function findRegionData(name) {
+
+    if (regionData[name]) {
+
+        return regionData[name];
+
+    }
+
+
+    const key =
+        Object.keys(regionData).find(
+
+            function(item) {
+
+                return (
+
+                    item.toLowerCase() ===
+                    name.toLowerCase()
+
+                );
+
+            }
+
+        );
+
+
+    if (key) {
+
+        return regionData[key];
+
+    }
+
+
+    return {
+
+        capital:
+            "Данные уточняются",
+
+        population:
+            "Данные уточняются",
+
+        area:
+            "Данные уточняются",
+
+        cities: []
+
+    };
+
+}
+ /* =====================================================
+   ОТКРЫВАЕМ ПАНЕЛЬ ОБЛАСТИ
+===================================================== */
+
+function openRegionPanel(name) {
+
+    const data =
+        findRegionData(name);
+
+
+    regionName.textContent =
+        name;
+
+
+    regionCapital.textContent =
+        data.capital;
+
+
+    regionPopulation.textContent =
+        data.population;
+
+
+    regionArea.textContent =
+        data.area;
+
+
+    regionCities.innerHTML =
+        "";
+
+
+    if (data.cities.length > 0) {
+
+        data.cities.forEach(
+
+            function(city) {
+
+                const element =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                element.className =
+                    "city";
+
+
+                element.textContent =
+                    city;
+
+
+                regionCities.appendChild(
+                    element
+                );
+
+            }
+
+        );
+
+    } else {
+
+        const element =
+            document.createElement(
+                "div"
+            );
+
+
+        element.className =
+            "city";
+
+
+        element.textContent =
+            "Данные уточняются";
+
+
+        regionCities.appendChild(
+            element
+        );
+
+    }
+
+
+    regionPanel.classList.add(
+        "open"
+    );
+
+}
+
+
+/* =====================================================
+   ЗАКРЫВАЕМ ПАНЕЛЬ
+===================================================== */
+
+function closeRegionPanel() {
+
+    regionPanel.classList.remove(
+        "open"
+    );
+
+
+    if (
+        selectedFeatureId !== null
+    ) {
+
+        try {
+
+            map.setFeatureState(
+
+                {
+                    source:
+                        "uzbekistan-regions",
+
+                    id:
+                        selectedFeatureId
+                },
+
+                {
+                    selected:
+                        false
+                }
+
+            );
+
+        }
+
+        catch (error) {
+
+            console.log(error);
+
+        }
+
+
+        selectedFeatureId =
+            null;
+
+    }
+
+
+    map.getCanvas()
+        .style
+        .cursor =
+        "";
+
+}
+
+
+/* =====================================================
+   КНОПКА ЗАКРЫТИЯ
+===================================================== */
+
+closePanel.addEventListener(
+
+    "click",
+
+    closeRegionPanel
+
+);
+
+
+/* =====================================================
    ЗАГРУЗКА КАРТЫ
 ===================================================== */
 
@@ -471,33 +1303,16 @@ map.on(
 
     "load",
 
-    async function () {
+    async function() {
 
 
-        /* =================================================
-           1. СТРАНЫ, КОТОРЫЕ ОСТАВЛЯЕМ
-        ================================================= */
-
-        const allowedCountries = [
-
-            "UZB",
-            "KAZ",
-            "KGZ",
-            "TJK",
-            "AFG",
-            "TKM"
-
-        ];
-
-
-        /* =================================================
-           2. СКРЫВАЕМ ОСТАЛЬНЫЕ СТРАНЫ
-        ================================================= */
+        /* =============================================
+           СКРЫВАЕМ ДРУГИЕ СТРАНЫ
+        ============================================= */
 
         try {
 
-
-            const countriesResponse =
+            const response =
                 await fetch(
 
                     "https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson"
@@ -506,7 +1321,19 @@ map.on(
 
 
             const countries =
-                await countriesResponse.json();
+                await response.json();
+
+
+            const allowedCountries = [
+
+                "UZB",
+                "KAZ",
+                "KGZ",
+                "TJK",
+                "AFG",
+                "TKM"
+
+            ];
 
 
             const hiddenCountries = {
@@ -514,16 +1341,13 @@ map.on(
                 type:
                     "FeatureCollection",
 
-
                 features:
 
                     countries.features.filter(
 
                         function(feature) {
 
-
                             const code =
-
                                 feature
                                     .properties
                                     [
@@ -590,32 +1414,25 @@ map.on(
                 "Страны загружены"
             );
 
-
         }
-
 
         catch (error) {
 
-
             console.error(
-
                 "Ошибка стран:",
-
                 error
-
             );
 
         }
 
 
-        /* =================================================
-           3. ЗАГРУЖАЕМ НАШ СОБСТВЕННЫЙ GEOJSON
-        ================================================= */
+        /* =============================================
+           ЗАГРУЖАЕМ ОБЛАСТИ
+        ============================================= */
 
         try {
 
-
-            const regionsResponse =
+            const response =
                 await fetch(
 
                     "./uzbekistan-regions.geojson"
@@ -623,11 +1440,11 @@ map.on(
                 );
 
 
-            if (!regionsResponse.ok) {
+            if (!response.ok) {
 
                 throw new Error(
 
-                    "Файл uzbekistan-regions.geojson не найден"
+                    "uzbekistan-regions.geojson не найден"
 
                 );
 
@@ -635,7 +1452,7 @@ map.on(
 
 
             const regions =
-                await regionsResponse.json();
+                await response.json();
 
 
             console.log(
@@ -644,9 +1461,9 @@ map.on(
             );
 
 
-            /* =================================================
-               4. ДАЁМ КАЖДОЙ ОБЛАСТИ УНИКАЛЬНЫЙ ID
-            ================================================= */
+            /* =========================================
+               УНИКАЛЬНЫЕ ID
+            ========================================= */
 
             regions.features.forEach(
 
@@ -660,9 +1477,9 @@ map.on(
             );
 
 
-            /* =================================================
-               5. ДОБАВЛЯЕМ SOURCE
-            ================================================= */
+            /* =========================================
+               SOURCE
+            ========================================= */
 
             map.addSource(
 
@@ -681,9 +1498,9 @@ map.on(
             );
 
 
-            /* =================================================
-               6. ОСНОВНАЯ ЗАЛИВКА
-            ================================================= */
+            /* =========================================
+               ЗАЛИВКА ОБЛАСТЕЙ
+            ========================================= */
 
             map.addLayer({
 
@@ -696,15 +1513,12 @@ map.on(
                 source:
                     "uzbekistan-regions",
 
-
                 paint: {
-
 
                     "fill-color": [
 
                         "case",
 
-
                         [
 
                             "boolean",
@@ -721,19 +1535,15 @@ map.on(
 
                         ],
 
-
-                        "#36a852",
-
+                        "#2e9d4d",
 
                         "#dcefd5"
 
                     ],
 
-
                     "fill-opacity": [
 
                         "case",
-
 
                         [
 
@@ -751,9 +1561,7 @@ map.on(
 
                         ],
 
-
-                        0.75,
-
+                        0.8,
 
                         0.55
 
@@ -764,9 +1572,9 @@ map.on(
             });
 
 
-            /* =================================================
-               7. ГРАНИЦЫ ОБЛАСТЕЙ
-            ================================================= */
+            /* =========================================
+               ГРАНИЦЫ ОБЛАСТЕЙ
+            ========================================= */
 
             map.addLayer({
 
@@ -778,7 +1586,6 @@ map.on(
 
                 source:
                     "uzbekistan-regions",
-
 
                 paint: {
 
@@ -796,13 +1603,9 @@ map.on(
             });
 
 
-            /* =================================================
-               8. НАЗВАНИЯ ОБЛАСТЕЙ
-            ================================================= */
-
-            /* =================================================
-               9. КЛИК ПО ОБЛАСТИ
-            ================================================= */
+            /* =========================================
+               КЛИК ПО ОБЛАСТИ
+            ========================================= */
 
             map.on(
 
@@ -827,33 +1630,29 @@ map.on(
                         event.features[0];
 
 
-                    const regionId =
+                    const id =
                         feature.id;
 
 
-                    const regionName =
+                    const name =
                         getRegionName(
                             feature.properties
                         );
 
 
                     console.log(
-
-                        "Нажата область:",
-
-                        regionName
-
+                        "Выбрана область:",
+                        name
                     );
 
 
-                    /* =========================================
-                       УБИРАЕМ ПРЕДЫДУЩУЮ ПОДСВЕТКУ
-                    ========================================= */
+                    /* =================================
+                       СНИМАЕМ СТАРУЮ ПОДСВЕТКУ
+                    ================================= */
 
                     if (
                         selectedFeatureId !== null
                     ) {
-
 
                         map.setFeatureState(
 
@@ -867,7 +1666,6 @@ map.on(
 
                             },
 
-
                             {
 
                                 selected:
@@ -880,12 +1678,12 @@ map.on(
                     }
 
 
-                    /* =========================================
-                       ПОДСВЕЧИВАЕМ НОВУЮ ОБЛАСТЬ
-                    ========================================= */
+                    /* =================================
+                       НОВАЯ ПОДСВЕТКА
+                    ================================= */
 
                     selectedFeatureId =
-                        regionId;
+                        id;
 
 
                     map.setFeatureState(
@@ -896,10 +1694,9 @@ map.on(
                                 "uzbekistan-regions",
 
                             id:
-                                regionId
+                                id
 
                         },
-
 
                         {
 
@@ -911,9 +1708,18 @@ map.on(
                     );
 
 
-                    /* =========================================
-                       ПОКАЗЫВАЕМ КУРСОР
-                    ========================================= */
+                    /* =================================
+                       ОТКРЫВАЕМ ПАНЕЛЬ
+                    ================================= */
+
+                    openRegionPanel(
+                        name
+                    );
+
+
+                    /* =================================
+                       КУРСОР
+                    ================================= */
 
                     map.getCanvas()
                         .style
@@ -921,47 +1727,9 @@ map.on(
                         "pointer";
 
 
-                    /* =========================================
-                       POPUP
-                    ========================================= */
-
-                    new maplibregl.Popup({
-
-                        offset:
-                            15
-
-                    })
-
-                    .setLngLat(
-
-                        event.lngLat
-
-                    )
-
-                    .setHTML(`
-
-                        <h3 class="region-title">
-
-                            🇺🇿 ${regionName}
-
-                        </h3>
-
-
-                        <p class="region-text">
-
-                            Административная
-                            область Узбекистана
-
-                        </p>
-
-                    `)
-
-                    .addTo(map);
-
-
-                    /* =========================================
+                    /* =================================
                        ПРИБЛИЖЕНИЕ
-                    ========================================= */
+                    ================================= */
 
                     map.flyTo({
 
@@ -973,34 +1741,38 @@ map.on(
 
                         ],
 
+                        zoom:
+                            Math.max(
 
-                        zoom: Math.max(
+                                map.getZoom(),
 
-                            map.getZoom(),
+                                6.5
 
-                            6.5
-
-                        ),
-
+                            ),
 
                         speed:
                             0.8,
 
-
                         curve:
-                            1.2
+                            1.2,
+
+                        padding: {
+
+                            right:
+                                380
+
+                        }
 
                     });
-
 
                 }
 
             );
 
 
-            /* =================================================
-               10. НАВЕДЕНИЕ
-            ================================================= */
+            /* =========================================
+               НАВЕДЕНИЕ
+            ========================================= */
 
             map.on(
 
@@ -1039,21 +1811,16 @@ map.on(
 
 
             console.log(
-
                 "✅ UZMAP: области готовы"
-
             );
-
 
         }
 
-
         catch (error) {
-
 
             console.error(
 
-                "❌ Ошибка загрузки областей:",
+                "Ошибка областей:",
 
                 error
 
@@ -1062,19 +1829,16 @@ map.on(
 
             showStatus(
 
-                "⚠️ Не удалось загрузить области"
+                "⚠️ Ошибка загрузки областей"
 
             );
 
         }
 
-
     }
 
 );
-
-
-/* =====================================================
+  /* =====================================================
    ПОИСК
 ===================================================== */
 
@@ -1122,7 +1886,9 @@ async function searchLocation() {
 
             + "?q="
 
-            + encodeURIComponent(query)
+            + encodeURIComponent(
+                query
+            )
 
             + "&format=jsonv2"
 
@@ -1154,11 +1920,9 @@ async function searchLocation() {
 
         if (!results.length) {
 
-
             showStatus(
                 "❌ Ничего не найдено"
             );
-
 
             return;
 
@@ -1202,30 +1966,31 @@ async function searchLocation() {
 
             .setHTML(`
 
-                <h3 class="region-title">
+                <strong>
 
                     📍 ${
                         place.name ||
                         "Найденное место"
                     }
 
-                </h3>
+                </strong>
 
+                <br><br>
 
-                <p class="region-text">
+                <small>
 
                     ${
                         place.display_name ||
                         ""
                     }
 
-                </p>
+                </small>
 
             `);
 
 
         /* =============================================
-           МАРКЕР
+           СОЗДАЁМ МАРКЕР
         ============================================= */
 
         currentMarker =
@@ -1328,7 +2093,7 @@ searchButton.addEventListener(
 
 
 /* =====================================================
-   ENTER
+   ENTER В ПОИСКЕ
 ===================================================== */
 
 searchInput.addEventListener(
@@ -1351,8 +2116,12 @@ searchInput.addEventListener(
 );
 
 
+/* =====================================================
+   КОНЕЦ JAVASCRIPT
+===================================================== */
+
 </script>
 
 </body>
 
-</html>
+</html>  
