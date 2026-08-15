@@ -1,4 +1,431 @@
-offset: 25
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>UZMAP — Карта Узбекистана</title>
+
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"
+    >
+
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: Arial, sans-serif;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Логотип */
+
+        .logo {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 1000;
+
+            background: white;
+            padding: 10px 16px;
+
+            border-radius: 10px;
+
+            font-size: 21px;
+            font-weight: bold;
+
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Поиск */
+
+        .search-box {
+            position: absolute;
+
+            top: 15px;
+            left: 150px;
+
+            z-index: 1000;
+
+            width: 400px;
+
+            display: flex;
+
+            background: white;
+
+            border-radius: 10px;
+
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+
+            overflow: hidden;
+        }
+
+        .search-input {
+            flex: 1;
+
+            border: none;
+            outline: none;
+
+            padding: 13px 15px;
+
+            font-size: 15px;
+        }
+
+        .search-button {
+            border: none;
+
+            background: white;
+
+            padding: 0 16px;
+
+            font-size: 18px;
+
+            cursor: pointer;
+        }
+
+        .search-button:hover {
+            background: #f2f2f2;
+        }
+
+        /* Сообщение */
+
+        .status {
+            position: absolute;
+
+            top: 70px;
+            left: 150px;
+
+            z-index: 1000;
+
+            background: white;
+
+            padding: 10px 14px;
+
+            border-radius: 8px;
+
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+
+            font-size: 14px;
+
+            display: none;
+        }
+
+        /* Карточка результата */
+
+        .result-title {
+            margin: 0 0 8px;
+
+            font-size: 17px;
+        }
+
+        .result-address {
+            margin: 0;
+
+            font-size: 13px;
+
+            color: #555;
+
+            line-height: 1.4;
+        }
+
+        /* Мобильный экран */
+
+        @media (max-width: 700px) {
+
+            .logo {
+                top: 10px;
+                left: 10px;
+            }
+
+            .search-box {
+                top: 65px;
+                left: 10px;
+
+                width: calc(100% - 20px);
+            }
+
+            .status {
+                top: 120px;
+                left: 10px;
+            }
+
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+    <!-- Логотип -->
+
+    <div class="logo">
+        🇺🇿 UZMAP
+    </div>
+
+
+    <!-- Поиск -->
+
+    <div class="search-box">
+
+        <input
+            id="searchInput"
+            class="search-input"
+            type="text"
+            placeholder="🔍 Найти адрес или место..."
+            autocomplete="off"
+        >
+
+        <button
+            id="searchButton"
+            class="search-button"
+        >
+            🔍
+        </button>
+
+    </div>
+
+
+    <!-- Статус -->
+
+    <div
+        id="status"
+        class="status"
+    ></div>
+
+
+    <!-- Карта -->
+
+    <div id="map"></div>
+
+
+    <script>
+
+        // =========================================
+        // КАРТА
+        // =========================================
+
+        const map = new maplibregl.Map({
+
+            container: "map",
+
+            style: {
+
+                version: 8,
+
+                sources: {
+
+                    osm: {
+
+                        type: "raster",
+
+                        tiles: [
+                            "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        ],
+                      tileSize: 256,
+
+                        attribution:
+                            "© OpenStreetMap contributors"
+                    }
+                },
+
+                layers: [
+
+                    {
+                        id: "osm",
+
+                        type: "raster",
+
+                        source: "osm"
+                    }
+
+                ]
+            },
+
+            center: [
+                64.5853,
+                41.3775
+            ],
+
+            zoom: 5
+        });
+
+        // =========================================
+        // КНОПКИ КАРТЫ
+        // =========================================
+
+        map.addControl(
+
+            new maplibregl.NavigationControl(),
+
+            "top-right"
+
+        );
+
+
+        // =========================================
+        // ЭЛЕМЕНТЫ
+        // =========================================
+
+        const searchInput =
+            document.getElementById("searchInput");
+
+        const searchButton =
+            document.getElementById("searchButton");
+
+        const status =
+            document.getElementById("status");
+
+
+        // =========================================
+        // ТЕКУЩИЙ МАРКЕР
+        // =========================================
+
+        let currentMarker = null;
+
+
+        // =========================================
+        // ПОКАЗЫВАЕМ СТАТУС
+        // =========================================
+
+        function showStatus(message) {
+
+            status.textContent = message;
+
+            status.style.display = "block";
+
+        }
+
+
+        function hideStatus() {
+
+            status.style.display = "none";
+
+        }
+
+
+        // =========================================
+        // РЕАЛЬНЫЙ ПОИСК
+        // =========================================
+
+        async function searchLocation() {
+
+            const query =
+                searchInput.value.trim();
+
+
+            if (!query) {
+
+                return;
+
+            }
+
+
+            showStatus("🔎 Ищем...");
+
+
+            try {
+
+                const url =
+                    "https://nominatim.openstreetmap.org/search"
+                    + "?q=" + encodeURIComponent(query)
+                    + "&format=jsonv2"
+                    + "&limit=5"
+                    + "&countrycodes=uz"
+                    + "&addressdetails=1"
+                    + "&accept-language=ru,uz,en";
+
+
+                const response =
+                    await fetch(url);
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        "Ошибка сервера"
+                    );
+
+                }
+
+
+                const results =
+                    await response.json();
+
+
+                // =================================
+                // НИЧЕГО НЕ НАЙДЕНО
+                // =================================
+
+                if (results.length === 0) {
+
+                    showStatus(
+                        "❌ Ничего не найдено"
+                    );
+
+                    return;
+
+                }
+
+
+                // =================================
+                // БЕРЁМ ЛУЧШИЙ РЕЗУЛЬТАТ
+                // =================================
+
+                const place =
+                    results[0];
+
+
+                const latitude =
+                    Number(place.lat);
+
+
+                const longitude =
+                    Number(place.lon);
+
+
+                // =================================
+                // УДАЛЯЕМ СТАРЫЙ МАРКЕР
+                // =================================
+
+                if (currentMarker) {
+
+                    currentMarker.remove();
+
+                }
+
+
+                // =================================
+                // СОЗДАЁМ КАРТОЧКУ
+                // =================================
+
+                const name =
+                    place.name ||
+                    "Найденное место";
+
+
+                const address =
+                    place.display_name ||
+                    "";
+
+
+                const popup =
+                    new maplibregl.Popup({offset: 25
                     })
                     .setHTML(`
 
