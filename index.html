@@ -19,8 +19,10 @@
             box-sizing: border-box;
         }
 
-        html, body {
+        html,
+        body {
             margin: 0;
+            padding: 0;
             width: 100%;
             height: 100%;
             font-family: Arial, sans-serif;
@@ -31,6 +33,7 @@
             height: 100%;
         }
 
+        /* Логотип */
         .logo {
             position: absolute;
             top: 15px;
@@ -38,73 +41,133 @@
             z-index: 10;
 
             background: white;
-            padding: 10px 15px;
+            padding: 10px 16px;
+
             border-radius: 10px;
 
-            font-size: 20px;
+            font-size: 21px;
             font-weight: bold;
 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Карточка места */
+        .mapboxgl-popup-content {
+            padding: 15px 18px;
+            border-radius: 10px;
+            font-family: Arial, sans-serif;
+        }
+
+        .place-title {
+            margin: 0 0 7px;
+            font-size: 18px;
+        }
+
+        .place-description {
+            margin: 0;
+            color: #555;
+            font-size: 14px;
         }
     </style>
 </head>
 
 <body>
 
-<div class="logo">
-    🇺🇿 UZMAP
-</div>
+    <!-- Логотип -->
+    <div class="logo">
+        🇺🇿 UZMAP
+    </div>
 
-<div id="map"></div>
+    <!-- Карта -->
+    <div id="map"></div>
 
-<script>
 
-    const map = new maplibregl.Map({
-        container: 'map',
+    <script>
 
-        style: {
-            version: 8,
+        // Создаём карту
+        const map = new maplibregl.Map({
 
-            sources: {
-                osm: {
-                    type: 'raster',
-                    tiles: [
-                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
-                    ],
-                    tileSize: 256,
+            container: 'map',
 
-                    attribution: '© OpenStreetMap contributors'
-                }
+            style: {
+
+                version: 8,
+
+                sources: {
+
+                    osm: {
+
+                        type: 'raster',
+
+                        tiles: [
+                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+                        ],
+
+                        tileSize: 256,
+
+                        attribution:
+                            '© OpenStreetMap contributors'
+                    }
+                },
+
+                layers: [
+
+                    {
+                        id: 'osm',
+
+                        type: 'raster',
+
+                        source: 'osm'
+                    }
+
+                ]
             },
 
-            layers: [
-                {
-                    id: 'osm',
-                    type: 'raster',
-                    source: 'osm'
-                }
-            ]
-        },
+            // Центр Узбекистана
+            center: [64.5853, 41.3775],
 
-        center: [64.5853, 41.3775],
-        zoom: 5
-    });
+            // Начальный масштаб
+            zoom: 5
+        });
 
-    map.addControl(
-        new maplibregl.NavigationControl(),
-        'top-right'
-    );
-const tashkent = new maplibregl.Marker()
-    .setLngLat([69.2401, 41.2995])
-    .setPopup(
-        new maplibregl.Popup({ offset: 25 })
+
+        // Кнопки + и -
+        map.addControl(
+            new maplibregl.NavigationControl(),
+            'top-right'
+        );
+
+
+        // ==============================
+        // ТАШКЕНТ
+        // ==============================
+
+        const tashkentPopup =
+            new maplibregl.Popup({
+                offset: 25
+            })
             .setHTML(`
-                <h3>🇺🇿 Ташкент</h3>
-                <p>Столица Узбекистана</p>
-            `)
-    )
-    .addTo(map);
-</script>
+                <h3 class="place-title">
+                    🇺🇿 Ташкент
+                </h3>
+
+                <p class="place-description">
+                    Столица Узбекистана
+                </p>
+            `);
+
+
+        const tashkentMarker =
+            new maplibregl.Marker()
+                .setLngLat([
+                    69.2401,
+                    41.2995
+                ])
+                .setPopup(tashkentPopup)
+                .addTo(map);
+
+
+    </script>
 
 </body>
 </html>
