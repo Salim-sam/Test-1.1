@@ -615,8 +615,117 @@ map.on("load", async function () {
             "Ошибка загрузки областей:",
             error
         );
+// =========================================
+// КЛИК ПО ОБЛАСТИ
+// =========================================
+
+map.on(
+    "click",
+    "uzbekistan-regions-fill",
+    function (event) {
+
+        const feature =
+            event.features[0];
+
+        const properties =
+            feature.properties;
+
+        const regionName =
+            properties.shapeName ||
+            "Область Узбекистана";
+
+
+        // Подсвечиваем выбранную область
+
+        if (
+            map.getLayer(
+                "selected-region"
+            )
+        ) {
+
+            map.removeLayer(
+                "selected-region"
+            );
+
+        }
+
+
+        map.addLayer({
+
+            id: "selected-region",
+
+            type: "fill",
+
+            source: "uzbekistan-regions",
+
+            filter: [
+                "==",
+                "shapeName",
+                regionName
+            ],
+
+            paint: {
+
+                "fill-color": "#4CAF50",
+
+                "fill-opacity": 0.45
+
+            }
+
+        });
+
+
+        // Показываем информацию
+
+        new maplibregl.Popup()
+
+            .setLngLat(
+                event.lngLat
+            )
+
+            .setHTML(`
+
+                <h3>
+                    🇺🇿 ${regionName}
+                </h3>
+
+                <p>
+                    Административная область
+                    Узбекистана
+                </p>
+
+            `)
+
+            .addTo(map);
 
     }
+);
+ // =========================================
+// КУРСОР НА ОБЛАСТИ
+// =========================================
+
+map.on(
+    "mouseenter",
+    "uzbekistan-regions-fill",
+    function () {
+
+        map.getCanvas().style.cursor =
+            "pointer";
+
+    }
+);
+
+
+map.on(
+    "mouseleave",
+    "uzbekistan-regions-fill",
+    function () {
+
+        map.getCanvas().style.cursor =
+            "";
+
+    }
+);   }
 
 });
 
