@@ -94,7 +94,16 @@
         new maplibregl.NavigationControl(),
         'top-right'
     );
-
+const tashkent = new maplibregl.Marker()
+    .setLngLat([69.2401, 41.2995])
+    .setPopup(
+        new maplibregl.Popup({ offset: 25 })
+            .setHTML(`
+                <h3>🇺🇿 Ташкент</h3>
+                <p>Столица Узбекистана</p>
+            `)
+    )
+    .addTo(map);
 </script>
 
 </body>
