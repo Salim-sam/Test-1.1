@@ -805,59 +805,6 @@ map.on(
                 id:
                     "uzbekistan-regions-labels",
 
-                type:
-                    "symbol",
-
-                source:
-                    "uzbekistan-regions",
-
-
-                layout: {
-
-
-                    "text-field": [
-
-                        "coalesce",
-
-                        [
-                            "get",
-                            "shapeName"
-                        ],
-
-                        [
-                            "get",
-                            "NAME_1"
-                        ],
-
-                        [
-                            "get",
-                            "name"
-                        ],
-
-                        [
-                            "get",
-                            "NAME"
-                        ],
-
-                        "Область"
-
-                    ],
-
-
-                    "text-size":
-                        12,
-
-
-                    "text-anchor":
-                        "center",
-
-
-                    "text-allow-overlap":
-                        false
-
-                },
-
-
                 paint: {
 
                     "text-color":
