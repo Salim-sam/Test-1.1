@@ -1,0 +1,245 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ташкент",
+        "name_en": "Tashkent",
+        "region": "Ташкент"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [69.21627, 41.26465]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Самарканд",
+        "name_en": "Samarkand",
+        "region": "Самаркандская область"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [66.96445, 39.65456]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Андижан",
+        "name_en": "Andijan",
+        "region": "Андижанская область"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [72.35067, 40.78338]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Наманган",
+        "name_en": "Namangan",
+        "region": "Наманганская область"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [71.67257, 40.99830]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Бухара",
+        "name_en": "Bukhara",
+        "region": "Бухарская область"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [64.43069, 39.77026]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Фергана",
+        "name_en": "Fergana",
+        "region": "Ферганская область"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [71.78432, 40.38421]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Нукус",
+        "name_en": "Nukus",
+        "region": "Каракалпакстан"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [59.60576, 42.45861]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Карши",
+        "name_en": "Qarshi",
+        "region": "Кашкадарьинская область"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [65.78905, 38.86056]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Коканд",
+        "name_en": "Kokand",
+        "region": "Ферганская область"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [70.94250, 40.52861]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Маргилан",
+        "name_en": "Margilan",
+        "region": "Ферганская область"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [71.72500, 40.47200]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Термез",
+        "name_en": "Termez",
+        "region": "Сурхандарьинская область"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [67.27833, 37.22417]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Навои",
+        "name_en": "Navoiy",
+        "region": "Навоийская область"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [65.37917, 40.08444]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Джизак",
+        "name_en": "Jizzakh",
+        "region": "Джизакская область"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [67.82956, 40.13351]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Гулистан",
+        "name_en": "Guliston",
+        "region": "Сырдарьинская область"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [68.77542, 40.49536]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ургенч",
+        "name_en": "Urgench",
+        "region": "Хорезмская область"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [60.63143, 41.55177]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Хива",
+        "name_en": "Khiva",
+        "region": "Хорезмская область"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [60.36408, 41.38555]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Шахрисабз",
+        "name_en": "Shahrisabz",
+        "region": "Кашкадарьинская область"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [66.83417, 39.05778]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Чирчик",
+        "name_en": "Chirchiq",
+        "region": "Ташкентская область"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [69.58222, 41.46889]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ангрен",
+        "name_en": "Angren",
+        "region": "Ташкентская область"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [70.14361, 41.01667]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Алмалык",
+        "name_en": "Olmaliq",
+        "region": "Ташкентская область"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [69.59833, 40.84472]
+      }
+    }
+  ]
+}
