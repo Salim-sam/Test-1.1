@@ -1,23 +1,1743 @@
-🇺🇿 UZMAP — Редактор
-Редактируй данные без изменения index.html
-🔎 Найти район
+<!DOCTYPE html>
+<html lang="ru">
 
-Загрузка...
-📍 Район
-Исходное имя
-Название на русском
-Область
-Административный центр
-Население
-Площадь, км²
-ID
-Описание
-💾 Сохранить
-↩️ Отменить
-📦 Экспорт для GitHub
-Сохраняет все изменения из редактора в готовые файлы.
-⬇️ district-names-ru.js
-⬇️ uzmap-data.json
-🗑 Очистить изменения
-🧪 Текущие данные
-{}
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>UZMAP — Редактор</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+
+    margin: 0;
+
+    background: #f3f5f7;
+
+    color: #111;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+header {
+
+    position: sticky;
+
+    top: 0;
+
+    z-index: 100;
+
+    background: white;
+
+    padding: 17px 20px;
+
+    box-shadow:
+        0 2px 12px rgba(0,0,0,.12);
+}
+
+header h1 {
+
+    margin: 0;
+
+    font-size: 23px;
+}
+
+header p {
+
+    margin: 5px 0 0;
+
+    color: #777;
+
+    font-size: 14px;
+}
+
+
+/* =========================
+   CONTAINER
+========================= */
+
+.container {
+
+    width: 100%;
+
+    max-width: 900px;
+
+    margin: auto;
+
+    padding: 16px;
+}
+
+
+/* =========================
+   CARD
+========================= */
+
+.card {
+
+    background: white;
+
+    border-radius: 17px;
+
+    padding: 20px;
+
+    margin-bottom: 15px;
+
+    box-shadow:
+        0 3px 15px rgba(0,0,0,.07);
+}
+
+.card h2 {
+
+    margin:
+        0 0 15px;
+
+    font-size: 20px;
+}
+
+
+/* =========================
+   INPUTS
+========================= */
+
+label {
+
+    display: block;
+
+    margin:
+        14px 0 6px;
+
+    font-weight: 700;
+
+    font-size: 14px;
+}
+
+input,
+textarea,
+select {
+
+    width: 100%;
+
+    border:
+        1px solid #d5d9de;
+
+    border-radius: 10px;
+
+    padding: 12px;
+
+    font-size: 16px;
+
+    outline: none;
+
+    background: white;
+}
+
+input:focus,
+textarea:focus {
+
+    border-color:
+        #1677ff;
+
+    box-shadow:
+        0 0 0 3px rgba(22,119,255,.1);
+}
+
+textarea {
+
+    min-height: 120px;
+
+    resize: vertical;
+}
+
+
+/* =========================
+   GRID
+========================= */
+
+.grid {
+
+    display: grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap: 13px;
+}
+
+
+/* =========================
+   BUTTONS
+========================= */
+
+.buttons {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 9px;
+
+    margin-top: 17px;
+}
+
+button {
+
+    border: none;
+
+    border-radius: 10px;
+
+    padding:
+        12px 16px;
+
+    font-size: 15px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.primary {
+
+    background:
+        #1677ff;
+
+    color: white;
+}
+
+.success {
+
+    background:
+        #18a84a;
+
+    color: white;
+}
+
+.gray {
+
+    background:
+        #e9edf1;
+
+    color: #222;
+}
+
+.danger {
+
+    background:
+        #ffe4e4;
+
+    color: #a00000;
+}
+
+
+/* =========================
+   SEARCH RESULTS
+========================= */
+
+#results {
+
+    margin-top: 9px;
+
+    max-height: 320px;
+
+    overflow-y: auto;
+}
+
+.result {
+
+    padding: 13px;
+
+    border-bottom:
+        1px solid #eee;
+
+    cursor: pointer;
+}
+
+.result:hover {
+
+    background:
+        #f5f7f9;
+}
+
+.result:last-child {
+
+    border-bottom: none;
+}
+
+
+/* =========================
+   STATUS
+========================= */
+
+#status {
+
+    display: none;
+
+    margin-top: 12px;
+
+    padding: 12px;
+
+    border-radius: 10px;
+
+    font-size: 14px;
+}
+
+
+/* =========================
+   PREVIEW
+========================= */
+
+pre {
+
+    margin: 0;
+
+    background:
+        #111;
+
+    color:
+        #eee;
+
+    padding: 15px;
+
+    border-radius: 10px;
+
+    overflow-x: auto;
+
+    white-space: pre-wrap;
+
+    word-break: break-word;
+
+    font-size: 13px;
+}
+
+
+/* =========================
+   SMALL TEXT
+========================= */
+
+.small {
+
+    color: #777;
+
+    font-size: 13px;
+
+    line-height: 1.5;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:600px) {
+
+    .container {
+
+        padding: 10px;
+    }
+
+    .card {
+
+        padding: 15px;
+    }
+
+    .grid {
+
+        grid-template-columns:
+            1fr;
+    }
+
+    header h1 {
+
+        font-size: 21px;
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<header>
+
+    <h1>
+        🇺🇿 UZMAP — Редактор
+    </h1>
+
+    <p>
+        Управление информацией карты
+    </p>
+
+</header>
+
+
+<div class="container">
+
+
+<!-- =====================================================
+     ПОИСК
+===================================================== -->
+
+<div class="card">
+
+    <h2>
+        🔎 Найти район
+    </h2>
+
+    <input
+        id="search"
+        type="text"
+        placeholder="Например: Уртачирчикский район"
+        autocomplete="off"
+    >
+
+    <div id="results"></div>
+
+    <p
+        id="loadInfo"
+        class="small"
+    >
+        Загрузка данных...
+    </p>
+
+</div>
+
+
+<!-- =====================================================
+     РЕДАКТОР
+===================================================== -->
+
+<div class="card">
+
+    <h2>
+        📍 Информация о районе
+    </h2>
+
+
+    <label>
+        Исходное название
+    </label>
+
+    <input
+        id="sourceName"
+        readonly
+    >
+
+
+    <label>
+        Название на русском
+    </label>
+
+    <input
+        id="nameRu"
+        placeholder="Название района"
+    >
+
+
+    <label>
+        Область
+    </label>
+
+    <input
+        id="region"
+        placeholder="Например: Ташкентская область"
+    >
+
+
+    <div class="grid">
+
+
+        <div>
+
+            <label>
+                Административный центр
+            </label>
+
+            <input
+                id="center"
+                placeholder="Например: Нурафшон"
+            >
+
+        </div>
+
+
+        <div>
+
+            <label>
+                Население
+            </label>
+
+            <input
+                id="population"
+                placeholder="Например: 180000"
+            >
+
+        </div>
+
+
+    </div>
+
+
+    <div class="grid">
+
+
+        <div>
+
+            <label>
+                Площадь, км²
+            </label>
+
+            <input
+                id="area"
+                placeholder="Например: 1200"
+            >
+
+        </div>
+
+
+        <div>
+
+            <label>
+                ID
+            </label>
+
+            <input
+                id="id"
+                readonly
+            >
+
+        </div>
+
+
+    </div>
+
+
+    <label>
+        Описание
+    </label>
+
+    <textarea
+        id="description"
+        placeholder="Информация о районе..."
+    ></textarea>
+
+
+    <div class="buttons">
+
+        <button
+            class="success"
+            id="save"
+        >
+            💾 Сохранить
+        </button>
+
+
+        <button
+            class="gray"
+            id="reset"
+        >
+            ↩️ Отменить
+        </button>
+
+    </div>
+
+
+    <div id="status"></div>
+
+</div>
+
+
+<!-- =====================================================
+     ЭКСПОРТ
+===================================================== -->
+
+<div class="card">
+
+    <h2>
+        📦 Экспорт данных
+    </h2>
+
+    <p class="small">
+
+        Изменения сначала сохраняются
+        в браузере. После редактирования
+        можно создать готовые файлы
+        для загрузки в GitHub.
+
+    </p>
+
+
+    <div class="buttons">
+
+
+        <button
+            class="primary"
+            id="exportNames"
+        >
+            ⬇️ district-names-ru.js
+        </button>
+
+
+        <button
+            class="primary"
+            id="exportData"
+        >
+            ⬇️ uzmap-data.json
+        </button>
+
+
+        <button
+            class="danger"
+            id="clear"
+        >
+            🗑 Очистить изменения
+        </button>
+
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     PREVIEW
+===================================================== -->
+
+<div class="card">
+
+    <h2>
+        🧪 Текущие данные
+    </h2>
+
+    <pre id="preview">{}</pre>
+
+</div>
+
+
+</div>
+
+
+<script>
+
+
+/* =====================================================
+   НАСТРОЙКИ
+===================================================== */
+
+const STORAGE_KEY =
+    "uzmap_editor_v1";
+
+
+const DISTRICTS_FILE =
+    "./uzbekistan-districts.geojson";
+
+
+const NAMES_FILE =
+    "./district-names-ru.js";
+
+
+let districts = null;
+
+let names = {};
+
+let selected = null;
+
+let original = null;
+
+
+/* =====================================================
+   SHORTCUT
+===================================================== */
+
+function $(id) {
+
+    return document.getElementById(id);
+
+}
+
+
+/* =====================================================
+   ЗАГРУЗКА JSON
+===================================================== */
+
+async function loadJSON(url) {
+
+    const response =
+        await fetch(url);
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            "Не найден файл: " +
+            url
+        );
+
+    }
+
+
+    return await response.json();
+
+}
+
+
+/* =====================================================
+   ЗАГРУЗКА TEXT
+===================================================== */
+
+async function loadText(url) {
+
+    const response =
+        await fetch(url);
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            "Не найден файл: " +
+            url
+        );
+
+    }
+
+
+    return await response.text();
+
+}
+
+
+/* =====================================================
+   ЧИТАЕМ DISTRICT-NAMES-RU.JS
+===================================================== */
+
+function parseNames(text) {
+
+    const match =
+
+        text.match(
+
+            /DISTRICT_NAMES_RU\s*=\s*(\{[\s\S]*?\})\s*;/
+
+        );
+
+
+    if (!match) {
+
+        return {};
+
+    }
+
+
+    try {
+
+        return Function(
+            "return (" +
+            match[1] +
+            ")"
+        )();
+
+    }
+
+    catch(error) {
+
+        console.error(
+            error
+        );
+
+        return {};
+
+    }
+
+}
+
+
+/* =====================================================
+   LOCAL STORAGE
+===================================================== */
+
+function getSavedData() {
+
+    try {
+
+        return JSON.parse(
+
+            localStorage.getItem(
+                STORAGE_KEY
+            ) || "{}"
+
+        );
+
+    }
+
+    catch(error) {
+
+        return {};
+
+    }
+
+}
+
+
+/* =====================================================
+   СОХРАНЕНИЕ LOCAL STORAGE
+===================================================== */
+
+function saveLocalData(data) {
+
+    localStorage.setItem(
+
+        STORAGE_KEY,
+
+        JSON.stringify(data)
+
+    );
+
+}
+
+
+/* =====================================================
+   ПОЛУЧИТЬ ИСХОДНОЕ ИМЯ
+===================================================== */
+
+function getSourceName(feature) {
+
+    const p =
+        feature.properties || {};
+
+
+    return String(
+
+        p.shapeName ||
+
+        p.NAME_2 ||
+
+        p.name ||
+
+        p.NAME ||
+
+        p.Name ||
+
+        ""
+
+    ).trim();
+
+}
+
+
+/* =====================================================
+   ПОЛУЧИТЬ ДАННЫЕ РАЙОНА
+===================================================== */
+
+function getDistrictData(
+    feature,
+    index
+) {
+
+    const sourceName =
+        getSourceName(
+            feature
+        );
+
+
+    const saved =
+        getSavedData();
+
+
+    const custom =
+        saved[sourceName] || {};
+
+
+    let russianName =
+        custom.nameRu;
+
+
+    if (!russianName) {
+
+        russianName =
+            names[sourceName];
+
+    }
+
+
+    if (!russianName) {
+
+        const cleanName =
+
+            sourceName
+
+                .replace(
+                    /\s+District$/i,
+                    ""
+                )
+
+                .trim();
+
+
+        russianName =
+            names[cleanName];
+
+    }
+
+
+    if (!russianName) {
+
+        russianName =
+            sourceName;
+
+    }
+
+
+    const p =
+        feature.properties || {};
+
+
+    return {
+
+        id:
+            index,
+
+        sourceName:
+            sourceName,
+
+        nameRu:
+            russianName || "",
+
+        region:
+
+            custom.region ||
+
+            p.region ||
+
+            p.REGION ||
+
+            p.Region ||
+
+            p.NAME_1 ||
+
+            p.name_1 ||
+
+            "",
+
+        center:
+            custom.center || "",
+
+        population:
+            custom.population || "",
+
+        area:
+            custom.area || "",
+
+        description:
+            custom.description || ""
+
+    };
+
+}
+
+
+/* =====================================================
+   ЗАПОЛНИТЬ ФОРМУ
+===================================================== */
+
+function fillForm(data) {
+
+    selected =
+        data;
+
+
+    original =
+        JSON.parse(
+            JSON.stringify(data)
+        );
+
+
+    $("sourceName").value =
+        data.sourceName;
+
+
+    $("nameRu").value =
+        data.nameRu;
+
+
+    $("region").value =
+        data.region;
+
+
+    $("center").value =
+        data.center;
+
+
+    $("population").value =
+        data.population;
+
+
+    $("area").value =
+        data.area;
+
+
+    $("id").value =
+        data.id;
+
+
+    $("description").value =
+        data.description;
+
+
+    updatePreview();
+
+}
+
+
+/* =====================================================
+   ПОЛУЧИТЬ ФОРМУ
+===================================================== */
+
+function getFormData() {
+
+    return {
+
+        id:
+            selected.id,
+
+        sourceName:
+            $("sourceName").value.trim(),
+
+        nameRu:
+            $("nameRu").value.trim(),
+
+        region:
+            $("region").value.trim(),
+
+        center:
+            $("center").value.trim(),
+
+        population:
+            $("population").value.trim(),
+
+        area:
+            $("area").value.trim(),
+
+        description:
+            $("description").value.trim()
+
+    };
+
+}
+
+
+/* =====================================================
+   STATUS
+===================================================== */
+
+function showStatus(
+    message,
+    success = true
+) {
+
+    const status =
+        $("status");
+
+
+    status.style.display =
+        "block";
+
+
+    status.style.background =
+        success
+            ? "#eef9f0"
+            : "#fff0f0";
+
+
+    status.style.color =
+        success
+            ? "#17752e"
+            : "#a00000";
+
+
+    status.textContent =
+        message;
+
+
+    setTimeout(
+
+        function() {
+
+            status.style.display =
+                "none";
+
+        },
+
+        3000
+
+    );
+
+}
+
+
+/* =====================================================
+   PREVIEW
+===================================================== */
+
+function updatePreview() {
+
+    $("preview").textContent =
+
+        JSON.stringify(
+
+            selected || {},
+
+            null,
+
+            2
+
+        );
+
+}
+
+
+/* =====================================================
+   ПОИСК
+===================================================== */
+
+$("search").addEventListener(
+
+    "input",
+
+    function() {
+
+        const query =
+            this.value
+                .toLowerCase()
+                .trim();
+
+
+        $("results").innerHTML =
+            "";
+
+
+        if (
+            !query ||
+            !districts
+        ) {
+
+            return;
+
+        }
+
+
+        districts.features.forEach(
+
+            function(feature, index) {
+
+                const data =
+                    getDistrictData(
+                        feature,
+                        index
+                    );
+
+
+                const text =
+
+                    (
+
+                        data.sourceName +
+
+                        " " +
+
+                        data.nameRu +
+
+                        " " +
+
+                        data.region
+
+                    )
+
+                        .toLowerCase();
+
+
+                if (
+                    !text.includes(
+                        query
+                    )
+                ) {
+
+                    return;
+
+                }
+
+
+                const item =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                item.className =
+                    "result";
+
+
+                item.innerHTML =
+
+                    "<b>" +
+
+                    escapeHTML(
+                        data.nameRu
+                    ) +
+
+                    "</b><br>" +
+
+                    "<span class='small'>" +
+
+                    escapeHTML(
+                        data.region ||
+                        "Область не указана"
+                    ) +
+
+                    "</span>";
+
+
+                item.addEventListener(
+
+                    "click",
+
+                    function() {
+
+                        fillForm(
+                            data
+                        );
+
+                    }
+
+                );
+
+
+                $("results")
+                    .appendChild(
+                        item
+                    );
+
+            }
+
+        );
+
+    }
+
+);
+
+
+/* =====================================================
+   СОХРАНИТЬ
+===================================================== */
+
+$("save").addEventListener(
+
+    "click",
+
+    function() {
+
+        if (!selected) {
+
+            showStatus(
+                "Сначала выбери район.",
+                false
+            );
+
+            return;
+
+        }
+
+
+        const data =
+            getFormData();
+
+
+        const all =
+            getSavedData();
+
+
+        all[data.sourceName] = {
+
+            nameRu:
+                data.nameRu,
+
+            region:
+                data.region,
+
+            center:
+                data.center,
+
+            population:
+                data.population,
+
+            area:
+                data.area,
+
+            description:
+                data.description
+
+        };
+
+
+        saveLocalData(
+            all
+        );
+
+
+        selected =
+            data;
+
+
+        original =
+            JSON.parse(
+                JSON.stringify(data)
+            );
+
+
+        updatePreview();
+
+
+        showStatus(
+            "✅ Изменения сохранены."
+        );
+
+    }
+
+);
+
+
+/* =====================================================
+   ОТМЕНИТЬ
+===================================================== */
+
+$("reset").addEventListener(
+
+    "click",
+
+    function() {
+
+        if (original) {
+
+            fillForm(
+                original
+            );
+
+        }
+
+    }
+
+);
+
+
+/* =====================================================
+   ВСЕ ДАННЫЕ
+===================================================== */
+
+function getAllData() {
+
+    const result = {};
+
+
+    if (
+        !districts ||
+        !districts.features
+    ) {
+
+        return result;
+
+    }
+
+
+    districts.features.forEach(
+
+        function(feature, index) {
+
+            const data =
+                getDistrictData(
+                    feature,
+                    index
+                );
+
+
+            result[
+                data.sourceName
+            ] = {
+
+                nameRu:
+                    data.nameRu,
+
+                region:
+                    data.region,
+
+                center:
+                    data.center,
+
+                population:
+                    data.population,
+
+                area:
+                    data.area,
+
+                description:
+                    data.description
+
+            };
+
+        }
+
+    );
+
+
+    return result;
+
+}
+
+
+/* =====================================================
+   DOWNLOAD
+===================================================== */
+
+function downloadFile(
+    filename,
+    content,
+    type
+) {
+
+    const blob =
+        new Blob(
+
+            [content],
+
+            {
+                type:
+                    type
+            }
+
+        );
+
+
+    const url =
+        URL.createObjectURL(
+            blob
+        );
+
+
+    const link =
+        document.createElement(
+            "a"
+        );
+
+
+    link.href =
+        url;
+
+
+    link.download =
+        filename;
+
+
+    document.body.appendChild(
+        link
+    );
+
+
+    link.click();
+
+
+    link.remove();
+
+
+    setTimeout(
+
+        function() {
+
+            URL.revokeObjectURL(
+                url
+            );
+
+        },
+
+        1000
+
+    );
+
+}
+
+
+/* =====================================================
+   ЭКСПОРТ НАЗВАНИЙ
+===================================================== */
+
+$("exportNames").addEventListener(
+
+    "click",
+
+    function() {
+
+        const all =
+            getAllData();
+
+
+        const namesOnly = {};
+
+
+        Object.keys(all).forEach(
+
+            function(key) {
+
+                namesOnly[key] =
+                    all[key].nameRu;
+
+            }
+
+        );
+
+
+        const content =
+
+`/* UZMAP — русские названия районов */
+
+const DISTRICT_NAMES_RU = ${
+
+    JSON.stringify(
+        namesOnly,
+        null,
+        2
+    )
+
+};
+
+`;
+
+
+        downloadFile(
+
+            "district-names-ru.js",
+
+            content,
+
+            "text/javascript;charset=utf-8"
+
+        );
+
+
+        showStatus(
+            "✅ district-names-ru.js создан."
+        );
+
+    }
+
+);
+
+
+/* =====================================================
+   ЭКСПОРТ ВСЕХ ДАННЫХ
+===================================================== */
+
+$("exportData").addEventListener(
+
+    "click",
+
+    function() {
+
+        const content =
+
+            JSON.stringify(
+
+                getAllData(),
+
+                null,
+
+                2
+
+            );
+
+
+        downloadFile(
+
+            "uzmap-data.json",
+
+            content,
+
+            "application/json;charset=utf-8"
+
+        );
+
+
+        showStatus(
+            "✅ uzmap-data.json создан."
+        );
+
+    }
+
+);
+
+
+/* =====================================================
+   ОЧИСТИТЬ
+===================================================== */
+
+$("clear").addEventListener(
+
+    "click",
+
+    function() {
+
+        const answer =
+            confirm(
+
+                "Удалить все изменения, сохранённые в этом браузере?"
+
+            );
+
+
+        if (!answer) {
+
+            return;
+
+        }
+
+
+        localStorage.removeItem(
+            STORAGE_KEY
+        );
+
+
+        showStatus(
+            "🗑 Локальные изменения удалены."
+        );
+
+    }
+
+);
+
+
+/* =====================================================
+   HTML SECURITY
+===================================================== */
+
+function escapeHTML(value) {
+
+    return String(value)
+
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+
+        .replace(
+            /</g,
+            "&lt;"
+        )
+
+        .replace(
+            />/g,
+            "&gt;"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+
+/* =====================================================
+   ЗАГРУЗКА
+===================================================== */
+
+(async function() {
+
+    try {
+
+        districts =
+            await loadJSON(
+                DISTRICTS_FILE
+            );
+
+
+        try {
+
+            const text =
+                await loadText(
+                    NAMES_FILE
+                );
+
+
+            names =
+                parseNames(
+                    text
+                );
+
+        }
+
+        catch(error) {
+
+            console.warn(
+                "Словарь названий не загружен:",
+                error
+            );
+
+        }
+
+
+        $("loadInfo").textContent =
+
+            "✅ Загружено районов: " +
+
+            (
+                districts.features
+                    ?.length || 0
+            );
+
+
+        updatePreview();
+
+    }
+
+    catch(error) {
+
+        console.error(
+            error
+        );
+
+
+        $("loadInfo").textContent =
+
+            "❌ " +
+            error.message;
+
+    }
+
+})();
+
+</script>
+
+</body>
+
+</html>
