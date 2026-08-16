@@ -7,7 +7,10 @@
 
 <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    content="width=device-width,
+             initial-scale=1.0,
+             maximum-scale=1.0,
+             user-scalable=no"
 >
 
 <title>UZMAP</title>
@@ -40,6 +43,7 @@ body {
 
     font-family:
         Arial,
+        Helvetica,
         sans-serif;
 }
 
@@ -47,7 +51,8 @@ body {
 
     position: absolute;
 
-    inset: 0;
+    left: 0;
+    top: 0;
 
     width: 100%;
     height: 100%;
@@ -67,23 +72,25 @@ body {
     top: 18px;
     left: 18px;
 
-    background: white;
+    background: rgba(255,255,255,.97);
 
-    padding: 13px 18px;
+    padding: 14px 20px;
 
-    border-radius: 15px;
+    border-radius: 16px;
 
-    font-size: 22px;
+    font-size: 23px;
 
     font-weight: 700;
 
     box-shadow:
-        0 3px 15px rgba(0,0,0,.18);
+        0 3px 18px rgba(0,0,0,.18);
+
+    user-select: none;
 }
 
 
 /* =====================================================
-   SEARCH
+   ПОИСК
 ===================================================== */
 
 .search-box {
@@ -92,14 +99,14 @@ body {
 
     z-index: 100;
 
-    top: 75px;
+    top: 76px;
 
     left: 18px;
     right: 18px;
 
-    max-width: 600px;
+    max-width: 680px;
 
-    margin: auto;
+    margin: 0 auto;
 
     display: flex;
 
@@ -107,15 +114,16 @@ body {
 
     background: white;
 
-    border-radius: 15px;
+    border-radius: 16px;
 
     box-shadow:
-        0 3px 15px rgba(0,0,0,.18);
+        0 3px 18px rgba(0,0,0,.18);
+
 }
 
 .search-icon {
 
-    padding-left: 15px;
+    padding-left: 16px;
 
     font-size: 22px;
 }
@@ -123,6 +131,8 @@ body {
 #searchInput {
 
     flex: 1;
+
+    width: 100%;
 
     border: none;
 
@@ -132,7 +142,7 @@ body {
 
     font-size: 17px;
 
-    padding: 15px 10px;
+    padding: 16px 9px;
 }
 
 #searchButton {
@@ -141,23 +151,23 @@ body {
 
     background: transparent;
 
-    font-size: 21px;
+    font-size: 22px;
 
-    padding: 12px 15px;
+    padding: 13px 16px;
 
     cursor: pointer;
 }
 
 
 /* =====================================================
-   SEARCH RESULTS
+   РЕЗУЛЬТАТЫ ПОИСКА
 ===================================================== */
 
 #searchResults {
 
     position: absolute;
 
-    z-index: 200;
+    z-index: 300;
 
     top: calc(100% + 7px);
 
@@ -166,83 +176,72 @@ body {
 
     background: white;
 
-    border-radius: 13px;
+    border-radius: 14px;
 
     overflow: hidden;
 
     box-shadow:
-        0 4px 20px rgba(0,0,0,.2);
+        0 5px 22px rgba(0,0,0,.2);
 
     display: none;
 
-    max-height: 300px;
+    max-height: 320px;
 
     overflow-y: auto;
 }
 
 .search-result {
 
-    padding: 13px 16px;
+    padding: 14px 16px;
 
     border-bottom:
-        1px solid #eee;
+        1px solid #eeeeee;
 
     cursor: pointer;
 
     font-size: 16px;
 }
 
-.search-result:hover {
+.search-result:last-child {
 
-    background: #f2f2f2;
+    border-bottom: none;
+}
+
+.search-result:active {
+
+    background: #eeeeee;
 }
 
 
 /* =====================================================
-   INFO PANEL
+   ИНФОРМАЦИОННАЯ КАРТОЧКА
 ===================================================== */
 
 #infoPanel {
 
     position: absolute;
 
-    z-index: 150;
+    z-index: 200;
 
     left: 15px;
     right: 15px;
 
-    bottom: 15px;
+    bottom: 18px;
 
-    max-width: 420px;
+    max-width: 440px;
 
     margin: auto;
 
-    background: white;
+    background: rgba(255,255,255,.98);
 
     border-radius: 18px;
 
     box-shadow:
-        0 4px 25px rgba(0,0,0,.25);
+        0 5px 28px rgba(0,0,0,.25);
 
-    padding: 18px;
+    padding: 20px;
 
     display: none;
-}
-
-.info-title {
-
-    font-size: 20px;
-
-    font-weight: 700;
-
-    margin-bottom: 10px;
-}
-
-.info-row {
-
-    font-size: 15px;
-
-    margin-top: 7px;
 }
 
 .info-close {
@@ -250,22 +249,45 @@ body {
     position: absolute;
 
     right: 10px;
-    top: 8px;
+    top: 7px;
+
+    width: 35px;
+    height: 35px;
 
     border: none;
 
     background: transparent;
 
-    font-size: 24px;
-
     color: #1677ff;
+
+    font-size: 27px;
 
     cursor: pointer;
 }
 
+.info-title {
+
+    padding-right: 30px;
+
+    font-size: 21px;
+
+    font-weight: 700;
+
+    line-height: 1.3;
+
+    margin-bottom: 12px;
+}
+
+.info-body {
+
+    font-size: 16px;
+
+    line-height: 1.5;
+}
+
 
 /* =====================================================
-   LOADING
+   ЗАГРУЗКА
 ===================================================== */
 
 #loading {
@@ -274,8 +296,8 @@ body {
 
     z-index: 500;
 
-    top: 50%;
     left: 50%;
+    top: 50%;
 
     transform:
         translate(-50%, -50%);
@@ -284,15 +306,17 @@ body {
 
     padding: 15px 20px;
 
-    border-radius: 13px;
+    border-radius: 14px;
 
     box-shadow:
         0 4px 20px rgba(0,0,0,.2);
+
+    font-size: 16px;
 }
 
 
 /* =====================================================
-   MOBILE
+   МОБИЛЬНЫЙ
 ===================================================== */
 
 @media (max-width: 600px) {
@@ -302,17 +326,24 @@ body {
         top: 12px;
         left: 12px;
 
-        font-size: 20px;
+        padding: 12px 16px;
 
-        padding: 11px 15px;
+        font-size: 21px;
+
+        border-radius: 15px;
     }
 
     .search-box {
 
-        top: 65px;
+        top: 66px;
 
         left: 12px;
         right: 12px;
+    }
+
+    #searchInput {
+
+        font-size: 17px;
     }
 
 }
@@ -381,13 +412,13 @@ body {
 
     <div
         id="infoBody"
+        class="info-body"
     ></div>
 
 </div>
 
 
 <script>
-
 
 /* =====================================================
    НАСТРОЙКИ
@@ -402,23 +433,12 @@ const START_ZOOM = 5;
 
 
 /* =====================================================
-   СОЗДАЁМ MAPLIBRE
+   MAPLIBRE
 ===================================================== */
 
 const map = new maplibregl.Map({
 
     container: "map",
-
-    /*
-     * OpenFreeMap Liberty
-     *
-     * Векторная карта:
-     * дороги
-     * улицы
-     * здания
-     * POI
-     * города
-     */
 
     style:
         "https://tiles.openfreemap.org/styles/liberty",
@@ -433,7 +453,10 @@ const map = new maplibregl.Map({
         4,
 
     maxZoom:
-        19
+        19,
+
+    attributionControl:
+        true
 
 });
 
@@ -452,7 +475,7 @@ map.addControl(
 
 
 /* =====================================================
-   ГЛОБАЛЬНЫЕ ДАННЫЕ
+   ДАННЫЕ
 ===================================================== */
 
 let districtsData = null;
@@ -471,14 +494,13 @@ let selectedDistrict = null;
 async function loadJSON(file) {
 
     const response =
-        await fetch(
-            "./" + file
-        );
+        await fetch("./" + file);
 
     if (!response.ok) {
 
         throw new Error(
-            file + " не найден"
+            "Не удалось загрузить: " +
+            file
         );
 
     }
@@ -624,7 +646,7 @@ function getRegionName(properties) {
 
 
 /* =====================================================
-   HTML SECURITY
+   БЕЗОПАСНЫЙ HTML
 ===================================================== */
 
 function escapeHTML(value) {
@@ -664,21 +686,15 @@ function escapeHTML(value) {
 ===================================================== */
 
 map.on(
-
     "load",
-
     async function() {
 
         try {
 
             console.log(
-                "UZMAP: загрузка..."
+                "🇺🇿 UZMAP: загрузка данных..."
             );
 
-
-            /* =========================================
-               ЗАГРУЖАЕМ НАШИ GEOJSON
-            ========================================= */
 
             const [
 
@@ -720,12 +736,10 @@ map.on(
                 districts.features.length
             );
 
-
             console.log(
                 "Области:",
                 regions.features.length
             );
-
 
             console.log(
                 "Города:",
@@ -733,9 +747,34 @@ map.on(
             );
 
 
-            /* =========================================
-               НАШИ ОБЛАСТИ
-            ========================================= */
+            /* =================================================
+               СОЗДАЁМ СТАБИЛЬНЫЙ ID ДЛЯ КАЖДОГО РАЙОНА
+            ================================================= */
+
+            districts.features.forEach(
+
+                function(feature, index) {
+
+                    if (
+                        !feature.properties
+                    ) {
+
+                        feature.properties = {};
+
+                    }
+
+
+                    feature.properties._uzmap_id =
+                        index;
+
+                }
+
+            );
+
+
+            /* =================================================
+               ОБЛАСТИ
+            ================================================= */
 
             map.addSource(
 
@@ -743,18 +782,16 @@ map.on(
 
                 {
 
-                    type: "geojson",
+                    type:
+                        "geojson",
 
-                    data: regions
+                    data:
+                        regions
 
                 }
 
             );
 
-
-            /* =========================================
-               ГРАНИЦЫ ОБЛАСТЕЙ
-            ========================================= */
 
             map.addLayer({
 
@@ -799,9 +836,9 @@ map.on(
             });
 
 
-            /* =========================================
-               НАШИ РАЙОНЫ
-            ========================================= */
+            /* =================================================
+               РАЙОНЫ
+            ================================================= */
 
             map.addSource(
 
@@ -813,19 +850,107 @@ map.on(
                         "geojson",
 
                     data:
-                        districts,
-
-                    promoteId:
-                        "id"
+                        districts
 
                 }
 
             );
 
 
-            /* =========================================
+            /* =================================================
+               ЗЕЛЁНЫЙ ВЫБРАННЫЙ РАЙОН
+               
+               ДОБАВЛЯЕМ ДО КЛИКАБЕЛЬНОГО СЛОЯ.
+               
+               Поэтому прозрачный слой сверху будет
+               принимать события.
+            ================================================= */
+
+            map.addLayer({
+
+                id:
+                    "uzmap-district-selected",
+
+                type:
+                    "fill",
+
+                source:
+                    "uzmap-districts",
+
+                minzoom:
+                    6,
+
+                maxzoom:
+                    10,
+
+                paint: {
+
+                    "fill-color":
+                        "#18a84a",
+
+                    "fill-opacity":
+                        0.45
+
+                },
+
+                filter: [
+
+                    "==",
+
+                    [
+                        "get",
+                        "_uzmap_id"
+                    ],
+
+                    -1
+
+                ]
+
+            });
+
+
+            /* =================================================
+               КЛИКАБЕЛЬНАЯ ОБЛАСТЬ РАЙОНА
+               
+               ВАЖНО:
+               fill-opacity 0.001 означает практически
+               невидимый слой, который всё равно принимает
+               pointer/click.
+            ================================================= */
+
+            map.addLayer({
+
+                id:
+                    "uzmap-district-click",
+
+                type:
+                    "fill",
+
+                source:
+                    "uzmap-districts",
+
+                minzoom:
+                    6,
+
+                maxzoom:
+                    10,
+
+                paint: {
+
+                    "fill-color":
+                        "#ffffff",
+
+                    "fill-opacity":
+                        0.001
+
+                }
+
+            });
+
+
+            /* =================================================
                ГРАНИЦЫ РАЙОНОВ
-            ========================================= */
+            ================================================= */
 
             map.addLayer({
 
@@ -844,7 +969,7 @@ map.on(
                 paint: {
 
                     "line-color":
-                        "#666666",
+                        "#555555",
 
                     "line-width": [
 
@@ -873,52 +998,88 @@ map.on(
             });
 
 
-            /* =========================================
-               ЗЕЛЁНЫЙ ВЫБРАННЫЙ РАЙОН
-               
-               Изначально НЕ ВИДЕН.
-            ========================================= */
+            /* =================================================
+               КЛИК ПО РАЙОНУ
+            ================================================= */
 
-            map.addLayer({
+            map.on(
 
-                id:
-                    "uzmap-district-selected",
+                "click",
 
-                type:
-                    "fill",
+                "uzmap-district-click",
 
-                source:
-                    "uzmap-districts",
+                function(event) {
 
-                minzoom:
-                    6,
+                    if (
+                        !event.features ||
+                        !event.features.length
+                    ) {
 
-                paint: {
+                        return;
 
-                    "fill-color":
-                        "#18a84a",
-
-                    "fill-opacity":
-                        0.45
-
-                },
-
-                filter: [
-
-                    "==",
-
-                    ["id"],
-
-                    ""
-
-                ]
-
-            });
+                    }
 
 
-            /* =========================================
+                    const feature =
+                        event.features[0];
+
+
+                    selectDistrict(
+
+                        feature,
+
+                        event.lngLat
+
+                    );
+
+                }
+
+            );
+
+
+            /* =================================================
+               CURSOR РАЙОНА
+            ================================================= */
+
+            map.on(
+
+                "mouseenter",
+
+                "uzmap-district-click",
+
+                function() {
+
+                    map.getCanvas()
+                        .style
+                        .cursor =
+                        "pointer";
+
+                }
+
+            );
+
+
+            map.on(
+
+                "mouseleave",
+
+                "uzmap-district-click",
+
+                function() {
+
+                    map.getCanvas()
+                        .style
+                        .cursor =
+                        "";
+
+                }
+
+            );
+
+
+            /* =================================================
                ГОРОДА
-            ========================================= */
+            ================================================= */
 
             map.addSource(
 
@@ -976,7 +1137,7 @@ map.on(
                         "#ffffff",
 
                     "circle-stroke-color":
-                        "#333333",
+                        "#222222",
 
                     "circle-stroke-width":
                         1.5
@@ -986,85 +1147,9 @@ map.on(
             });
 
 
-            /* =========================================
-               КЛИК ПО РАЙОНУ
-            ========================================= */
-
-            map.on(
-
-                "click",
-
-                "uzmap-district-borders",
-
-                function(event) {
-
-                    if (
-                        !event.features ||
-                        !event.features.length
-                    ) {
-
-                        return;
-
-                    }
-
-
-                    const feature =
-                        event.features[0];
-
-
-                    selectDistrict(
-                        feature,
-                        event.lngLat
-                    );
-
-                }
-
-            );
-
-
-            /* =========================================
-               CURSOR РАЙОНОВ
-            ========================================= */
-
-            map.on(
-
-                "mouseenter",
-
-                "uzmap-district-borders",
-
-                function() {
-
-                    map.getCanvas()
-                        .style
-                        .cursor =
-                        "pointer";
-
-                }
-
-            );
-
-
-            map.on(
-
-                "mouseleave",
-
-                "uzmap-district-borders",
-
-                function() {
-
-                    map.getCanvas()
-                        .style
-                        .cursor =
-                        "";
-
-                }
-
-            );
-
-
-            /* =========================================
-               ГОРОД
-            ========================================= */
+            /* =================================================
+               КЛИК ПО ГОРОДУ
+            ================================================= */
 
             map.on(
 
@@ -1100,6 +1185,8 @@ map.on(
 
                         properties.Name ||
 
+                        properties.name_ru ||
+
                         "Город";
 
 
@@ -1117,28 +1204,70 @@ map.on(
             );
 
 
-            /* =========================================
-               НАСТРОЙКА КЛИКОВ ПО УЛИЦАМ
-            ========================================= */
+            map.on(
+
+                "mouseenter",
+
+                "uzmap-city-points",
+
+                function() {
+
+                    map.getCanvas()
+                        .style
+                        .cursor =
+                        "pointer";
+
+                }
+
+            );
+
+
+            map.on(
+
+                "mouseleave",
+
+                "uzmap-city-points",
+
+                function() {
+
+                    map.getCanvas()
+                        .style
+                        .cursor =
+                        "";
+
+                }
+
+            );
+
+
+            /* =================================================
+               УЛИЦЫ
+            ================================================= */
 
             setupStreetInteraction();
 
 
-            /* =========================================
-               НАСТРОЙКА КЛИКОВ ПО ЗДАНИЯМ
-            ========================================= */
+            /* =================================================
+               ЗДАНИЯ
+            ================================================= */
 
             setupBuildingInteraction();
 
 
+            /* =================================================
+               ГОТОВО
+            ================================================= */
+
             document
-                .getElementById("loading")
+                .getElementById(
+                    "loading"
+                )
                 .style.display =
                 "none";
 
 
             console.log(
-                "🇺🇿 UZMAP готов!"
+                "✅ UZMAP готов!"
             );
 
         }
@@ -1146,19 +1275,21 @@ map.on(
         catch(error) {
 
             console.error(
+                "UZMAP ERROR:",
                 error
             );
 
 
             document
-                .getElementById("loading")
+                .getElementById(
+                    "loading"
+                )
                 .textContent =
                 "Ошибка загрузки карты";
 
         }
 
     }
-
 );
 
 
@@ -1175,32 +1306,13 @@ function selectDistrict(
         feature;
 
 
-    /*
-     * Берём ID.
-     */
-
-    const id =
-        feature.id;
+    const districtId =
+        feature.properties._uzmap_id;
 
 
-    if (
-        id === undefined ||
-        id === null
-    ) {
-
-        console.warn(
-            "У района нет ID"
-        );
-
-        return;
-
-    }
-
-
-    /*
-     * Подсвечиваем
-     * ТОЛЬКО этот район.
-     */
+    /* =================================================
+       ТОЛЬКО ВЫБРАННЫЙ РАЙОН ЗЕЛЁНЫЙ
+    ================================================= */
 
     map.setFilter(
 
@@ -1210,9 +1322,12 @@ function selectDistrict(
 
             "==",
 
-            ["id"],
+            [
+                "get",
+                "_uzmap_id"
+            ],
 
-            id
+            districtId
 
         ]
 
@@ -1242,6 +1357,10 @@ function selectDistrict(
     );
 
 
+    /*
+     * Немного приближаем.
+     */
+
     map.flyTo({
 
         center: [
@@ -1255,7 +1374,7 @@ function selectDistrict(
 
             Math.max(
                 map.getZoom(),
-                8.5
+                8
             ),
 
         speed:
@@ -1267,7 +1386,7 @@ function selectDistrict(
 
 
 /* =====================================================
-   ИНФО ПАНЕЛЬ
+   ИНФОРМАЦИОННАЯ КАРТОЧКА
 ===================================================== */
 
 function showInfo(
@@ -1287,8 +1406,8 @@ function showInfo(
         .getElementById(
             "infoBody"
         )
-        .textContent =
-        body;
+        .innerHTML =
+        escapeHTML(body);
 
 
     document
@@ -1302,7 +1421,7 @@ function showInfo(
 
 
 /* =====================================================
-   ЗАКРЫТЬ ИНФО
+   ЗАКРЫТЬ КАРТОЧКУ
 ===================================================== */
 
 function closeInfo() {
@@ -1318,7 +1437,7 @@ function closeInfo() {
 
 
 /* =====================================================
-   ПОЛУЧИТЬ СЛОИ УЛИЦ
+   STREET LAYERS
 ===================================================== */
 
 function getStreetLayerIds() {
@@ -1329,37 +1448,54 @@ function getStreetLayerIds() {
 
     return layers
 
-        .filter(layer =>
+        .filter(
 
-            layer.source ===
-                "openmaptiles"
+            function(layer) {
 
-            &&
+                return (
 
-            (
+                    layer.source ===
+                        "openmaptiles"
 
-                layer["source-layer"] ===
-                    "transportation"
+                    &&
 
-                ||
+                    (
 
-                layer["source-layer"] ===
-                    "transportation_name"
+                        layer[
+                            "source-layer"
+                        ] ===
+                            "transportation"
 
-            )
+                        ||
+
+                        layer[
+                            "source-layer"
+                        ] ===
+                            "transportation_name"
+
+                    )
+
+                );
+
+            }
 
         )
 
         .map(
-            layer =>
-                layer.id
+
+            function(layer) {
+
+                return layer.id;
+
+            }
+
         );
 
 }
 
 
 /* =====================================================
-   НАСТРОЙКА УЛИЦ
+   STREET INTERACTION
 ===================================================== */
 
 function setupStreetInteraction() {
@@ -1369,7 +1505,7 @@ function setupStreetInteraction() {
 
 
     console.log(
-        "Слои улиц:",
+        "🛣️ Слои улиц:",
         layers
     );
 
@@ -1377,7 +1513,7 @@ function setupStreetInteraction() {
     if (!layers.length) {
 
         console.warn(
-            "Слои улиц не найдены."
+            "Слои улиц OpenFreeMap не найдены."
         );
 
         return;
@@ -1385,14 +1521,9 @@ function setupStreetInteraction() {
     }
 
 
-    /*
-     * Наведение.
-     */
-
     layers.forEach(
 
-        layerId => {
-
+        function(layerId) {
 
             map.on(
 
@@ -1402,10 +1533,22 @@ function setupStreetInteraction() {
 
                 function() {
 
-                    map.getCanvas()
-                        .style
-                        .cursor =
-                        "pointer";
+                    /*
+                     * При большом приближении
+                     * показываем pointer.
+                     */
+
+                    if (
+                        map.getZoom() >=
+                        10
+                    ) {
+
+                        map.getCanvas()
+                            .style
+                            .cursor =
+                            "pointer";
+
+                    }
 
                 }
 
@@ -1430,10 +1573,6 @@ function setupStreetInteraction() {
             );
 
 
-            /*
-             * Клик.
-             */
-
             map.on(
 
                 "click",
@@ -1441,6 +1580,20 @@ function setupStreetInteraction() {
                 layerId,
 
                 function(event) {
+
+                    /*
+                     * Районы здесь уже не должны
+                     * блокировать улицу.
+                     */
+
+                    if (
+                        map.getZoom() < 10
+                    ) {
+
+                        return;
+
+                    }
+
 
                     if (
                         !event.features ||
@@ -1457,8 +1610,7 @@ function setupStreetInteraction() {
 
 
                     showStreetInfo(
-                        feature,
-                        event.lngLat
+                        feature
                     );
 
                 }
@@ -1473,12 +1625,11 @@ function setupStreetInteraction() {
 
 
 /* =====================================================
-   ИНФОРМАЦИЯ ОБ УЛИЦЕ
+   STREET INFO
 ===================================================== */
 
 function showStreetInfo(
-    feature,
-    lngLat
+    feature
 ) {
 
     const properties =
@@ -1574,7 +1725,7 @@ function showStreetInfo(
 
 
 /* =====================================================
-   ПОЛУЧИТЬ СЛОИ ЗДАНИЙ
+   BUILDING LAYERS
 ===================================================== */
 
 function getBuildingLayerIds() {
@@ -1585,28 +1736,43 @@ function getBuildingLayerIds() {
 
     return layers
 
-        .filter(layer =>
+        .filter(
 
-            layer.source ===
-                "openmaptiles"
+            function(layer) {
 
-            &&
+                return (
 
-            layer["source-layer"] ===
-                "building"
+                    layer.source ===
+                        "openmaptiles"
+
+                    &&
+
+                    layer[
+                        "source-layer"
+                    ] ===
+                        "building"
+
+                );
+
+            }
 
         )
 
         .map(
-            layer =>
-                layer.id
+
+            function(layer) {
+
+                return layer.id;
+
+            }
+
         );
 
 }
 
 
 /* =====================================================
-   ЗДАНИЯ
+   BUILDING INTERACTION
 ===================================================== */
 
 function setupBuildingInteraction() {
@@ -1616,7 +1782,7 @@ function setupBuildingInteraction() {
 
 
     console.log(
-        "Слои зданий:",
+        "🏠 Слои зданий:",
         layers
     );
 
@@ -1624,7 +1790,7 @@ function setupBuildingInteraction() {
     if (!layers.length) {
 
         console.warn(
-            "Слои зданий не найдены."
+            "Слои зданий OpenFreeMap не найдены."
         );
 
         return;
@@ -1634,39 +1800,7 @@ function setupBuildingInteraction() {
 
     layers.forEach(
 
-        layerId => {
-
-
-            map.on(
-
-                "click",
-
-                layerId,
-
-                function(event) {
-
-                    if (
-                        !event.features ||
-                        !event.features.length
-                    ) {
-
-                        return;
-
-                    }
-
-
-                    const feature =
-                        event.features[0];
-
-
-                    showBuildingInfo(
-                        feature
-                    );
-
-                }
-
-            );
-
+        function(layerId) {
 
             map.on(
 
@@ -1676,10 +1810,17 @@ function setupBuildingInteraction() {
 
                 function() {
 
-                    map.getCanvas()
-                        .style
-                        .cursor =
-                        "pointer";
+                    if (
+                        map.getZoom() >=
+                        13
+                    ) {
+
+                        map.getCanvas()
+                            .style
+                            .cursor =
+                            "pointer";
+
+                    }
 
                 }
 
@@ -1703,6 +1844,46 @@ function setupBuildingInteraction() {
 
             );
 
+
+            map.on(
+
+                "click",
+
+                layerId,
+
+                function(event) {
+
+                    if (
+                        map.getZoom() < 13
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    if (
+                        !event.features ||
+                        !event.features.length
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    const feature =
+                        event.features[0];
+
+
+                    showBuildingInfo(
+                        feature
+                    );
+
+                }
+
+            );
+
         }
 
     );
@@ -1711,7 +1892,7 @@ function setupBuildingInteraction() {
 
 
 /* =====================================================
-   ИНФОРМАЦИЯ О ЗДАНИИ
+   BUILDING INFO
 ===================================================== */
 
 function showBuildingInfo(
@@ -1722,7 +1903,7 @@ function showBuildingInfo(
         feature.properties || {};
 
 
-    const address =
+    const street =
 
         properties["addr:street"] ||
 
@@ -1731,8 +1912,6 @@ function showBuildingInfo(
         properties["name:ru"] ||
 
         properties.name ||
-
-        properties.address ||
 
         null;
 
@@ -1751,11 +1930,11 @@ function showBuildingInfo(
     let html = "";
 
 
-    if (address) {
+    if (street) {
 
         html +=
             "Улица: " +
-            escapeHTML(address);
+            escapeHTML(street);
 
     }
 
@@ -1763,12 +1942,17 @@ function showBuildingInfo(
     if (houseNumber) {
 
         if (html) {
+
             html += "<br>";
+
         }
+
 
         html +=
             "Дом: " +
-            escapeHTML(houseNumber);
+            escapeHTML(
+                houseNumber
+            );
 
     }
 
@@ -1806,7 +1990,7 @@ function showBuildingInfo(
 
 
     console.log(
-        "Здание:",
+        "🏠 Здание:",
         properties
     );
 
@@ -1814,7 +1998,7 @@ function showBuildingInfo(
 
 
 /* =====================================================
-   ПОИСК УЛИЦ
+   ПОИСК
 ===================================================== */
 
 const searchInput =
@@ -1880,7 +2064,7 @@ searchButton.addEventListener(
 
 
 /* =====================================================
-   ПОИСК ПО GEOJSON + NOMINATIM
+   ПОИСК
 ===================================================== */
 
 async function searchLocation() {
@@ -1890,14 +2074,15 @@ async function searchLocation() {
 
 
     if (!query) {
+
         return;
+
     }
 
 
-    /*
-     * Сначала ищем среди
-     * наших районов.
-     */
+    /* =================================================
+       СНАЧАЛА РАЙОНЫ
+    ================================================= */
 
     if (
         districtsData &&
@@ -1905,20 +2090,22 @@ async function searchLocation() {
     ) {
 
         const district =
+
             districtsData.features.find(
 
-                feature => {
+                function(feature) {
 
                     const name =
                         getDistrictName(
                             feature.properties
-                        )
-                        .toLowerCase();
+                        );
 
 
                     return (
-                        name ===
+
+                        name.toLowerCase() ===
                         query.toLowerCase()
+
                     );
 
                 }
@@ -1951,6 +2138,7 @@ async function searchLocation() {
 
             }
 
+
             return;
 
         }
@@ -1958,10 +2146,9 @@ async function searchLocation() {
     }
 
 
-    /*
-     * Затем ищем улицу
-     * через Nominatim.
-     */
+    /* =================================================
+       NOMINATIM
+    ================================================= */
 
     try {
 
@@ -1996,6 +2183,15 @@ async function searchLocation() {
 
         const response =
             await fetch(url);
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Ошибка Nominatim"
+            );
+
+        }
 
 
         const results =
@@ -2066,7 +2262,7 @@ async function searchLocation() {
 
             },
 
-            1000
+            700
 
         );
 
@@ -2075,8 +2271,10 @@ async function searchLocation() {
     catch(error) {
 
         console.error(
+            "SEARCH ERROR:",
             error
         );
+
 
         showInfo(
 
@@ -2109,17 +2307,23 @@ function getFeatureCenter(
     }
 
 
-    const coordinates =
-        [];
+    const coordinates = [];
 
 
-    function collect(
-        value
-    ) {
+    function collect(value) {
+
+        if (
+            !Array.isArray(value)
+        ) {
+
+            return;
+
+        }
+
 
         if (
             typeof value[0] ===
-                "number"
+            "number"
         ) {
 
             coordinates.push(
@@ -2156,15 +2360,17 @@ function getFeatureCenter(
 
 
     coordinates.forEach(
-        point => {
+
+        function(point) {
 
             lng +=
-                point[0];
+                Number(point[0]);
 
             lat +=
-                point[1];
+                Number(point[1]);
 
         }
+
     );
 
 
@@ -2182,7 +2388,7 @@ function getFeatureCenter(
 
 
 /* =====================================================
-   ПОИСКОВЫЕ ПОДСКАЗКИ
+   ПОДСКАЗКИ ПО РАЙОНАМ
 ===================================================== */
 
 function showSearchResults(
@@ -2224,7 +2430,7 @@ function showSearchResults(
 
             .filter(
 
-                feature => {
+                function(feature) {
 
                     const name =
                         getDistrictName(
@@ -2240,7 +2446,10 @@ function showSearchResults(
 
             )
 
-            .slice(0, 8);
+            .slice(
+                0,
+                8
+            );
 
 
     if (!results.length) {
@@ -2255,7 +2464,7 @@ function showSearchResults(
 
     results.forEach(
 
-        feature => {
+        function(feature) {
 
             const item =
                 document.createElement(
@@ -2281,11 +2490,9 @@ function showSearchResults(
                 function() {
 
                     searchInput.value =
-                        item.textContent
-                            .replace(
-                                "📍 ",
-                                ""
-                            );
+                        getDistrictName(
+                            feature.properties
+                        );
 
 
                     searchResults.style.display =
@@ -2360,6 +2567,29 @@ document.addEventListener(
 
 );
 
+
+/* =====================================================
+   ЗАКРЫТИЕ INFO ПО ESC
+===================================================== */
+
+document.addEventListener(
+
+    "keydown",
+
+    function(event) {
+
+        if (
+            event.key ===
+            "Escape"
+        ) {
+
+            closeInfo();
+
+        }
+
+    }
+
+);
 
 </script>
 
