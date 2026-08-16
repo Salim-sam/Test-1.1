@@ -2,21 +2,25 @@
 <html lang="ru">
 
 <head>
+
 <meta charset="UTF-8">
 
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
 <title>UZMAP — Карта Узбекистана</title>
 
 <link
-  rel="stylesheet"
-  href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"
+    rel="stylesheet"
+    href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"
 >
 
 <script
-  src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js">
+    src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js">
 </script>
+
 
 <style>
 
@@ -28,8 +32,10 @@ html,
 body {
     margin: 0;
     padding: 0;
+
     width: 100%;
     height: 100%;
+
     font-family: Arial, sans-serif;
 }
 
@@ -39,30 +45,39 @@ body {
 }
 
 
-/* ЛОГО */
+/* =========================
+   ЛОГО
+========================= */
 
 .logo {
+
     position: absolute;
+
     top: 15px;
     left: 15px;
+
     z-index: 1000;
 
     background: white;
+
     padding: 10px 16px;
 
-    border-radius: 10px;
+    border-radius: 12px;
 
     font-size: 21px;
     font-weight: bold;
 
     box-shadow:
-        0 2px 10px rgba(0,0,0,0.2);
+        0 2px 12px rgba(0,0,0,0.18);
 }
 
 
-/* ПОИСК */
+/* =========================
+   ПОИСК
+========================= */
 
 .search-box {
+
     position: absolute;
 
     top: 15px;
@@ -76,15 +91,16 @@ body {
 
     background: white;
 
-    border-radius: 10px;
+    border-radius: 12px;
 
     overflow: hidden;
 
     box-shadow:
-        0 2px 10px rgba(0,0,0,0.2);
+        0 2px 12px rgba(0,0,0,0.18);
 }
 
 .search-input {
+
     flex: 1;
 
     border: none;
@@ -96,20 +112,25 @@ body {
 }
 
 .search-button {
+
+    width: 55px;
+
     border: none;
+
     background: white;
 
-    padding: 0 16px;
-
-    font-size: 18px;
+    font-size: 20px;
 
     cursor: pointer;
 }
 
 
-/* СТАТУС */
+/* =========================
+   СТАТУС
+========================= */
 
 .status {
+
     position: absolute;
 
     top: 70px;
@@ -132,9 +153,12 @@ body {
 }
 
 
-/* ПАНЕЛЬ */
+/* =========================
+   ПАНЕЛЬ ОБЛАСТИ
+========================= */
 
 .region-panel {
+
     position: fixed;
 
     top: 0;
@@ -159,35 +183,43 @@ body {
 }
 
 .region-panel.open {
+
     transform: translateX(0);
 }
 
 
-/* ШАПКА */
-
 .region-header {
+
+    position: relative;
+
     padding: 25px 22px 20px;
 
     border-bottom:
         1px solid #e5e5e5;
-
-    position: relative;
 }
 
 .region-country {
+
     font-size: 13px;
+
     color: #777;
+
     margin-bottom: 8px;
 }
 
 .region-name {
+
     margin: 0;
+
     font-size: 26px;
+
     line-height: 1.2;
+
     color: #222;
 }
 
 .close-panel {
+
     position: absolute;
 
     top: 18px;
@@ -197,6 +229,7 @@ body {
     height: 36px;
 
     border: none;
+
     border-radius: 50%;
 
     background: #f1f1f1;
@@ -207,13 +240,14 @@ body {
 }
 
 
-/* КОНТЕНТ */
-
 .region-content {
+
     padding: 20px 22px;
 }
 
+
 .region-card {
+
     background: #f7f8f9;
 
     border-radius: 12px;
@@ -223,36 +257,51 @@ body {
     margin-bottom: 12px;
 }
 
+
 .region-card-title {
+
     font-size: 12px;
+
     color: #777;
+
     margin-bottom: 6px;
 }
 
+
 .region-card-value {
+
     font-size: 18px;
+
     font-weight: 600;
+
     color: #222;
 }
 
 
-/* ГОРОДА */
-
 .cities-title {
+
     margin-top: 25px;
+
     margin-bottom: 12px;
 
     font-size: 18px;
+
     font-weight: bold;
 }
 
+
 .cities-list {
+
     display: flex;
+
     flex-wrap: wrap;
+
     gap: 8px;
 }
 
+
 .city {
+
     background: #f0f1f2;
 
     padding: 8px 11px;
@@ -263,16 +312,20 @@ body {
 }
 
 
-/* МОБИЛЬНЫЙ */
+/* =========================
+   МОБИЛЬНАЯ ВЕРСИЯ
+========================= */
 
 @media (max-width: 700px) {
 
     .logo {
+
         top: 10px;
         left: 10px;
     }
 
     .search-box {
+
         top: 65px;
         left: 10px;
 
@@ -281,15 +334,18 @@ body {
     }
 
     .status {
+
         top: 120px;
         left: 10px;
     }
 
     .region-panel {
+
         top: auto;
         bottom: 0;
 
         width: 100%;
+
         height: 70vh;
 
         border-radius:
@@ -300,6 +356,7 @@ body {
     }
 
     .region-panel.open {
+
         transform:
             translateY(0);
     }
@@ -309,13 +366,22 @@ body {
 
 </head>
 
+
 <body>
 
+
+<!-- =========================
+     ЛОГО
+========================= -->
 
 <div class="logo">
     🇺🇿 UZMAP
 </div>
 
+
+<!-- =========================
+     ПОИСК
+========================= -->
 
 <div class="search-box">
 
@@ -343,8 +409,16 @@ body {
 </div>
 
 
+<!-- =========================
+     КАРТА
+========================= -->
+
 <div id="map"></div>
 
+
+<!-- =========================
+     ПАНЕЛЬ ОБЛАСТИ
+========================= -->
 
 <aside
     id="regionPanel"
@@ -432,8 +506,7 @@ body {
         <div
             id="regionCities"
             class="cities-list"
-        >
-        </div>
+        ></div>
 
     </div>
 
@@ -444,7 +517,16 @@ body {
 
 
 /* =====================================================
-   КАРТА
+   СОСТОЯНИЕ UZMAP
+===================================================== */
+
+let selectedRegionId = null;
+
+let selectedDistrictId = null;
+
+
+/* =====================================================
+   СОЗДАЁМ КАРТУ
 ===================================================== */
 
 const map = new maplibregl.Map({
@@ -493,8 +575,10 @@ const map = new maplibregl.Map({
     },
 
     center: [
+
         64.5853,
         41.3775
+
     ],
 
     zoom: 5
@@ -503,301 +587,408 @@ const map = new maplibregl.Map({
 
 
 map.addControl(
+
     new maplibregl.NavigationControl(),
+
     "top-right"
+
 );
 
 
 /* =====================================================
-   ПЕРЕМЕННЫЕ
-===================================================== */
-
-let selectedRegionId = null;
-
-
-/* =====================================================
-   ПАНЕЛЬ
+   DOM
 ===================================================== */
 
 const regionPanel =
-    document.getElementById("regionPanel");
+    document.getElementById(
+        "regionPanel"
+    );
 
 const closePanel =
-    document.getElementById("closePanel");
+    document.getElementById(
+        "closePanel"
+    );
 
 const regionName =
-    document.getElementById("regionName");
+    document.getElementById(
+        "regionName"
+    );
 
 const regionCapital =
-    document.getElementById("regionCapital");
+    document.getElementById(
+        "regionCapital"
+    );
 
 const regionPopulation =
-    document.getElementById("regionPopulation");
+    document.getElementById(
+        "regionPopulation"
+    );
 
 const regionArea =
-    document.getElementById("regionArea");
+    document.getElementById(
+        "regionArea"
+    );
 
 const regionCities =
-    document.getElementById("regionCities");
+    document.getElementById(
+        "regionCities"
+    );
 
 const status =
-    document.getElementById("status");
+    document.getElementById(
+        "status"
+    );
 
+
+/* =====================================================
+   СТАТУС
+===================================================== */
 
 function showStatus(text) {
 
     status.textContent = text;
 
-    status.style.display = "block";
+    status.style.display =
+        "block";
 }
 
 
 function hideStatus() {
 
-    status.style.display = "none";
+    status.style.display =
+        "none";
 }
 
 
 /* =====================================================
-   ОБЛАСТИ
+   ДАННЫЕ ОБЛАСТЕЙ
 ===================================================== */
 
 const regionData = {
 
-    "Tashkent": {
+    Tashkent: {
+
         capital: "Нурафшон",
+
         cities: [
             "Чирчик",
             "Ангрен",
             "Алмалык",
             "Бекабад"
         ]
+
     },
 
-    "Toshkent": {
+    Toshkent: {
+
         capital: "Нурафшон",
+
         cities: [
             "Чирчик",
             "Ангрен",
             "Алмалык",
             "Бекабад"
         ]
+
     },
 
-    "Samarkand": {
+    Samarkand: {
+
         capital: "Самарканд",
+
         cities: [
             "Самарканд",
             "Каттакурган",
             "Ургут"
         ]
+
     },
 
-    "Samarqand": {
+    Samarqand: {
+
         capital: "Самарканд",
+
         cities: [
             "Самарканд",
             "Каттакурган",
             "Ургут"
         ]
+
     },
 
-    "Bukhara": {
+    Bukhara: {
+
         capital: "Бухара",
+
         cities: [
             "Бухара",
             "Каган",
             "Гиждуван"
         ]
+
     },
 
-    "Buxoro": {
+    Buxoro: {
+
         capital: "Бухара",
+
         cities: [
             "Бухара",
             "Каган",
             "Гиждуван"
         ]
+
     },
 
-    "Fergana": {
+    Fergana: {
+
         capital: "Фергана",
+
         cities: [
             "Фергана",
             "Кувасай",
             "Коканд",
             "Маргилан"
         ]
+
     },
 
-    "Namangan": {
+    Namangan: {
+
         capital: "Наманган",
+
         cities: [
             "Наманган",
             "Чуст",
             "Касансай"
         ]
+
     },
 
-    "Andijan": {
+    Andijan: {
+
         capital: "Андижан",
+
         cities: [
             "Андижан",
             "Асака",
             "Шахрихан"
         ]
+
     },
 
-    "Qashqadaryo": {
+    Qashqadaryo: {
+
         capital: "Карши",
+
         cities: [
             "Карши",
             "Шахрисабз",
             "Китаб"
         ]
+
     },
 
-    "Kashkadarya": {
+    Kashkadarya: {
+
         capital: "Карши",
+
         cities: [
             "Карши",
             "Шахрисабз",
             "Китаб"
         ]
+
     },
 
-    "Surxondaryo": {
+    Surxondaryo: {
+
         capital: "Термез",
+
         cities: [
             "Термез",
             "Денау",
             "Шерабад"
         ]
+
     },
 
-    "Surkhandarya": {
+    Surkhandarya: {
+
         capital: "Термез",
+
         cities: [
             "Термез",
             "Денау",
             "Шерабад"
         ]
+
     },
 
-    "Navoi": {
+    Navoi: {
+
         capital: "Навои",
+
         cities: [
             "Навои",
             "Зарафшан",
             "Учкудук"
         ]
+
     },
 
-    "Navoiy": {
+    Navoiy: {
+
         capital: "Навои",
+
         cities: [
             "Навои",
             "Зарафшан",
             "Учкудук"
         ]
+
     },
 
-    "Khorezm": {
+    Khorezm: {
+
         capital: "Ургенч",
+
         cities: [
             "Ургенч",
             "Хива",
             "Шават"
         ]
+
     },
 
-    "Xorazm": {
+    Xorazm: {
+
         capital: "Ургенч",
+
         cities: [
             "Ургенч",
             "Хива",
             "Шават"
         ]
+
     },
 
-    "Jizzakh": {
+    Jizzakh: {
+
         capital: "Джизак",
+
         cities: [
             "Джизак",
             "Галляарал",
             "Даштобод"
         ]
+
     },
 
-    "Sirdaryo": {
+    Sirdaryo: {
+
         capital: "Гулистан",
+
         cities: [
             "Гулистан",
             "Ширин",
             "Янгиер"
         ]
+
     },
 
-    "Karakalpakstan": {
+    Karakalpakstan: {
+
         capital: "Нукус",
+
         cities: [
             "Нукус",
             "Ходжейли",
             "Муйнак"
         ]
+
     },
 
     "Qoraqalpog'iston": {
+
         capital: "Нукус",
+
         cities: [
             "Нукус",
             "Ходжейли",
             "Муйнак"
         ]
+
     }
 
 };
 
 
+/* =====================================================
+   НАЗВАНИЕ ОБЛАСТИ
+===================================================== */
+
 function getRegionName(properties) {
 
     if (!properties) {
+
         return "Область Узбекистана";
+
     }
 
     return (
 
         properties.shapeName ||
+
         properties.NAME_1 ||
+
         properties.name ||
+
         properties.NAME ||
+
         properties.NAME_1_RU ||
+
         properties.region ||
+
         properties.Region ||
+
         "Область Узбекистана"
 
     );
+
 }
 
+
+/* =====================================================
+   ИНФОРМАЦИЯ ОБ ОБЛАСТИ
+===================================================== */
 
 function getRegionInfo(name) {
 
     if (regionData[name]) {
+
         return regionData[name];
+
     }
+
 
     const key =
         Object.keys(regionData).find(
 
             item =>
+
                 item.toLowerCase() ===
                 name.toLowerCase()
 
         );
 
+
     if (key) {
+
         return regionData[key];
+
     }
+
 
     return {
 
@@ -811,31 +1002,44 @@ function getRegionInfo(name) {
 }
 
 
+/* =====================================================
+   ОТКРЫТЬ ОБЛАСТЬ
+===================================================== */
+
 function openRegion(name) {
 
     const data =
         getRegionInfo(name);
 
+
     regionName.textContent =
         name;
+
 
     regionCapital.textContent =
         data.capital;
 
+
     regionPopulation.textContent =
         "Данные уточняются";
+
 
     regionArea.textContent =
         "Данные уточняются";
 
-    regionCities.innerHTML = "";
+
+    regionCities.innerHTML =
+        "";
+
 
     data.cities.forEach(
 
         city => {
 
             const item =
-                document.createElement("div");
+                document.createElement(
+                    "div"
+                );
 
             item.className =
                 "city";
@@ -843,955 +1047,1344 @@ function openRegion(name) {
             item.textContent =
                 city;
 
-            regionCities.appendChild(item);
+            regionCities.appendChild(
+                item
+            );
 
         }
 
     );
 
-    regionPanel.classList.add("open");
+
+    regionPanel.classList.add(
+        "open"
+    );
+
 }
 
 
-closePanel.addEventListener(
-    "click",
-    () => regionPanel.classList.remove("open")
-);
-
-
 /* =====================================================
-   ЗАГРУЗКА
+   СБРОС ОБЛАСТИ
 ===================================================== */
 
-map.on("load", async function() {
+function clearRegionSelection() {
 
+    if (
+        selectedRegionId !== null
+    ) {
 
-    /* =================================================
-       ОБЛАСТИ
-    ================================================= */
+        try {
 
-    try {
+            map.setFeatureState(
 
-        const response =
-            await fetch(
-                "./uzbekistan-regions.geojson"
-            );
+                {
 
-        if (!response.ok) {
+                    source:
+                        "uzbekistan-regions",
 
-            throw new Error(
-                "Файл областей не найден"
+                    id:
+                        selectedRegionId
+
+                },
+
+                {
+
+                    selected:
+                        false
+
+                }
+
             );
 
         }
 
-        const regions =
-            await response.json();
+        catch (error) {
+
+            console.warn(
+                "Не удалось снять выделение области",
+                error
+            );
+
+        }
+
+    }
 
 
-        regions.features.forEach(
+    selectedRegionId =
+        null;
 
-            (feature, index) => {
-
-                feature.id = index;
-
-            }
-
-        );
+}
 
 
-        map.addSource(
-            "uzbekistan-regions",
-            {
-                type: "geojson",
-                data: regions
-            }
-        );
+/* =====================================================
+   СБРОС РАЙОНА
+===================================================== */
 
+function clearDistrictSelection() {
 
-        map.addLayer({
+    if (
+        selectedDistrictId !== null
+    ) {
 
-            id:
-                "uzbekistan-regions-fill",
+        try {
 
-            type:
-                "fill",
+            map.setFeatureState(
 
-            source:
-                "uzbekistan-regions",
+                {
 
-            paint: {
+                    source:
+                        "uzbekistan-districts",
 
-                "fill-color": [
+                    id:
+                        selectedDistrictId
 
-                    "case",
+                },
 
-                    [
-                        "boolean",
-                        [
-                            "feature-state",
-                            "selected"
-                        ],
+                {
+
+                    selected:
                         false
-                    ],
 
-                    "#2e9d4d",
-
-                    "#dcefd5"
-
-                ],
-
-                "fill-opacity": [
-
-                    "case",
-
-                    [
-                        "boolean",
-                        [
-                            "feature-state",
-                            "selected"
-                        ],
-                        false
-                    ],
-
-                    0.75,
-
-                    0.45
-
-                ]
-
-            }
-
-        });
-
-
-        map.addLayer({
-
-            id:
-                "uzbekistan-regions-border",
-
-            type:
-                "line",
-
-            source:
-                "uzbekistan-regions",
-
-            paint: {
-
-                "line-color":
-                    "#555555",
-
-                "line-width":
-                    1.5
-
-            }
-
-        });
-
-
-        map.on(
-
-            "click",
-
-            "uzbekistan-regions-fill",
-
-            function(event) {
-
-                if (
-                    !event.features ||
-                    !event.features.length
-                ) {
-                    return;
                 }
 
+            );
 
-                const feature =
-                    event.features[0];
+        }
+
+        catch (error) {
+
+            console.warn(
+                "Не удалось снять выделение района",
+                error
+            );
+
+        }
+
+    }
 
 
-                if (
-                    selectedRegionId !== null
-                ) {
+    selectedDistrictId =
+        null;
+
+}
+
+
+/* =====================================================
+   ЗАКРЫТЬ ПАНЕЛЬ
+===================================================== */
+
+closePanel.addEventListener(
+
+    "click",
+
+    () => {
+
+        regionPanel.classList.remove(
+            "open"
+        );
+
+    }
+
+);
+
+
+/* =====================================================
+   LOAD
+===================================================== */
+
+map.on(
+
+    "load",
+
+    async function() {
+
+
+        /* =============================================
+           ОБЛАСТИ
+        ============================================= */
+
+        try {
+
+            const response =
+                await fetch(
+                    "./uzbekistan-regions.geojson"
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Файл областей не найден"
+                );
+
+            }
+
+
+            const regions =
+                await response.json();
+
+
+            /*
+             * Очень важно:
+             * каждому объекту области даём ID.
+             */
+
+            regions.features.forEach(
+
+                (feature, index) => {
+
+                    feature.id =
+                        index;
+
+                }
+
+            );
+
+
+            map.addSource(
+
+                "uzbekistan-regions",
+
+                {
+
+                    type:
+                        "geojson",
+
+                    data:
+                        regions
+
+                }
+
+            );
+
+
+            /* =========================================
+               ЗАЛИВКА ОБЛАСТЕЙ
+               
+               ВАЖНО:
+               обычная область ПРОЗРАЧНАЯ.
+               Зелёной становится только selected.
+            ========================================= */
+
+            map.addLayer({
+
+                id:
+                    "uzbekistan-regions-fill",
+
+                type:
+                    "fill",
+
+                source:
+                    "uzbekistan-regions",
+
+                paint: {
+
+                    "fill-color": [
+
+                        "case",
+
+                        [
+
+                            "boolean",
+
+                            [
+                                "feature-state",
+                                "selected"
+                            ],
+
+                            false
+
+                        ],
+
+                        "#2e9d4d",
+
+                        "#ffffff"
+
+                    ],
+
+
+                    "fill-opacity": [
+
+                        "case",
+
+                        [
+
+                            "boolean",
+
+                            [
+                                "feature-state",
+                                "selected"
+                            ],
+
+                            false
+
+                        ],
+
+                        0.35,
+
+                        0
+
+                    ]
+
+                }
+
+            });
+
+
+            /* =========================================
+               ГРАНИЦЫ ОБЛАСТЕЙ
+            ========================================= */
+
+            map.addLayer({
+
+                id:
+                    "uzbekistan-regions-border",
+
+                type:
+                    "line",
+
+                source:
+                    "uzbekistan-regions",
+
+                paint: {
+
+                    "line-color":
+                        "#555555",
+
+                    "line-width":
+                        1.5,
+
+                    "line-opacity":
+                        0.9
+
+                }
+
+            });
+
+
+            /* =========================================
+               КЛИК ПО ОБЛАСТИ
+            ========================================= */
+
+            map.on(
+
+                "click",
+
+                "uzbekistan-regions-fill",
+
+                function(event) {
+
+                    if (
+                        !event.features ||
+                        !event.features.length
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    const feature =
+                        event.features[0];
+
+
+                    /*
+                     * Если был выбран район,
+                     * полностью снимаем его.
+                     */
+
+                    clearDistrictSelection();
+
+
+                    /*
+                     * Снимаем предыдущую область.
+                     */
+
+                    clearRegionSelection();
+
+
+                    /*
+                     * Выбираем новую область.
+                     */
+
+                    selectedRegionId =
+                        feature.id;
+
 
                     map.setFeatureState(
 
                         {
+
                             source:
                                 "uzbekistan-regions",
 
                             id:
                                 selectedRegionId
+
                         },
 
                         {
+
                             selected:
-                                false
+                                true
+
                         }
 
                     );
 
+
+                    const name =
+                        getRegionName(
+                            feature.properties
+                        );
+
+
+                    openRegion(name);
+
+
+                    map.flyTo({
+
+                        center: [
+
+                            event.lngLat.lng,
+
+                            event.lngLat.lat
+
+                        ],
+
+                        zoom:
+
+                            Math.max(
+
+                                map.getZoom(),
+
+                                6.5
+
+                            ),
+
+                        speed:
+                            0.8,
+
+                        curve:
+                            1.2
+
+                    });
+
                 }
 
-
-                selectedRegionId =
-                    feature.id;
-
-
-                map.setFeatureState(
-
-                    {
-                        source:
-                            "uzbekistan-regions",
-
-                        id:
-                            feature.id
-                    },
-
-                    {
-                        selected:
-                            true
-                    }
-
-                );
-
-
-                const name =
-                    getRegionName(
-                        feature.properties
-                    );
-
-
-                openRegion(name);
-
-
-                map.flyTo({
-
-                    center: [
-                        event.lngLat.lng,
-                        event.lngLat.lat
-                    ],
-
-                    zoom:
-                        Math.max(
-                            map.getZoom(),
-                            6.5
-                        ),
-
-                    speed:
-                        0.8,
-
-                    curve:
-                        1.2
-
-                });
-
-            }
-
-        );
-
-
-        map.on(
-
-            "mouseenter",
-
-            "uzbekistan-regions-fill",
-
-            () => {
-
-                map.getCanvas()
-                    .style
-                    .cursor =
-                    "pointer";
-
-            }
-
-        );
-
-
-        map.on(
-
-            "mouseleave",
-
-            "uzbekistan-regions-fill",
-
-            () => {
-
-                map.getCanvas()
-                    .style
-                    .cursor =
-                    "";
-
-            }
-
-        );
-
-
-        console.log(
-            "✅ Области загружены"
-        );
-
-    }
-
-    catch (error) {
-
-        console.error(
-            "Ошибка областей:",
-            error
-        );
-
-    }
-
-
-    /* =================================================
-       РАЙОНЫ
-    ================================================= */
-
-    try {
-
-        const response =
-            await fetch(
-                "./uzbekistan-districts.geojson"
             );
 
 
-        if (!response.ok) {
+            map.on(
 
-            throw new Error(
-                "Файл районов не найден"
+                "mouseenter",
+
+                "uzbekistan-regions-fill",
+
+                function() {
+
+                    map.getCanvas()
+                        .style
+                        .cursor =
+                        "pointer";
+
+                }
+
+            );
+
+
+            map.on(
+
+                "mouseleave",
+
+                "uzbekistan-regions-fill",
+
+                function() {
+
+                    map.getCanvas()
+                        .style
+                        .cursor =
+                        "";
+
+                }
+
+            );
+
+
+            console.log(
+                "✅ Области загружены"
+            );
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "❌ Ошибка областей:",
+                error
             );
 
         }
 
 
-        const districts =
-            await response.json();
+        /* =============================================
+           РАЙОНЫ
+        ============================================= */
+
+        try {
+
+            const response =
+                await fetch(
+                    "./uzbekistan-districts.geojson"
+                );
 
 
-        console.log(
-            "Районы загружены:",
-            districts
-        );
+            if (!response.ok) {
 
-
-        map.addSource(
-
-            "uzbekistan-districts",
-
-            {
-
-                type:
-                    "geojson",
-
-                data:
-                    districts
+                throw new Error(
+                    "Файл районов не найден"
+                );
 
             }
 
-        );
 
+            const districts =
+                await response.json();
 
-        /* ГРАНИЦЫ РАЙОНОВ */
 
-        map.addLayer({
+            /*
+             * ВАЖНО:
+             * назначаем уникальный ID каждому району.
+             */
 
-            id:
-                "uzbekistan-districts-border",
+            districts.features.forEach(
 
-            type:
-                "line",
+                (feature, index) => {
 
-            source:
-                "uzbekistan-districts",
+                    feature.id =
+                        index;
 
-            minzoom:
-                7,
-
-            paint: {
-
-                "line-color":
-                    "#777777",
-
-                "line-width":
-                    1,
-
-                "line-opacity":
-                    0.75
-
-            }
-
-        });
-
-
-        /* ЛЁГКАЯ ЗАЛИВКА */
-
-        map.addLayer({
-
-            id:
-                "uzbekistan-districts-fill",
-
-            type:
-                "fill",
-
-            source:
-                "uzbekistan-districts",
-
-            minzoom:
-                7.5,
-
-            paint: {
-
-                "fill-color":
-                    "#ffffff",
-
-                "fill-opacity":
-                    0.05
-
-            }
-
-        });
-
-
-        /* =================================================
-           НАЗВАНИЯ РАЙОНОВ
-        ================================================= */
-
-        map.addLayer({
-
-            id:
-                "uzbekistan-districts-labels",
-
-            type:
-                "symbol",
-
-            source:
-                "uzbekistan-districts",
-
-            minzoom:
-                8.5,
-
-            layout: {
-
-                "text-field": [
-
-                    "coalesce",
-
-                    ["get", "shapeName"],
-
-                    ["get", "NAME_2"],
-
-                    ["get", "name"],
-
-                    ["get", "NAME"],
-
-                    ""
-
-                ],
-
-                "text-size": [
-
-                    "interpolate",
-
-                    ["linear"],
-
-                    ["zoom"],
-
-                    8.5,
-                    9,
-
-                    11,
-                    13,
-
-                    14,
-                    16
-
-                ],
-
-                "text-color":
-                    "#444444",
-
-                "text-halo-color":
-                    "#ffffff",
-
-                "text-halo-width":
-                    1.5,
-
-                "text-allow-overlap":
-                    false
-
-            },
-
-            paint: {
-
-                "text-color":
-                    "#444444",
-
-                "text-halo-color":
-                    "#ffffff",
-
-                "text-halo-width":
-                    1.5
-
-            }
-
-        });
-
-
-        /* =================================================
-           КЛИК ПО РАЙОНУ
-        ================================================= */
-
-        map.on(
-
-            "click",
-
-            "uzbekistan-districts-fill",
-
-            function(event) {
-
-                if (
-                    !event.features ||
-                    !event.features.length
-                ) {
-                    return;
                 }
 
-
-                const feature =
-                    event.features[0];
+            );
 
 
-                const p =
-                    feature.properties || {};
+            map.addSource(
+
+                "uzbekistan-districts",
+
+                {
+
+                    type:
+                        "geojson",
+
+                    data:
+                        districts
+
+                }
+
+            );
 
 
-                const districtName =
+            /* =========================================
+               ЗАЛИВКА РАЙОНОВ
+               
+               По умолчанию:
+               opacity = 0
 
-                    p.shapeName ||
-                    p.NAME_2 ||
-                    p.name ||
-                    p.NAME ||
-                    "Район";
+               Выбранный:
+               opacity = 0.65
+            ========================================= */
+
+            map.addLayer({
+
+                id:
+                    "uzbekistan-districts-fill",
+
+                type:
+                    "fill",
+
+                source:
+                    "uzbekistan-districts",
+
+                minzoom:
+                    7,
+
+                paint: {
+
+                    "fill-color": [
+
+                        "case",
+
+                        [
+
+                            "boolean",
+
+                            [
+                                "feature-state",
+                                "selected"
+                            ],
+
+                            false
+
+                        ],
+
+                        "#2e9d4d",
+
+                        "#ffffff"
+
+                    ],
 
 
-                const regionName =
+                    "fill-opacity": [
 
-                    p.shapeGroup ||
-                    p.NAME_1 ||
-                    p.region ||
-                    "Узбекистан";
+                        "case",
+
+                        [
+
+                            "boolean",
+
+                            [
+                                "feature-state",
+                                "selected"
+                            ],
+
+                            false
+
+                        ],
+
+                        0.65,
+
+                        0
+
+                    ]
+
+                }
+
+            });
 
 
-                new maplibregl.Popup({
+            /* =========================================
+               ГРАНИЦЫ РАЙОНОВ
+            ========================================= */
 
-                    offset:
-                        12
+            map.addLayer({
 
-                })
+                id:
+                    "uzbekistan-districts-border",
 
-                .setLngLat(
-                    event.lngLat
-                )
+                type:
+                    "line",
 
-                .setHTML(`
+                source:
+                    "uzbekistan-districts",
 
-                    <div style="
-                        min-width:180px;
-                    ">
+                minzoom:
+                    7,
+
+                paint: {
+
+                    "line-color":
+                        "#777777",
+
+                    "line-width":
+                        1,
+
+                    "line-opacity":
+                        0.85
+
+                }
+
+            });
+
+
+            /* =========================================
+               НАЗВАНИЯ РАЙОНОВ
+            ========================================= */
+
+            map.addLayer({
+
+                id:
+                    "uzbekistan-districts-labels",
+
+                type:
+                    "symbol",
+
+                source:
+                    "uzbekistan-districts",
+
+                minzoom:
+                    8.5,
+
+                layout: {
+
+                    "text-field": [
+
+                        "coalesce",
+
+                        [
+                            "get",
+                            "shapeName"
+                        ],
+
+                        [
+                            "get",
+                            "NAME_2"
+                        ],
+
+                        [
+                            "get",
+                            "name"
+                        ],
+
+                        [
+                            "get",
+                            "NAME"
+                        ],
+
+                        ""
+
+                    ],
+
+
+                    "text-size": [
+
+                        "interpolate",
+
+                        ["linear"],
+
+                        ["zoom"],
+
+                        8.5,
+                        9,
+
+                        11,
+                        13,
+
+                        14,
+                        16
+
+                    ],
+
+                    "text-color":
+                        "#444444",
+
+                    "text-halo-color":
+                        "#ffffff",
+
+                    "text-halo-width":
+                        1.5,
+
+                    "text-allow-overlap":
+                        false
+
+                },
+
+                paint: {
+
+                    "text-color":
+                        "#444444",
+
+                    "text-halo-color":
+                        "#ffffff",
+
+                    "text-halo-width":
+                        1.5
+
+                }
+
+            });
+
+
+            /* =========================================
+               КЛИК ПО РАЙОНУ
+            ========================================= */
+
+            map.on(
+
+                "click",
+
+                "uzbekistan-districts-fill",
+
+                function(event) {
+
+                    if (
+                        !event.features ||
+                        !event.features.length
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    const feature =
+                        event.features[0];
+
+
+                    /*
+                     * КЛЮЧЕВОЙ МОМЕНТ:
+                     *
+                     * полностью снимаем
+                     * выделение области.
+                     */
+
+                    clearRegionSelection();
+
+
+                    /*
+                     * Снимаем предыдущий район.
+                     */
+
+                    clearDistrictSelection();
+
+
+                    /*
+                     * Запоминаем новый район.
+                     */
+
+                    selectedDistrictId =
+                        feature.id;
+
+
+                    /*
+                     * Выделяем ТОЛЬКО
+                     * этот район.
+                     */
+
+                    map.setFeatureState(
+
+                        {
+
+                            source:
+                                "uzbekistan-districts",
+
+                            id:
+                                selectedDistrictId
+
+                        },
+
+                        {
+
+                            selected:
+                                true
+
+                        }
+
+                    );
+
+
+                    const properties =
+                        feature.properties || {};
+
+
+                    const districtName =
+
+                        properties.shapeName ||
+
+                        properties.NAME_2 ||
+
+                        properties.name ||
+
+                        properties.NAME ||
+
+                        "Район";
+
+
+                    const regionName =
+
+                        properties.shapeGroup ||
+
+                        properties.NAME_1 ||
+
+                        properties.region ||
+
+                        "Узбекистан";
+
+
+                    /*
+                     * Popup района.
+                     */
+
+                    new maplibregl.Popup({
+
+                        offset:
+                            12
+
+                    })
+
+                    .setLngLat(
+                        event.lngLat
+                    )
+
+                    .setHTML(`
+
+                        <div style="
+                            min-width:190px;
+                        ">
+
+                            <strong>
+                                📍 ${districtName}
+                            </strong>
+
+                            <br><br>
+
+                            <span>
+                                Область:
+                                ${regionName}
+                            </span>
+
+                        </div>
+
+                    `)
+
+                    .addTo(map);
+
+
+                    /*
+                     * Приближаемся.
+                     */
+
+                    map.flyTo({
+
+                        center: [
+
+                            event.lngLat.lng,
+
+                            event.lngLat.lat
+
+                        ],
+
+                        zoom:
+
+                            Math.max(
+
+                                map.getZoom(),
+
+                                9
+
+                            ),
+
+                        speed:
+                            0.8,
+
+                        curve:
+                            1.2
+
+                    });
+
+
+                    console.log(
+
+                        "✅ Выбран район:",
+
+                        districtName
+
+                    );
+
+                }
+
+            );
+
+
+            map.on(
+
+                "mouseenter",
+
+                "uzbekistan-districts-fill",
+
+                function() {
+
+                    map.getCanvas()
+                        .style
+                        .cursor =
+                        "pointer";
+
+                }
+
+            );
+
+
+            map.on(
+
+                "mouseleave",
+
+                "uzbekistan-districts-fill",
+
+                function() {
+
+                    map.getCanvas()
+                        .style
+                        .cursor =
+                        "";
+
+                }
+
+            );
+
+
+            console.log(
+                "✅ Районы загружены"
+            );
+
+            console.log(
+                "Количество районов:",
+                districts.features.length
+            );
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "❌ Ошибка районов:",
+                error
+            );
+
+        }
+
+
+        /* =============================================
+           ГОРОДА
+        ============================================= */
+
+        try {
+
+            const response =
+                await fetch(
+                    "./uzbekistan-cities.geojson"
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Файл городов не найден"
+                );
+
+            }
+
+
+            const cities =
+                await response.json();
+
+
+            map.addSource(
+
+                "uzbekistan-cities",
+
+                {
+
+                    type:
+                        "geojson",
+
+                    data:
+                        cities
+
+                }
+
+            );
+
+
+            /* ТОЧКИ ГОРОДОВ */
+
+            map.addLayer({
+
+                id:
+                    "uzbekistan-cities-points",
+
+                type:
+                    "circle",
+
+                source:
+                    "uzbekistan-cities",
+
+                minzoom:
+                    5.5,
+
+                paint: {
+
+                    "circle-radius": [
+
+                        "interpolate",
+
+                        ["linear"],
+
+                        ["zoom"],
+
+                        5.5,
+                        4,
+
+                        8,
+                        7,
+
+                        12,
+                        10
+
+                    ],
+
+                    "circle-color":
+                        "#ffffff",
+
+                    "circle-stroke-color":
+                        "#222222",
+
+                    "circle-stroke-width":
+                        2
+
+                }
+
+            });
+
+
+            /* НАЗВАНИЯ ГОРОДОВ */
+
+            map.addLayer({
+
+                id:
+                    "uzbekistan-cities-labels",
+
+                type:
+                    "symbol",
+
+                source:
+                    "uzbekistan-cities",
+
+                minzoom:
+                    6.5,
+
+                layout: {
+
+                    "text-field": [
+
+                        "coalesce",
+
+                        [
+                            "get",
+                            "name"
+                        ],
+
+                        [
+                            "get",
+                            "NAME"
+                        ],
+
+                        ""
+
+                    ],
+
+                    "text-size": [
+
+                        "interpolate",
+
+                        ["linear"],
+
+                        ["zoom"],
+
+                        6.5,
+                        10,
+
+                        10,
+                        14,
+
+                        14,
+                        17
+
+                    ],
+
+                    "text-offset":
+                        [0, 1.2],
+
+                    "text-anchor":
+                        "top"
+
+                },
+
+                paint: {
+
+                    "text-color":
+                        "#222222",
+
+                    "text-halo-color":
+                        "#ffffff",
+
+                    "text-halo-width":
+                        1.5
+
+                }
+
+            });
+
+
+            /* КЛИК ПО ГОРОДУ */
+
+            map.on(
+
+                "click",
+
+                "uzbekistan-cities-points",
+
+                function(event) {
+
+                    if (
+                        !event.features ||
+                        !event.features.length
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    /*
+                     * Если выбираем город,
+                     * убираем район и область.
+                     */
+
+                    clearDistrictSelection();
+
+                    clearRegionSelection();
+
+
+                    const properties =
+                        event.features[0]
+                            .properties;
+
+
+                    const name =
+
+                        properties.name ||
+
+                        properties.NAME ||
+
+                        "Город";
+
+
+                    const region =
+
+                        properties.region ||
+
+                        properties.NAME_1 ||
+
+                        "Узбекистан";
+
+
+                    new maplibregl.Popup({
+
+                        offset:
+                            15
+
+                    })
+
+                    .setLngLat(
+                        event.lngLat
+                    )
+
+                    .setHTML(`
 
                         <strong>
-                            📍 ${districtName}
+                            🏙 ${name}
                         </strong>
 
                         <br><br>
 
-                        <span>
-                            Область:
-                            ${regionName}
-                        </span>
+                        <small>
+                            ${region}
+                        </small>
 
-                    </div>
+                    `)
 
-                `)
-
-                .addTo(map);
+                    .addTo(map);
 
 
-                map.flyTo({
+                    map.flyTo({
 
-                    center: [
-                        event.lngLat.lng,
-                        event.lngLat.lat
-                    ],
+                        center: [
 
-                    zoom:
-                        Math.max(
-                            map.getZoom(),
-                            9
-                        ),
+                            event.lngLat.lng,
 
-                    speed:
-                        0.8,
+                            event.lngLat.lat
 
-                    curve:
-                        1.2
+                        ],
 
-                });
+                        zoom:
+                            Math.max(
+                                map.getZoom(),
+                                9
+                            ),
 
-            }
+                        speed:
+                            0.8,
 
-        );
+                        curve:
+                            1.2
 
+                    });
 
-        map.on(
+                }
 
-            "mouseenter",
-
-            "uzbekistan-districts-fill",
-
-            () => {
-
-                map.getCanvas()
-                    .style
-                    .cursor =
-                    "pointer";
-
-            }
-
-        );
-
-
-        map.on(
-
-            "mouseleave",
-
-            "uzbekistan-districts-fill",
-
-            () => {
-
-                map.getCanvas()
-                    .style
-                    .cursor =
-                    "";
-
-            }
-
-        );
-
-
-        console.log(
-            "✅ Районы UZMAP готовы"
-        );
-
-    }
-
-    catch (error) {
-
-        console.error(
-            "❌ Ошибка районов:",
-            error
-        );
-
-    }
-
-
-    /* =================================================
-       ГОРОДА
-    ================================================= */
-
-    try {
-
-        const response =
-            await fetch(
-                "./uzbekistan-cities.geojson"
             );
 
 
-        if (!response.ok) {
+            map.on(
 
-            throw new Error(
-                "Файл городов не найден"
+                "mouseenter",
+
+                "uzbekistan-cities-points",
+
+                function() {
+
+                    map.getCanvas()
+                        .style
+                        .cursor =
+                        "pointer";
+
+                }
+
+            );
+
+
+            map.on(
+
+                "mouseleave",
+
+                "uzbekistan-cities-points",
+
+                function() {
+
+                    map.getCanvas()
+                        .style
+                        .cursor =
+                        "";
+
+                }
+
+            );
+
+
+            console.log(
+                "✅ Города загружены"
+            );
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "❌ Ошибка городов:",
+                error
             );
 
         }
 
 
-        const cities =
-            await response.json();
-
-
-        map.addSource(
-
-            "uzbekistan-cities",
-
-            {
-
-                type:
-                    "geojson",
-
-                data:
-                    cities
-
-            }
-
-        );
-
-
-        map.addLayer({
-
-            id:
-                "uzbekistan-cities-points",
-
-            type:
-                "circle",
-
-            source:
-                "uzbekistan-cities",
-
-            minzoom:
-                5.5,
-
-            paint: {
-
-                "circle-radius": [
-
-                    "interpolate",
-
-                    ["linear"],
-
-                    ["zoom"],
-
-                    5.5,
-                    4,
-
-                    8,
-                    7,
-
-                    12,
-                    10
-
-                ],
-
-                "circle-color":
-                    "#ffffff",
-
-                "circle-stroke-color":
-                    "#222222",
-
-                "circle-stroke-width":
-                    2
-
-            }
-
-        });
-
-
-        map.addLayer({
-
-            id:
-                "uzbekistan-cities-labels",
-
-            type:
-                "symbol",
-
-            source:
-                "uzbekistan-cities",
-
-            minzoom:
-                6.5,
-
-            layout: {
-
-                "text-field":
-                    [
-                        "get",
-                        "name"
-                    ],
-
-                "text-size": [
-
-                    "interpolate",
-
-                    ["linear"],
-
-                    ["zoom"],
-
-                    6.5,
-                    10,
-
-                    10,
-                    14,
-
-                    14,
-                    17
-
-                ],
-
-                "text-offset":
-                    [0, 1.2],
-
-                "text-anchor":
-                    "top"
-
-            },
-
-            paint: {
-
-                "text-color":
-                    "#222222",
-
-                "text-halo-color":
-                    "#ffffff",
-
-                "text-halo-width":
-                    1.5
-
-            }
-
-        });
-
-
-        map.on(
-
-            "click",
-
-            "uzbekistan-cities-points",
-
-            function(event) {
-
-                if (
-                    !event.features ||
-                    !event.features.length
-                ) {
-                    return;
-                }
-
-
-                const p =
-                    event.features[0]
-                        .properties;
-
-
-                const name =
-                    p.name ||
-                    "Город";
-
-
-                const region =
-                    p.region ||
-                    "Узбекистан";
-
-
-                new maplibregl.Popup({
-
-                    offset:
-                        15
-
-                })
-
-                .setLngLat(
-                    event.lngLat
-                )
-
-                .setHTML(`
-
-                    <strong>
-                        🏙 ${name}
-                    </strong>
-
-                    <br><br>
-
-                    <small>
-                        ${region}
-                    </small>
-
-                `)
-
-                .addTo(map);
-
-
-                map.flyTo({
-
-                    center: [
-                        event.lngLat.lng,
-                        event.lngLat.lat
-                    ],
-
-                    zoom:
-                        Math.max(
-                            map.getZoom(),
-                            9
-                        ),
-
-                    speed:
-                        0.8,
-
-                    curve:
-                        1.2
-
-                });
-
-            }
-
-        );
-
-
-        map.on(
-
-            "mouseenter",
-
-            "uzbekistan-cities-points",
-
-            () => {
-
-                map.getCanvas()
-                    .style
-                    .cursor =
-                    "pointer";
-
-            }
-
-        );
-
-
-        map.on(
-
-            "mouseleave",
-
-            "uzbekistan-cities-points",
-
-            () => {
-
-                map.getCanvas()
-                    .style
-                    .cursor =
-                    "";
-
-            }
-
-        );
-
-
         console.log(
-            "✅ Города UZMAP готовы"
+            "🇺🇿 UZMAP 0.8 готов"
         );
 
     }
 
-    catch (error) {
-
-        console.error(
-            "❌ Ошибка городов:",
-            error
-        );
-
-    }
-
-
-    console.log(
-        "🇺🇿 UZMAP полностью загружен"
-    );
-
-});
+);
 
 
 /* =====================================================
@@ -1816,7 +2409,9 @@ async function searchLocation() {
 
 
     if (!query) {
+
         return;
+
     }
 
 
@@ -1832,7 +2427,10 @@ async function searchLocation() {
             "https://nominatim.openstreetmap.org/search"
 
             + "?q="
-            + encodeURIComponent(query)
+
+            + encodeURIComponent(
+                query
+            )
 
             + "&format=jsonv2"
 
@@ -1858,6 +2456,7 @@ async function searchLocation() {
             );
 
             return;
+
         }
 
 
@@ -1868,15 +2467,28 @@ async function searchLocation() {
         const lat =
             Number(place.lat);
 
+
         const lng =
             Number(place.lon);
+
+
+        /*
+         * Поиск тоже сбрасывает
+         * административные выделения.
+         */
+
+        clearDistrictSelection();
+
+        clearRegionSelection();
 
 
         map.flyTo({
 
             center: [
+
                 lng,
                 lat
+
             ],
 
             zoom:
@@ -1894,8 +2506,10 @@ async function searchLocation() {
         new maplibregl.Marker()
 
             .setLngLat([
+
                 lng,
                 lat
+
             ])
 
             .setPopup(
@@ -1935,8 +2549,11 @@ async function searchLocation() {
 
 
         setTimeout(
+
             hideStatus,
+
             2000
+
         );
 
     }
@@ -1944,9 +2561,10 @@ async function searchLocation() {
     catch (error) {
 
         console.error(
-            "Ошибка поиска:",
+            "❌ Ошибка поиска:",
             error
         );
+
 
         showStatus(
             "⚠️ Ошибка поиска"
@@ -1957,11 +2575,22 @@ async function searchLocation() {
 }
 
 
+/* =====================================================
+   КНОПКА ПОИСКА
+===================================================== */
+
 searchButton.addEventListener(
+
     "click",
+
     searchLocation
+
 );
 
+
+/* =====================================================
+   ENTER
+===================================================== */
 
 searchInput.addEventListener(
 
@@ -1984,4 +2613,5 @@ searchInput.addEventListener(
 </script>
 
 </body>
+
 </html>
