@@ -2,375 +2,315 @@
 <html lang="ru">
 
 <head>
+    <meta charset="UTF-8">
 
-<meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    >
 
-<meta
-    name="viewport"
-    content="width=device-width,
-             initial-scale=1.0,
-             maximum-scale=1.0,
-             user-scalable=no"
->
+    <title>Naqsha</title>
 
-<title>Naqsha</title>
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"
+    >
 
-<link
-    rel="stylesheet"
-    href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"
->
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 
-<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+    <style>
 
-<style>
+        * {
+            box-sizing: border-box;
+        }
 
-/* =====================================================
-   ОСНОВА
-===================================================== */
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: Arial, Helvetica, sans-serif;
+        }
 
-* {
-    box-sizing: border-box;
-}
+        #map {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
 
-html,
-body {
+        /* ==============================
+           LOGO
+        ============================== */
 
-    margin: 0;
-    padding: 0;
+        .logo {
+            position: absolute;
+            z-index: 100;
 
-    width: 100%;
-    height: 100%;
+            top: 18px;
+            left: 18px;
 
-    overflow: hidden;
+            background: rgba(255, 255, 255, 0.97);
 
-    font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
-}
+            padding: 14px 20px;
 
-#map {
+            border-radius: 16px;
 
-    position: absolute;
+            font-size: 23px;
+            font-weight: 700;
 
-    left: 0;
-    top: 0;
+            box-shadow:
+                0 3px 18px rgba(0, 0, 0, 0.18);
 
-    width: 100%;
-    height: 100%;
-}
+            user-select: none;
+        }
 
+        /* ==============================
+           SEARCH
+        ============================== */
 
-/* =====================================================
-   LOGO
-===================================================== */
+        .search-box {
+            position: absolute;
+            z-index: 100;
 
-.logo {
+            top: 76px;
+            left: 18px;
+            right: 18px;
 
-    position: absolute;
+            max-width: 680px;
 
-    z-index: 100;
+            margin: 0 auto;
 
-    top: 18px;
-    left: 18px;
+            display: flex;
+            align-items: center;
 
-    background: rgba(255,255,255,.97);
+            background: white;
 
-    padding: 14px 20px;
+            border-radius: 16px;
 
-    border-radius: 16px;
+            box-shadow:
+                0 3px 18px rgba(0, 0, 0, 0.18);
+        }
 
-    font-size: 23px;
+        .search-icon {
+            padding-left: 16px;
+            font-size: 22px;
+        }
 
-    font-weight: 700;
+        #searchInput {
+            flex: 1;
 
-    box-shadow:
-        0 3px 18px rgba(0,0,0,.18);
+            width: 100%;
 
-    user-select: none;
-}
+            border: none;
+            outline: none;
 
+            background: transparent;
 
-/* =====================================================
-   ПОИСК
-===================================================== */
+            font-size: 17px;
 
-.search-box {
+            padding: 16px 9px;
+        }
 
-    position: absolute;
+        #searchButton {
+            border: none;
 
-    z-index: 100;
+            background: transparent;
 
-    top: 76px;
+            font-size: 22px;
 
-    left: 18px;
-    right: 18px;
+            padding: 13px 16px;
 
-    max-width: 680px;
+            cursor: pointer;
+        }
 
-    margin: 0 auto;
+        /* ==============================
+           SEARCH RESULTS
+        ============================== */
 
-    display: flex;
+        #searchResults {
+            position: absolute;
 
-    align-items: center;
+            z-index: 300;
 
-    background: white;
+            top: calc(100% + 7px);
 
-    border-radius: 16px;
+            left: 0;
+            right: 0;
 
-    box-shadow:
-        0 3px 18px rgba(0,0,0,.18);
-}
+            background: white;
 
-.search-icon {
+            border-radius: 14px;
 
-    padding-left: 16px;
+            overflow: hidden;
 
-    font-size: 22px;
-}
+            box-shadow:
+                0 5px 22px rgba(0, 0, 0, 0.2);
 
-#searchInput {
+            display: none;
 
-    flex: 1;
+            max-height: 320px;
 
-    width: 100%;
+            overflow-y: auto;
+        }
 
-    border: none;
+        .search-result {
+            padding: 14px 16px;
 
-    outline: none;
+            border-bottom:
+                1px solid #eeeeee;
 
-    background: transparent;
+            cursor: pointer;
 
-    font-size: 17px;
+            font-size: 16px;
+        }
 
-    padding: 16px 9px;
-}
+        .search-result:last-child {
+            border-bottom: none;
+        }
 
-#searchButton {
+        .search-result:hover {
+            background: #f3f3f3;
+        }
 
-    border: none;
+        .search-result:active {
+            background: #eeeeee;
+        }
 
-    background: transparent;
+        /* ==============================
+           INFO PANEL
+        ============================== */
 
-    font-size: 22px;
+        #infoPanel {
+            position: absolute;
 
-    padding: 13px 16px;
+            z-index: 200;
 
-    cursor: pointer;
-}
+            left: 15px;
+            right: 15px;
+            bottom: 18px;
 
+            max-width: 440px;
 
-/* =====================================================
-   РЕЗУЛЬТАТЫ ПОИСКА
-===================================================== */
+            margin: auto;
 
-#searchResults {
+            background: rgba(255, 255, 255, 0.98);
 
-    position: absolute;
+            border-radius: 18px;
 
-    z-index: 300;
+            box-shadow:
+                0 5px 28px rgba(0, 0, 0, 0.25);
 
-    top: calc(100% + 7px);
+            padding: 20px;
 
-    left: 0;
-    right: 0;
+            display: none;
+        }
 
-    background: white;
+        .info-close {
+            position: absolute;
 
-    border-radius: 14px;
+            right: 10px;
+            top: 7px;
 
-    overflow: hidden;
+            width: 35px;
+            height: 35px;
 
-    box-shadow:
-        0 5px 22px rgba(0,0,0,.2);
+            border: none;
 
-    display: none;
+            background: transparent;
 
-    max-height: 320px;
+            color: #1677ff;
 
-    overflow-y: auto;
-}
+            font-size: 27px;
 
-.search-result {
+            cursor: pointer;
+        }
 
-    padding: 14px 16px;
+        .info-title {
+            padding-right: 30px;
 
-    border-bottom:
-        1px solid #eeeeee;
+            font-size: 21px;
 
-    cursor: pointer;
+            font-weight: 700;
 
-    font-size: 16px;
-}
+            line-height: 1.3;
 
-.search-result:last-child {
+            margin-bottom: 12px;
+        }
 
-    border-bottom: none;
-}
+        .info-body {
+            font-size: 16px;
 
-.search-result:hover {
+            line-height: 1.5;
+        }
 
-    background: #f3f3f3;
-}
+        /* ==============================
+           LOADING
+        ============================== */
 
-.search-result:active {
+        #loading {
+            position: absolute;
 
-    background: #eeeeee;
-}
+            z-index: 500;
 
+            left: 50%;
+            top: 50%;
 
-/* =====================================================
-   ИНФОРМАЦИОННАЯ КАРТОЧКА
-===================================================== */
+            transform:
+                translate(-50%, -50%);
 
-#infoPanel {
+            background: white;
 
-    position: absolute;
+            padding: 15px 20px;
 
-    z-index: 200;
+            border-radius: 14px;
 
-    left: 15px;
-    right: 15px;
+            box-shadow:
+                0 4px 20px rgba(0, 0, 0, 0.2);
 
-    bottom: 18px;
+            font-size: 16px;
 
-    max-width: 440px;
+            white-space: nowrap;
+        }
 
-    margin: auto;
+        @media (max-width: 600px) {
 
-    background: rgba(255,255,255,.98);
+            .logo {
+                top: 12px;
+                left: 12px;
 
-    border-radius: 18px;
+                padding: 12px 16px;
 
-    box-shadow:
-        0 5px 28px rgba(0,0,0,.25);
+                font-size: 21px;
 
-    padding: 20px;
+                border-radius: 15px;
+            }
 
-    display: none;
-}
+            .search-box {
+                top: 66px;
 
-.info-close {
+                left: 12px;
+                right: 12px;
+            }
 
-    position: absolute;
+            #searchInput {
+                font-size: 17px;
+            }
+        }
 
-    right: 10px;
-    top: 7px;
-
-    width: 35px;
-    height: 35px;
-
-    border: none;
-
-    background: transparent;
-
-    color: #1677ff;
-
-    font-size: 27px;
-
-    cursor: pointer;
-}
-
-.info-title {
-
-    padding-right: 30px;
-
-    font-size: 21px;
-
-    font-weight: 700;
-
-    line-height: 1.3;
-
-    margin-bottom: 12px;
-}
-
-.info-body {
-
-    font-size: 16px;
-
-    line-height: 1.5;
-}
-
-
-/* =====================================================
-   ЗАГРУЗКА
-===================================================== */
-
-#loading {
-
-    position: absolute;
-
-    z-index: 500;
-
-    left: 50%;
-    top: 50%;
-
-    transform:
-        translate(-50%, -50%);
-
-    background: white;
-
-    padding: 15px 20px;
-
-    border-radius: 14px;
-
-    box-shadow:
-        0 4px 20px rgba(0,0,0,.2);
-
-    font-size: 16px;
-
-    white-space: nowrap;
-}
-
-
-/* =====================================================
-   МОБИЛЬНЫЙ
-===================================================== */
-
-@media (max-width: 600px) {
-
-    .logo {
-
-        top: 12px;
-        left: 12px;
-
-        padding: 12px 16px;
-
-        font-size: 21px;
-
-        border-radius: 15px;
-    }
-
-    .search-box {
-
-        top: 66px;
-
-        left: 12px;
-        right: 12px;
-    }
-
-    #searchInput {
-
-        font-size: 17px;
-    }
-
-}
-
-</style>
-
+    </style>
 </head>
 
 
 <body>
 
-
 <div id="map"></div>
 
 
 <div class="logo">
-
     🇺🇿 Naqsha
-
 </div>
 
 
@@ -450,7 +390,6 @@ async function supabaseRPC(functionName) {
         functionName
     );
 
-
     const response = await fetch(
 
         SUPABASE_URL +
@@ -458,7 +397,6 @@ async function supabaseRPC(functionName) {
         functionName,
 
         {
-
             method: "POST",
 
             headers: {
@@ -475,12 +413,9 @@ async function supabaseRPC(functionName) {
 
                 "Accept":
                     "application/json"
-
             },
 
-            body:
-                "{}"
-
+            body: "{}"
         }
 
     );
@@ -498,24 +433,20 @@ async function supabaseRPC(functionName) {
         );
 
         throw new Error(
-
             "Supabase RPC " +
             functionName +
             " → HTTP " +
             response.status
-
         );
-
     }
 
 
     return await response.json();
-
 }
 
 
 /* =====================================================
-   НАСТРОЙКИ КАРТЫ
+   MAP SETTINGS
 ===================================================== */
 
 const MAP_CENTER = [
@@ -527,12 +458,13 @@ const START_ZOOM = 5;
 
 
 /* =====================================================
-   MAPLIBRE
+   MAP
 ===================================================== */
 
 const map = new maplibregl.Map({
 
-    container: "map",
+    container:
+        "map",
 
     style:
         "https://tiles.openfreemap.org/styles/liberty",
@@ -551,13 +483,8 @@ const map = new maplibregl.Map({
 
     attributionControl:
         true
-
 });
 
-
-/* =====================================================
-   ОШИБКИ MAPLIBRE
-===================================================== */
 
 map.on(
     "error",
@@ -572,21 +499,14 @@ map.on(
 );
 
 
-/* =====================================================
-   НАВИГАЦИЯ
-===================================================== */
-
 map.addControl(
-
     new maplibregl.NavigationControl(),
-
     "top-right"
-
 );
 
 
 /* =====================================================
-   ДАННЫЕ
+   DATA
 ===================================================== */
 
 let regionsData = null;
@@ -597,12 +517,12 @@ let selectedDistrict = null;
 
 
 /* =====================================================
-   HTML SECURITY
+   HTML ESCAPE
 ===================================================== */
 
 function escapeHTML(value) {
 
-    return String(value)
+    return String(value || "")
 
         .replace(
             /&/g,
@@ -628,12 +548,107 @@ function escapeHTML(value) {
             /'/g,
             "&#039;"
         );
-
 }
 
 
 /* =====================================================
-   ЗАГРУЗКА ДАННЫХ
+   NORMALIZE SEARCH
+===================================================== */
+
+function normalizeSearchText(text) {
+
+    return String(text || "")
+
+        .toLowerCase()
+
+        .trim()
+
+        .replace(
+            /district/g,
+            ""
+        )
+
+        .replace(
+            /район/g,
+            ""
+        )
+
+        .replace(
+            /область/g,
+            ""
+        )
+
+        .replace(
+            /['’`]/g,
+            ""
+        )
+
+        .replace(
+            /q/g,
+            "k"
+        )
+
+        .replace(
+            /\s+/g,
+            " "
+        )
+
+        .trim();
+}
+
+
+/* =====================================================
+   SEARCH ALIASES
+===================================================== */
+
+const SEARCH_ALIASES = {
+
+    mingbuloq:
+        "mingbulak",
+
+    mingbulak:
+        "mingbuloq",
+
+    toshkent:
+        "tashkent",
+
+    tashkent:
+        "toshkent",
+
+    andijon:
+        "andijan",
+
+    andijan:
+        "andijon",
+
+    buxoro:
+        "bukhara",
+
+    bukhara:
+        "buxoro",
+
+    jizzax:
+        "jizzakh",
+
+    jizzakh:
+        "jizzax",
+
+    qashqadaryo:
+        "kashkadarya",
+
+    kashkadarya:
+        "qashqadaryo",
+
+    surxondaryo:
+        "surkhandarya",
+
+    surkhandarya:
+        "surxondaryo"
+};
+
+
+/* =====================================================
+   LOAD NAQSHA DATA
 ===================================================== */
 
 async function loadNaqshaData() {
@@ -669,10 +684,6 @@ async function loadNaqshaData() {
         districts;
 
 
-    /* =================================================
-       ПРОВЕРКА REGIONS
-    ================================================= */
-
     if (
         !regionsData ||
         regionsData.type !==
@@ -682,13 +693,8 @@ async function loadNaqshaData() {
         throw new Error(
             "get_regions_geojson вернул неправильный формат"
         );
-
     }
 
-
-    /* =================================================
-       ПРОВЕРКА DISTRICTS
-    ================================================= */
 
     if (
         !districtsData ||
@@ -699,7 +705,6 @@ async function loadNaqshaData() {
         throw new Error(
             "get_districts_geojson вернул неправильный формат"
         );
-
     }
 
 
@@ -715,43 +720,31 @@ async function loadNaqshaData() {
     );
 
 
-    /* =================================================
-       ЗАЩИТА ОТ NULL
-    ================================================= */
-
     regionsData.features =
         regionsData.features.filter(
-
             function(feature) {
 
                 return (
-
                     feature &&
                     feature.geometry &&
                     feature.geometry.coordinates
-
                 );
 
             }
-
         );
 
 
     districtsData.features =
         districtsData.features.filter(
-
             function(feature) {
 
                 return (
-
                     feature &&
                     feature.geometry &&
                     feature.geometry.coordinates
-
                 );
 
             }
-
         );
 
 
@@ -765,7 +758,6 @@ async function loadNaqshaData() {
         "Районов после проверки:",
         districtsData.features.length
     );
-
 }
 
 
@@ -774,9 +766,7 @@ async function loadNaqshaData() {
 ===================================================== */
 
 map.on(
-
     "load",
-
     async function() {
 
         try {
@@ -784,30 +774,21 @@ map.on(
             await loadNaqshaData();
 
 
-            /* =================================================
-               REGIONS SOURCE
-            ================================================= */
+            /* ==============================
+               REGIONS
+            ============================== */
 
             map.addSource(
-
                 "naqsha-regions",
-
                 {
-
                     type:
                         "geojson",
 
                     data:
                         regionsData
-
                 }
-
             );
 
-
-            /* =================================================
-               REGIONS BORDERS
-            ================================================= */
 
             map.addLayer({
 
@@ -826,56 +807,42 @@ map.on(
                         "#555555",
 
                     "line-width": [
-
                         "interpolate",
-
                         ["linear"],
-
                         ["zoom"],
-
                         4,
                         1,
-
                         7,
                         1.3,
-
                         12,
                         2
-
                     ],
 
                     "line-opacity":
                         0.75
-
                 }
-
             });
 
 
-            /* =================================================
-               DISTRICTS SOURCE
-            ================================================= */
+            /* ==============================
+               DISTRICTS
+            ============================== */
 
             map.addSource(
-
                 "naqsha-districts",
-
                 {
-
                     type:
                         "geojson",
 
                     data:
                         districtsData
-
                 }
-
             );
 
 
-            /* =================================================
+            /* ==============================
                SELECTED DISTRICT
-            ================================================= */
+            ============================== */
 
             map.addLayer({
 
@@ -901,7 +868,6 @@ map.on(
 
                     "fill-opacity":
                         0.45
-
                 },
 
                 filter: [
@@ -909,26 +875,21 @@ map.on(
                     "==",
 
                     [
-
                         "to-string",
-
                         [
                             "get",
                             "id"
                         ]
-
                     ],
 
                     "__NO_DISTRICT__"
-
                 ]
-
             });
 
 
-            /* =================================================
-               CLICKABLE DISTRICT
-            ================================================= */
+            /* ==============================
+               CLICK LAYER
+            ============================== */
 
             map.addLayer({
 
@@ -954,15 +915,13 @@ map.on(
 
                     "fill-opacity":
                         0.001
-
                 }
-
             });
 
 
-            /* =================================================
+            /* ==============================
                DISTRICT BORDERS
-            ================================================= */
+            ============================== */
 
             map.addLayer({
 
@@ -984,42 +943,30 @@ map.on(
                         "#555555",
 
                     "line-width": [
-
                         "interpolate",
-
                         ["linear"],
-
                         ["zoom"],
-
                         6,
                         0.7,
-
                         9,
                         1.2,
-
                         13,
                         2
-
                     ],
 
                     "line-opacity":
                         0.8
-
                 }
-
             });
 
 
-            /* =================================================
+            /* ==============================
                CLICK DISTRICT
-            ================================================= */
+            ============================== */
 
             map.on(
-
                 "click",
-
                 "naqsha-district-click",
-
                 function(event) {
 
                     try {
@@ -1028,22 +975,16 @@ map.on(
                             !event.features ||
                             !event.features.length
                         ) {
-
                             return;
-
                         }
 
 
                         selectDistrict(
-
                             event.features[0],
-
                             event.lngLat
-
                         );
 
                     }
-
                     catch(error) {
 
                         console.error(
@@ -1052,22 +993,17 @@ map.on(
                         );
 
                     }
-
                 }
-
             );
 
 
-            /* =================================================
-               CURSOR DISTRICT
-            ================================================= */
+            /* ==============================
+               CURSOR
+            ============================== */
 
             map.on(
-
                 "mouseenter",
-
                 "naqsha-district-click",
-
                 function() {
 
                     map.getCanvas()
@@ -1076,16 +1012,12 @@ map.on(
                         "pointer";
 
                 }
-
             );
 
 
             map.on(
-
                 "mouseleave",
-
                 "naqsha-district-click",
-
                 function() {
 
                     map.getCanvas()
@@ -1094,27 +1026,26 @@ map.on(
                         "";
 
                 }
-
             );
 
 
-            /* =================================================
-               STREET INTERACTION
-            ================================================= */
+            /* ==============================
+               STREETS
+            ============================== */
 
             setupStreetInteraction();
 
 
-            /* =================================================
-               BUILDING INTERACTION
-            ================================================= */
+            /* ==============================
+               BUILDINGS
+            ============================== */
 
             setupBuildingInteraction();
 
 
-            /* =================================================
+            /* ==============================
                READY
-            ================================================= */
+            ============================== */
 
             document
                 .getElementById(
@@ -1165,22 +1096,17 @@ map.on(
 
 
             showInfo(
-
                 "❌ Ошибка",
-
                 error.message
-
             );
 
         }
-
     }
-
 );
 
 
 /* =====================================================
-   ВЫБОР РАЙОНА
+   SELECT DISTRICT
 ===================================================== */
 
 function selectDistrict(
@@ -1189,9 +1115,7 @@ function selectDistrict(
 ) {
 
     if (!feature) {
-
         return;
-
     }
 
 
@@ -1220,20 +1144,26 @@ function selectDistrict(
 
 
     console.log(
-        "Выбран район:",
+        "📍 Выбран район:",
         districtName
     );
 
 
     console.log(
-        "ID района:",
+        "ID:",
         districtId
     );
 
 
-    /* =================================================
-       ПОДСВЕТКА
-    ================================================= */
+    console.log(
+        "Region:",
+        regionName
+    );
+
+
+    /* ==============================
+       HIGHLIGHT
+    ============================== */
 
     if (
         districtId !== null &&
@@ -1251,28 +1181,22 @@ function selectDistrict(
                 "==",
 
                 [
-
                     "to-string",
-
                     [
                         "get",
                         "id"
                     ]
-
                 ],
 
                 districtId
-
             ]
-
         );
-
     }
 
 
-    /* =================================================
+    /* ==============================
        INFO
-    ================================================= */
+    ============================== */
 
     showInfo(
 
@@ -1285,9 +1209,9 @@ function selectDistrict(
     );
 
 
-    /* =================================================
-       ПРИБЛИЖЕНИЕ
-    ================================================= */
+    /* ==============================
+       FLY
+    ============================== */
 
     if (
         lngLat &&
@@ -1316,16 +1240,13 @@ function selectDistrict(
 
             speed:
                 0.8
-
         });
-
     }
-
 }
 
 
 /* =====================================================
-   РАЙОН ИЗ ПОИСКА
+   SELECT DISTRICT FROM SEARCH
 ===================================================== */
 
 function selectDistrictFromSearch(
@@ -1345,7 +1266,6 @@ function selectDistrictFromSearch(
         );
 
         return;
-
     }
 
 
@@ -1354,22 +1274,18 @@ function selectDistrictFromSearch(
         feature,
 
         {
-
             lng:
                 center[0],
 
             lat:
                 center[1]
-
         }
-
     );
-
 }
 
 
 /* =====================================================
-   INFO PANEL
+   INFO
 ===================================================== */
 
 function showInfo(
@@ -1399,7 +1315,6 @@ function showInfo(
         )
         .style.display =
         "block";
-
 }
 
 
@@ -1411,7 +1326,6 @@ function closeInfo() {
         )
         .style.display =
         "none";
-
 }
 
 
@@ -1428,7 +1342,6 @@ function getStreetLayerIds() {
     return layers
 
         .filter(
-
             function(layer) {
 
                 return (
@@ -1439,7 +1352,6 @@ function getStreetLayerIds() {
                     &&
 
                     (
-
                         layer[
                             "source-layer"
                         ] ===
@@ -1451,25 +1363,19 @@ function getStreetLayerIds() {
                             "source-layer"
                         ] ===
                             "transportation_name"
-
                     )
-
                 );
 
             }
-
         )
 
         .map(
-
             function(layer) {
 
                 return layer.id;
 
             }
-
         );
-
 }
 
 
@@ -1492,24 +1398,19 @@ function setupStreetInteraction() {
     if (!layers.length) {
 
         console.warn(
-            "Слои улиц OpenFreeMap не найдены."
+            "Слои улиц не найдены."
         );
 
         return;
-
     }
 
 
     layers.forEach(
-
         function(layerId) {
 
             map.on(
-
                 "mouseenter",
-
                 layerId,
-
                 function() {
 
                     if (
@@ -1521,20 +1422,15 @@ function setupStreetInteraction() {
                             .style
                             .cursor =
                             "pointer";
-
                     }
 
                 }
-
             );
 
 
             map.on(
-
                 "mouseleave",
-
                 layerId,
-
                 function() {
 
                     map.getCanvas()
@@ -1543,16 +1439,12 @@ function setupStreetInteraction() {
                         "";
 
                 }
-
             );
 
 
             map.on(
-
                 "click",
-
                 layerId,
-
                 function(event) {
 
                     try {
@@ -1560,9 +1452,7 @@ function setupStreetInteraction() {
                         if (
                             map.getZoom() < 10
                         ) {
-
                             return;
-
                         }
 
 
@@ -1570,9 +1460,7 @@ function setupStreetInteraction() {
                             !event.features ||
                             !event.features.length
                         ) {
-
                             return;
-
                         }
 
 
@@ -1581,7 +1469,6 @@ function setupStreetInteraction() {
                         );
 
                     }
-
                     catch(error) {
 
                         console.error(
@@ -1590,15 +1477,11 @@ function setupStreetInteraction() {
                         );
 
                     }
-
                 }
-
             );
 
         }
-
     );
-
 }
 
 
@@ -1669,7 +1552,6 @@ function showStreetInfo(
 
         path:
             "Тропа"
-
     };
 
 
@@ -1685,9 +1567,7 @@ function showStreetInfo(
 
         "Тип: " +
         type
-
     );
-
 }
 
 
@@ -1704,7 +1584,6 @@ function getBuildingLayerIds() {
     return layers
 
         .filter(
-
             function(layer) {
 
                 return (
@@ -1718,23 +1597,18 @@ function getBuildingLayerIds() {
                         "source-layer"
                     ] ===
                         "building"
-
                 );
 
             }
-
         )
 
         .map(
-
             function(layer) {
 
                 return layer.id;
 
             }
-
         );
-
 }
 
 
@@ -1757,24 +1631,19 @@ function setupBuildingInteraction() {
     if (!layers.length) {
 
         console.warn(
-            "Слои зданий OpenFreeMap не найдены."
+            "Слои зданий не найдены."
         );
 
         return;
-
     }
 
 
     layers.forEach(
-
         function(layerId) {
 
             map.on(
-
                 "mouseenter",
-
                 layerId,
-
                 function() {
 
                     if (
@@ -1786,20 +1655,15 @@ function setupBuildingInteraction() {
                             .style
                             .cursor =
                             "pointer";
-
                     }
 
                 }
-
             );
 
 
             map.on(
-
                 "mouseleave",
-
                 layerId,
-
                 function() {
 
                     map.getCanvas()
@@ -1808,16 +1672,12 @@ function setupBuildingInteraction() {
                         "";
 
                 }
-
             );
 
 
             map.on(
-
                 "click",
-
                 layerId,
-
                 function(event) {
 
                     try {
@@ -1825,9 +1685,7 @@ function setupBuildingInteraction() {
                         if (
                             map.getZoom() < 13
                         ) {
-
                             return;
-
                         }
 
 
@@ -1835,9 +1693,7 @@ function setupBuildingInteraction() {
                             !event.features ||
                             !event.features.length
                         ) {
-
                             return;
-
                         }
 
 
@@ -1846,7 +1702,6 @@ function setupBuildingInteraction() {
                         );
 
                     }
-
                     catch(error) {
 
                         console.error(
@@ -1855,15 +1710,11 @@ function setupBuildingInteraction() {
                         );
 
                     }
-
                 }
-
             );
 
         }
-
     );
-
 }
 
 
@@ -1911,16 +1762,13 @@ function showBuildingInfo(
         html +=
             "Улица: " +
             escapeHTML(street);
-
     }
 
 
     if (houseNumber) {
 
         if (html) {
-
             html += "<br>";
-
         }
 
 
@@ -1929,7 +1777,6 @@ function showBuildingInfo(
             escapeHTML(
                 houseNumber
             );
-
     }
 
 
@@ -1937,7 +1784,6 @@ function showBuildingInfo(
 
         html =
             "Информация об адресе пока отсутствует.";
-
     }
 
 
@@ -1963,12 +1809,11 @@ function showBuildingInfo(
         )
         .style.display =
         "block";
-
 }
 
 
 /* =====================================================
-   ЭЛЕМЕНТЫ ПОИСКА
+   SEARCH ELEMENTS
 ===================================================== */
 
 const searchInput =
@@ -1990,13 +1835,11 @@ const searchResults =
 
 
 /* =====================================================
-   INPUT SEARCH
+   SEARCH INPUT
 ===================================================== */
 
 searchInput.addEventListener(
-
     "input",
-
     function() {
 
         showSearchResults(
@@ -2004,7 +1847,6 @@ searchInput.addEventListener(
         );
 
     }
-
 );
 
 
@@ -2013,9 +1855,7 @@ searchInput.addEventListener(
 ===================================================== */
 
 searchInput.addEventListener(
-
     "keydown",
-
     function(event) {
 
         if (
@@ -2028,25 +1868,21 @@ searchInput.addEventListener(
         }
 
     }
-
 );
 
 
 /* =====================================================
-   BUTTON
+   SEARCH BUTTON
 ===================================================== */
 
 searchButton.addEventListener(
-
     "click",
-
     searchLocation
-
 );
 
 
 /* =====================================================
-   ПОИСК ПО НАШЕЙ БАЗЕ
+   SEARCH LOCATION
 ===================================================== */
 
 async function searchLocation() {
@@ -2056,9 +1892,7 @@ async function searchLocation() {
 
 
     if (!query) {
-
         return;
-
     }
 
 
@@ -2066,8 +1900,14 @@ async function searchLocation() {
         "none";
 
 
+    console.log(
+        "🔎 Поиск:",
+        query
+    );
+
+
     /* =================================================
-       1. СНАЧАЛА НАША БАЗА SUPABASE
+       NAQSHA / SUPABASE
     ================================================= */
 
     if (
@@ -2076,19 +1916,26 @@ async function searchLocation() {
     ) {
 
         const normalizedQuery =
-            query
-                .toLowerCase()
-                .trim();
+            normalizeSearchText(
+                query
+            );
+
+
+        console.log(
+            "🔎 Нормализованный запрос:",
+            normalizedQuery
+        );
+
+
+        let district = null;
 
 
         /* =================================================
-           ТОЧНОЕ СОВПАДЕНИЕ
+           1. ТОЧНОЕ СОВПАДЕНИЕ
         ================================================= */
 
-        const district =
-
+        district =
             districtsData.features.find(
-
                 function(feature) {
 
                     const properties =
@@ -2096,29 +1943,127 @@ async function searchLocation() {
 
 
                     const name =
-                        String(
-                            properties.name || ""
-                        )
-                        .toLowerCase()
-                        .trim();
+                        normalizeSearchText(
+                            properties.name
+                        );
 
 
                     return (
-
                         name ===
                         normalizedQuery
-
                     );
 
                 }
-
             );
 
+
+        /* =================================================
+           2. ЧАСТИЧНОЕ СОВПАДЕНИЕ
+        ================================================= */
+
+        if (!district) {
+
+            district =
+                districtsData.features.find(
+                    function(feature) {
+
+                        const properties =
+                            feature.properties || {};
+
+
+                        const name =
+                            normalizeSearchText(
+                                properties.name
+                            );
+
+
+                        return (
+
+                            name.includes(
+                                normalizedQuery
+                            )
+
+                            ||
+
+                            normalizedQuery.includes(
+                                name
+                            )
+
+                        );
+
+                    }
+                );
+
+        }
+
+
+        /* =================================================
+           3. ALIAS
+        ================================================= */
+
+        if (!district) {
+
+            const alternative =
+                SEARCH_ALIASES[
+                    normalizedQuery
+                ];
+
+
+            if (alternative) {
+
+                district =
+                    districtsData.features.find(
+                        function(feature) {
+
+                            const properties =
+                                feature.properties || {};
+
+
+                            const name =
+                                normalizeSearchText(
+                                    properties.name
+                                );
+
+
+                            return (
+                                name.includes(
+                                    alternative
+                                )
+                            );
+
+                        }
+                    );
+
+            }
+
+        }
+
+
+        /* =================================================
+           НАШЛИ В NAQSHA
+        ================================================= */
 
         if (district) {
 
             console.log(
-                "✅ Район найден в Supabase:",
+                "✅ NAQSHA: район найден в Supabase"
+            );
+
+
+            console.log(
+                "ID:",
+                district.properties?.id
+            );
+
+
+            console.log(
+                "Название:",
+                district.properties?.name
+            );
+
+
+            console.log(
+                "Данные:",
                 district.properties
             );
 
@@ -2129,72 +2074,21 @@ async function searchLocation() {
 
 
             return;
-
         }
 
 
-        /* =================================================
-           ЧАСТИЧНОЕ СОВПАДЕНИЕ
-        ================================================= */
-
-        const partialDistrict =
-
-            districtsData.features.find(
-
-                function(feature) {
-
-                    const properties =
-                        feature.properties || {};
-
-
-                    const name =
-                        String(
-                            properties.name || ""
-                        )
-                        .toLowerCase()
-                        .trim();
-
-
-                    return (
-
-                        name.includes(
-                            normalizedQuery
-                        )
-
-                    );
-
-                }
-
-            );
-
-
-        if (partialDistrict) {
-
-            console.log(
-                "✅ Район найден по частичному совпадению:",
-                partialDistrict.properties
-            );
-
-
-            selectDistrictFromSearch(
-                partialDistrict
-            );
-
-
-            return;
-
-        }
-
+        console.log(
+            "⚠️ В базе Naqsha район не найден."
+        );
     }
 
 
     /* =================================================
-       2. NOMINATIM — ЗАПАСНОЙ ПОИСК
+       NOMINATIM FALLBACK
     ================================================= */
 
     console.log(
-        "ℹ️ В базе Naqsha район не найден.",
-        "Используем Nominatim."
+        "🌍 Используем Nominatim как запасной поиск..."
     );
 
 
@@ -2220,18 +2114,15 @@ async function searchLocation() {
 
 
         const response =
-            await fetch(
-                url
-            );
+            await fetch(url);
 
 
         if (!response.ok) {
 
             throw new Error(
-                "Ошибка Nominatim: HTTP " +
+                "Nominatim HTTP " +
                 response.status
             );
-
         }
 
 
@@ -2245,15 +2136,11 @@ async function searchLocation() {
         ) {
 
             showInfo(
-
                 "🔎 Ничего не найдено",
-
-                "В базе Naqsha и OpenStreetMap ничего не найдено."
-
+                "Naqsha и OpenStreetMap ничего не нашли."
             );
 
             return;
-
         }
 
 
@@ -2281,30 +2168,25 @@ async function searchLocation() {
             throw new Error(
                 "Nominatim вернул неправильные координаты."
             );
-
         }
 
 
         map.flyTo({
 
             center: [
-
                 lon,
                 lat
-
             ],
 
             zoom:
-                16,
+                14,
 
             speed:
                 1
-
         });
 
 
         setTimeout(
-
             function() {
 
                 showInfo(
@@ -2321,9 +2203,7 @@ async function searchLocation() {
                 );
 
             },
-
             700
-
         );
 
     }
@@ -2331,44 +2211,34 @@ async function searchLocation() {
     catch(error) {
 
         console.error(
-            "SEARCH ERROR:",
+            "❌ SEARCH ERROR:",
             error
         );
 
 
         showInfo(
-
             "❌ Ошибка поиска",
-
             "Не удалось выполнить поиск."
-
         );
-
     }
-
 }
 
 
 /* =====================================================
-   ПОДСКАЗКИ ПО НАШЕЙ БАЗЕ
+   SEARCH SUGGESTIONS
 ===================================================== */
 
-function showSearchResults(
-    text
-) {
+function showSearchResults(text) {
 
     searchResults.innerHTML = "";
 
 
-    if (
-        !text.trim()
-    ) {
+    if (!text.trim()) {
 
         searchResults.style.display =
             "none";
 
         return;
-
     }
 
 
@@ -2378,14 +2248,13 @@ function showSearchResults(
     ) {
 
         return;
-
     }
 
 
     const query =
-        text
-            .toLowerCase()
-            .trim();
+        normalizeSearchText(
+            text
+        );
 
 
     const results =
@@ -2393,7 +2262,6 @@ function showSearchResults(
         districtsData.features
 
             .filter(
-
                 function(feature) {
 
                     const properties =
@@ -2401,33 +2269,47 @@ function showSearchResults(
 
 
                     const name =
-                        String(
-                            properties.name || ""
+                        normalizeSearchText(
+                            properties.name
                         );
 
 
                     const region =
-                        String(
-                            properties.region_name || ""
+                        normalizeSearchText(
+                            properties.region_name
                         );
+
+
+                    const alias =
+                        SEARCH_ALIASES[
+                            query
+                        ];
 
 
                     return (
 
-                        name
-                            .toLowerCase()
-                            .includes(query)
+                        name.includes(
+                            query
+                        )
 
                         ||
 
-                        region
-                            .toLowerCase()
-                            .includes(query)
+                        region.includes(
+                            query
+                        )
+
+                        ||
+
+                        (
+                            alias &&
+                            name.includes(
+                                alias
+                            )
+                        )
 
                     );
 
                 }
-
             )
 
             .slice(
@@ -2436,20 +2318,16 @@ function showSearchResults(
             );
 
 
-    if (
-        !results.length
-    ) {
+    if (!results.length) {
 
         searchResults.style.display =
             "none";
 
         return;
-
     }
 
 
     results.forEach(
-
         function(feature) {
 
             const properties =
@@ -2489,9 +2367,7 @@ function showSearchResults(
 
 
             item.addEventListener(
-
                 "click",
-
                 function() {
 
                     searchInput.value =
@@ -2503,7 +2379,7 @@ function showSearchResults(
 
 
                     console.log(
-                        "Выбран район из базы:",
+                        "Выбран район из Naqsha:",
                         properties
                     );
 
@@ -2513,7 +2389,6 @@ function showSearchResults(
                     );
 
                 }
-
             );
 
 
@@ -2522,18 +2397,16 @@ function showSearchResults(
             );
 
         }
-
     );
 
 
     searchResults.style.display =
         "block";
-
 }
 
 
 /* =====================================================
-   ЦЕНТР GEOJSON
+   GEOJSON CENTER
 ===================================================== */
 
 function getFeatureCenter(
@@ -2547,23 +2420,18 @@ function getFeatureCenter(
     ) {
 
         return null;
-
     }
 
 
     const coordinates = [];
 
 
-    function collect(
-        value
-    ) {
+    function collect(value) {
 
         if (
             !Array.isArray(value)
         ) {
-
             return;
-
         }
 
 
@@ -2584,14 +2452,12 @@ function getFeatureCenter(
             );
 
             return;
-
         }
 
 
         value.forEach(
             collect
         );
-
     }
 
 
@@ -2605,7 +2471,6 @@ function getFeatureCenter(
     ) {
 
         return null;
-
     }
 
 
@@ -2617,7 +2482,6 @@ function getFeatureCenter(
 
 
     coordinates.forEach(
-
         function(point) {
 
             const pointLng =
@@ -2653,11 +2517,9 @@ function getFeatureCenter(
                     pointLat;
 
                 count++;
-
             }
 
         }
-
     );
 
 
@@ -2666,7 +2528,6 @@ function getFeatureCenter(
     ) {
 
         return null;
-
     }
 
 
@@ -2677,18 +2538,15 @@ function getFeatureCenter(
         lat / count
 
     ];
-
 }
 
 
 /* =====================================================
-   ЗАКРЫТИЕ ПОИСКА
+   CLOSE SEARCH
 ===================================================== */
 
 document.addEventListener(
-
     "click",
-
     function(event) {
 
         if (
@@ -2699,11 +2557,9 @@ document.addEventListener(
 
             searchResults.style.display =
                 "none";
-
         }
 
     }
-
 );
 
 
@@ -2712,9 +2568,7 @@ document.addEventListener(
 ===================================================== */
 
 document.addEventListener(
-
     "keydown",
-
     function(event) {
 
         if (
@@ -2726,15 +2580,12 @@ document.addEventListener(
 
             searchResults.style.display =
                 "none";
-
         }
 
     }
-
 );
 
 </script>
 
 </body>
-
 </html>
