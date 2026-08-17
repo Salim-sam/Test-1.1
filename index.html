@@ -53,7 +53,8 @@ body {
 
     position: absolute;
 
-    inset: 0;
+    left: 0;
+    top: 0;
 
     width: 100%;
     height: 100%;
@@ -205,6 +206,11 @@ body {
 .search-result:last-child {
 
     border-bottom: none;
+}
+
+.search-result:hover {
+
+    background: #f3f3f3;
 }
 
 .search-result:active {
@@ -433,12 +439,18 @@ const SUPABASE_KEY =
 
 
 /* =====================================================
-   RPC SUPABASE
+   SUPABASE RPC
 ===================================================== */
 
 async function supabaseRPC(
     functionName
 ) {
+
+    console.log(
+        "Supabase RPC:",
+        functionName
+    );
+
 
     const response = await fetch(
 
@@ -480,12 +492,18 @@ async function supabaseRPC(
         const errorText =
             await response.text();
 
+        console.error(
+            "Supabase error:",
+            response.status,
+            errorText
+        );
+
         throw new Error(
 
-            "Supabase RPC error " +
-            response.status +
-            ": " +
-            errorText
+            "Supabase RPC " +
+            functionName +
+            " → HTTP " +
+            response.status
 
         );
 
@@ -537,6 +555,27 @@ const map = new maplibregl.Map({
 
 });
 
+
+/* =====================================================
+   ОШИБКИ MAPLIBRE
+===================================================== */
+
+map.on(
+    "error",
+    function(event) {
+
+        console.warn(
+            "MapLibre:",
+            event
+        );
+
+    }
+);
+
+
+/* =====================================================
+   НАВИГАЦИЯ
+===================================================== */
 
 map.addControl(
 
@@ -597,7 +636,7 @@ function escapeHTML(
 
 
 /* =====================================================
-   ЗАГРУЗКА REGIONS + DISTRICTS
+   ЗАГРУЗКА NAQSHA DATA
 ===================================================== */
 
 async function loadNaqshaData() {
@@ -607,26 +646,35 @@ async function loadNaqshaData() {
     );
 
 
-    const results =
-        await Promise.all([
+    const [
 
-            supabaseRPC(
-                "get_regions_geojson"
-            ),
+        regions,
 
-            supabaseRPC(
-                "get_districts_geojson"
-            )
+        districts
 
-        ]);
+    ] = await Promise.all([
+
+        supabaseRPC(
+            "get_regions_geojson"
+        ),
+
+        supabaseRPC(
+            "get_districts_geojson"
+        )
+
+    ]);
 
 
     regionsData =
-        results[0];
+        regions;
 
     districtsData =
-        results[1];
+        districts;
 
+
+    /* =================================================
+       ПРОВЕРКА REGIONS
+    ================================================= */
 
     if (
         !regionsData ||
@@ -635,11 +683,15 @@ async function loadNaqshaData() {
     ) {
 
         throw new Error(
-            "Некорректный ответ regions"
+            "get_regions_geojson вернул неправильный формат"
         );
 
     }
 
+
+    /* =================================================
+       ПРОВЕРКА DISTRICTS
+    ================================================= */
 
     if (
         !districtsData ||
@@ -648,7 +700,7 @@ async function loadNaqshaData() {
     ) {
 
         throw new Error(
-            "Некорректный ответ districts"
+            "get_districts_geojson вернул неправильный формат"
         );
 
     }
@@ -666,28 +718,56 @@ async function loadNaqshaData() {
     );
 
 
-    if (
-        regionsData.features.length !==
-        14
-    ) {
+    /* =================================================
+       ЗАЩИТА ОТ NULL
+    ================================================= */
 
-        console.warn(
-            "Ожидалось 14 областей."
+    regionsData.features =
+        regionsData.features.filter(
+
+            function(feature) {
+
+                return (
+
+                    feature &&
+                    feature.geometry &&
+                    feature.geometry.coordinates
+
+                );
+
+            }
+
         );
 
-    }
 
+    districtsData.features =
+        districtsData.features.filter(
 
-    if (
-        districtsData.features.length !==
-        159
-    ) {
+            function(feature) {
 
-        console.warn(
-            "Ожидалось 159 районов."
+                return (
+
+                    feature &&
+                    feature.geometry &&
+                    feature.geometry.coordinates
+
+                );
+
+            }
+
         );
 
-    }
+
+    console.log(
+        "Областей после проверки:",
+        regionsData.features.length
+    );
+
+
+    console.log(
+        "Районов после проверки:",
+        districtsData.features.length
+    );
 
 }
 
@@ -697,7 +777,9 @@ async function loadNaqshaData() {
 ===================================================== */
 
 map.on(
+
     "load",
+
     async function() {
 
         try {
@@ -810,7 +892,7 @@ map.on(
                     "naqsha-districts",
 
                 minzoom:
-                    6,
+                    5,
 
                 maxzoom:
                     14,
@@ -830,11 +912,17 @@ map.on(
                     "==",
 
                     [
-                        "get",
-                        "id"
+
+                        "to-string",
+
+                        [
+                            "get",
+                            "id"
+                        ]
+
                     ],
 
-                    ""
+                    "__NO_DISTRICT__"
 
                 ]
 
@@ -937,20 +1025,36 @@ map.on(
 
                 function(event) {
 
-                    if (
-                        !event.features ||
-                        !event.features.length
-                    ) {
+                    try {
 
-                        return;
+                        if (
+                            !event.features ||
+                            !event.features.length
+                        ) {
+
+                            return;
+
+                        }
+
+
+                        selectDistrict(
+
+                            event.features[0],
+
+                            event.lngLat
+
+                        );
 
                     }
 
+                    catch(error) {
 
-                    selectDistrict(
-                        event.features[0],
-                        event.lngLat
-                    );
+                        console.error(
+                            "District click error:",
+                            error
+                        );
+
+                    }
 
                 }
 
@@ -958,7 +1062,7 @@ map.on(
 
 
             /* =================================================
-               CURSOR
+               DISTRICT CURSOR
             ================================================= */
 
             map.on(
@@ -998,14 +1102,14 @@ map.on(
 
 
             /* =================================================
-               УЛИЦЫ
+               STREET INTERACTION
             ================================================= */
 
             setupStreetInteraction();
 
 
             /* =================================================
-               ЗДАНИЯ
+               BUILDING INTERACTION
             ================================================= */
 
             setupBuildingInteraction();
@@ -1024,25 +1128,29 @@ map.on(
 
 
             console.log(
-                "================================"
+                "=============================="
             );
+
 
             console.log(
                 "✅ NAQSHA ГОТОВ"
             );
+
 
             console.log(
                 "Regions:",
                 regionsData.features.length
             );
 
+
             console.log(
                 "Districts:",
                 districtsData.features.length
             );
 
+
             console.log(
-                "================================"
+                "=============================="
             );
 
         }
@@ -1074,11 +1182,12 @@ map.on(
         }
 
     }
+
 );
 
 
 /* =====================================================
-   SELECT DISTRICT
+   ВЫБОР РАЙОНА
 ===================================================== */
 
 function selectDistrict(
@@ -1101,33 +1210,19 @@ function selectDistrict(
         feature.properties || {};
 
 
+    /* =================================================
+       ID
+    ================================================= */
+
     const districtId =
-        properties.id;
+        properties.id != null
+            ? String(properties.id)
+            : null;
 
 
     /* =================================================
-       GREEN HIGHLIGHT
+       NAME
     ================================================= */
-
-    map.setFilter(
-
-        "naqsha-district-selected",
-
-        [
-
-            "==",
-
-            [
-                "get",
-                "id"
-            ],
-
-            districtId
-
-        ]
-
-    );
-
 
     const districtName =
         properties.name ||
@@ -1139,6 +1234,57 @@ function selectDistrict(
         "Узбекистан";
 
 
+    console.log(
+        "Выбран район:",
+        districtName
+    );
+
+
+    console.log(
+        "ID района:",
+        districtId
+    );
+
+
+    /* =================================================
+       ПОДСВЕТКА
+    ================================================= */
+
+    if (
+        districtId !== null &&
+        map.getLayer(
+            "naqsha-district-selected"
+        )
+    ) {
+
+        map.setFilter(
+
+            "naqsha-district-selected",
+
+            [
+
+                "==",
+
+                [
+
+                    "to-string",
+
+                    [
+                        "get",
+                        "id"
+                    ]
+
+                ],
+
+                districtId
+
+            ]
+
+        );
+
+    }
+
+
     /* =================================================
        INFO
     ================================================= */
@@ -1148,28 +1294,36 @@ function selectDistrict(
         "📍 " +
         districtName,
 
+        "Область: " +
         regionName
 
     );
 
 
     /* =================================================
-       ZOOM
+       FLY TO
     ================================================= */
 
-    if (lngLat) {
+    if (
+        lngLat &&
+        Number.isFinite(
+            Number(lngLat.lng)
+        ) &&
+        Number.isFinite(
+            Number(lngLat.lat)
+        )
+    ) {
 
         map.flyTo({
 
             center: [
 
-                lngLat.lng,
-                lngLat.lat
+                Number(lngLat.lng),
+                Number(lngLat.lat)
 
             ],
 
             zoom:
-
                 Math.max(
                     map.getZoom(),
                     8
@@ -1309,7 +1463,7 @@ function setupStreetInteraction() {
     if (!layers.length) {
 
         console.warn(
-            "Слои улиц не найдены."
+            "Слои улиц OpenFreeMap не найдены."
         );
 
         return;
@@ -1373,28 +1527,43 @@ function setupStreetInteraction() {
 
                 function(event) {
 
-                    if (
-                        map.getZoom() < 10
-                    ) {
+                    try {
 
-                        return;
+                        if (
+                            map.getZoom() < 10
+                        ) {
+
+                            return;
+
+                        }
+
+
+                        if (
+                            !event.features ||
+                            !event.features.length
+                        ) {
+
+                            return;
+
+                        }
+
+
+                        showStreetInfo(
+
+                            event.features[0]
+
+                        );
 
                     }
 
+                    catch(error) {
 
-                    if (
-                        !event.features ||
-                        !event.features.length
-                    ) {
-
-                        return;
+                        console.error(
+                            "Street error:",
+                            error
+                        );
 
                     }
-
-
-                    showStreetInfo(
-                        event.features[0]
-                    );
 
                 }
 
@@ -1562,7 +1731,7 @@ function setupBuildingInteraction() {
     if (!layers.length) {
 
         console.warn(
-            "Слои зданий не найдены."
+            "Слои зданий OpenFreeMap не найдены."
         );
 
         return;
@@ -1626,28 +1795,43 @@ function setupBuildingInteraction() {
 
                 function(event) {
 
-                    if (
-                        map.getZoom() < 13
-                    ) {
+                    try {
 
-                        return;
+                        if (
+                            map.getZoom() < 13
+                        ) {
+
+                            return;
+
+                        }
+
+
+                        if (
+                            !event.features ||
+                            !event.features.length
+                        ) {
+
+                            return;
+
+                        }
+
+
+                        showBuildingInfo(
+
+                            event.features[0]
+
+                        );
 
                     }
 
+                    catch(error) {
 
-                    if (
-                        !event.features ||
-                        !event.features.length
-                    ) {
-
-                        return;
+                        console.error(
+                            "Building error:",
+                            error
+                        );
 
                     }
-
-
-                    showBuildingInfo(
-                        event.features[0]
-                    );
 
                 }
 
@@ -1702,8 +1886,12 @@ function showBuildingInfo(
     if (street) {
 
         html +=
+
             "Улица: " +
-            escapeHTML(street);
+
+            escapeHTML(
+                street
+            );
 
     }
 
@@ -1718,7 +1906,9 @@ function showBuildingInfo(
 
 
         html +=
+
             "Дом: " +
+
             escapeHTML(
                 houseNumber
             );
@@ -1827,7 +2017,7 @@ searchButton.addEventListener(
 
 
 /* =====================================================
-   ПОКАЗ РЕЗУЛЬТАТОВ ПОИСКА
+   SEARCH RESULTS
 ===================================================== */
 
 function showSearchResults(
@@ -2006,7 +2196,7 @@ function showSearchResults(
 
 
 /* =====================================================
-   ВЫБОР РАЙОНА ИЗ ПОИСКА
+   DISTRICT FROM SEARCH
 ===================================================== */
 
 function selectDistrictFromSearch(
@@ -2020,6 +2210,10 @@ function selectDistrictFromSearch(
 
 
     if (!center) {
+
+        console.warn(
+            "Не удалось определить центр района."
+        );
 
         return;
 
@@ -2046,7 +2240,7 @@ function selectDistrictFromSearch(
 
 
 /* =====================================================
-   ПОИСК
+   SEARCH LOCATION
 ===================================================== */
 
 async function searchLocation() {
@@ -2063,7 +2257,7 @@ async function searchLocation() {
 
 
     /* =================================================
-       СНАЧАЛА ИЩЕМ В РАЙОНАХ SUPABASE
+       РАЙОНЫ SUPABASE
     ================================================= */
 
     if (
@@ -2091,9 +2285,12 @@ async function searchLocation() {
                     return (
 
                         name
-                            .toLowerCase() ===
+                            .toLowerCase()
+                            .trim() ===
+
                         query
                             .toLowerCase()
+                            .trim()
 
                     );
 
@@ -2104,9 +2301,14 @@ async function searchLocation() {
 
         if (district) {
 
+            searchResults.style.display =
+                "none";
+
+
             selectDistrictFromSearch(
                 district
             );
+
 
             return;
 
@@ -2149,7 +2351,7 @@ async function searchLocation() {
         if (!response.ok) {
 
             throw new Error(
-                "Nominatim error"
+                "Ошибка Nominatim"
             );
 
         }
@@ -2190,6 +2392,18 @@ async function searchLocation() {
             Number(
                 result.lon
             );
+
+
+        if (
+            !Number.isFinite(lat) ||
+            !Number.isFinite(lon)
+        ) {
+
+            throw new Error(
+                "Nominatim вернул неправильные координаты."
+            );
+
+        }
 
 
         map.flyTo({
@@ -2245,7 +2459,7 @@ async function searchLocation() {
 
         showInfo(
 
-            "Ошибка поиска",
+            "❌ Ошибка поиска",
 
             "Не удалось выполнить поиск."
 
@@ -2257,7 +2471,7 @@ async function searchLocation() {
 
 
 /* =====================================================
-   ЦЕНТР GEOJSON
+   CENTER GEOJSON
 ===================================================== */
 
 function getFeatureCenter(
@@ -2266,7 +2480,8 @@ function getFeatureCenter(
 
     if (
         !feature ||
-        !feature.geometry
+        !feature.geometry ||
+        !feature.geometry.coordinates
     ) {
 
         return null;
@@ -2291,8 +2506,11 @@ function getFeatureCenter(
 
 
         if (
+            value.length >= 2 &&
             typeof value[0] ===
-            "number"
+                "number" &&
+            typeof value[1] ===
+                "number"
         ) {
 
             coordinates.push(
@@ -2330,32 +2548,55 @@ function getFeatureCenter(
     let lat = 0;
 
 
+    let count = 0;
+
+
     coordinates.forEach(
 
         function(point) {
 
-            lng +=
-                Number(
-                    point[0]
-                );
+            const pointLng =
+                Number(point[0]);
 
-            lat +=
-                Number(
-                    point[1]
-                );
+
+            const pointLat =
+                Number(point[1]);
+
+
+            if (
+                Number.isFinite(pointLng) &&
+                Number.isFinite(pointLat)
+            ) {
+
+                lng +=
+                    pointLng;
+
+                lat +=
+                    pointLat;
+
+                count++;
+
+            }
 
         }
 
     );
 
 
+    if (
+        count === 0
+    ) {
+
+        return null;
+
+    }
+
+
     return [
 
-        lng /
-            coordinates.length,
+        lng / count,
 
-        lat /
-            coordinates.length
+        lat / count
 
     ];
 
@@ -2404,6 +2645,9 @@ document.addEventListener(
         ) {
 
             closeInfo();
+
+            searchResults.style.display =
+                "none";
 
         }
 
