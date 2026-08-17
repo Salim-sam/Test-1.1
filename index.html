@@ -457,64 +457,79 @@ function fd(f){
  };
 }
 
-async function loadAll(){
+async function loadAll() {
+    try {
+        $('globalStatus').style.display = 'none';
 
- try{
+        console.log('🔄 Обновление данных...');
 
-  $('globalStatus').style.display='none';
+        const [r, d, c] = await Promise.all([
+            rpc('get_regions_geojson'),
+            rpc('get_districts_geojson'),
+            rpc('get_cities_geojson')
+        ]);
 
-  const [r,d,c]=await Promise.all([
-   rpc('get_regions_geojson'),
-   rpc('get_districts_geojson'),
-   rpc('get_cities_geojson')
-  ]);
+        console.log('Regions:', r);
+        console.log('Districts:', d);
+        console.log('Cities:', c);
 
-  regions=r;
-  districts=d;
-  cities=c;
+        if (!r || !Array.isArray(r.features)) {
+            throw new Error(
+                'get_regions_geojson вернул неправильный формат'
+            );
+        }
 
-  if(
-   !regions?.features||
-   !districts?.features||
-   !cities?.features
-  ){
-   throw new Error(
-    'GeoJSON RPC вернули неправильный формат.'
-   );
-  }
+        if (!d || !Array.isArray(d.features)) {
+            throw new Error(
+                'get_districts_geojson вернул неправильный формат'
+            );
+        }
 
-  $('regionCount').textContent=
-   regions.features.length;
+        if (!c || !Array.isArray(c.features)) {
+            throw new Error(
+                'get_cities_geojson вернул неправильный формат'
+            );
+        }
 
-  $('districtCount').textContent=
-   districts.features.length;
+        regions = r;
+        districts = d;
+        cities = c;
 
-  $('cityCount').textContent=
-   cities.features.length;
+        $('regionCount').textContent =
+            regions.features.length;
 
-  fillRegionSelects();
+        $('districtCount').textContent =
+            districts.features.length;
 
-  renderRegions();
-  renderDistricts();
-  renderCities();
+        $('cityCount').textContent =
+            cities.features.length;
 
-  $('preview').textContent=
-   JSON.stringify({
-    regions:regions.features.length,
-    districts:districts.features.length,
-    cities:cities.features.length
-   },null,2);
+        fillRegionSelects();
 
- }catch(e){
+        renderRegions();
+        renderDistricts();
+        renderCities();
 
-  console.error(e);
+        $('preview').textContent = JSON.stringify({
+            updated: new Date().toLocaleString('ru-RU'),
+            regions: regions.features.length,
+            districts: districts.features.length,
+            cities: cities.features.length
+        }, null, 2);
 
-  notice(
-   'globalStatus',
-   '❌ '+e.message,
-   false
-  );
- }
+        console.log('✅ Данные обновлены');
+
+    } catch (e) {
+        console.error('❌ Ошибка loadAll:', e);
+
+        notice(
+            'globalStatus',
+            '❌ Не удалось обновить данные: ' + e.message,
+            false
+        );
+
+        throw e;
+    }
 }
 
 function regionObjects(){
@@ -1202,7 +1217,35 @@ $('clearRegionSearch').onclick=()=>{
 
 /* Refresh / logout */
 
-$('refresh').onclick=loadAll;
+$('refresh').onclick = async () => {
+    const btn = $('refresh');
+
+    if (btn.disabled) return;
+
+    btn.disabled = true;
+    btn.textContent = '⏳ Обновление...';
+
+    try {
+        await loadAll();
+
+        btn.textContent = '✅ Обновлено';
+
+        setTimeout(() => {
+            btn.textContent = '🔄 Обновить';
+        }, 1500);
+
+    } catch (e) {
+        console.error('Ошибка обновления:', e);
+
+        btn.textContent = '❌ Ошибка';
+
+        setTimeout(() => {
+            btn.textContent = '🔄 Обновить';
+        }, 2000);
+    } finally {
+        btn.disabled = false;
+    }
+};
 
 $('logout').onclick=()=>{
  localStorage.removeItem(
