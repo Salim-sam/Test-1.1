@@ -275,8 +275,19 @@ pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-w
 <label>ID</label>
 <input id="r_id" readonly>
 
-<label>Название (name)</label>
+<label>Название (name) / EN</label>
 <input id="r_name">
+
+<div class="grid">
+<div>
+<label>Название RU</label>
+<input id="r_name_ru">
+</div>
+<div>
+<label>Название UZ</label>
+<input id="r_name_uz">
+</div>
+</div>
 
 <label>Обновлено</label>
 <input id="r_updated" readonly>
@@ -1080,6 +1091,8 @@ function selectRegion(r){
 
  $('r_id').value=r.id;
  $('r_name').value=r.name;
+ $('r_name_ru').value=r.name_ru||'';
+ $('r_name_uz').value=r.name_uz||'';
  $('r_updated').value=r.updated_at;
 
  $('preview').textContent=
@@ -1108,14 +1121,18 @@ $('saveRegion').onclick=async()=>{
 
   const x={
    id:String(selectedRegion.id),
-   name:$('r_name').value.trim()
+   name:$('r_name').value.trim(),
+   name_ru:$('r_name_ru').value.trim(),
+   name_uz:$('r_name_uz').value.trim()
   };
 
   await rpc(
    'admin_update_region',
    {
     p_id:x.id,
-    p_name:x.name
+    p_name:x.name,
+    p_name_ru:x.name_ru,
+    p_name_uz:x.name_uz
    }
   );
 
