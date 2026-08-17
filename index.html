@@ -242,6 +242,10 @@ body {
     padding: 20px;
 
     display: none;
+
+    max-height: 75vh;
+
+    overflow-y: auto;
 }
 
 .info-close {
@@ -275,16 +279,55 @@ body {
 
     line-height: 1.3;
 
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
 
 .info-body {
 
     font-size: 16px;
 
-    line-height: 1.5;
+    line-height: 1.55;
 
     margin-bottom: 15px;
+}
+
+
+/* =====================================================
+   ИНФОРМАЦИЯ О РАЙОНЕ
+===================================================== */
+
+.district-info {
+
+    margin-top: 10px;
+}
+
+.district-row {
+
+    padding: 7px 0;
+
+    border-bottom:
+        1px solid #eeeeee;
+}
+
+.district-row:last-child {
+
+    border-bottom: none;
+}
+
+.district-label {
+
+    color: #777;
+
+    font-size: 13px;
+
+    margin-bottom: 2px;
+}
+
+.district-value {
+
+    font-size: 16px;
+
+    font-weight: 500;
 }
 
 
@@ -312,14 +355,7 @@ body {
 
     cursor: pointer;
 
-    transition:
-        transform .1s ease,
-        background .15s ease;
-}
-
-.edit-button:hover {
-
-    background: #0869ed;
+    margin-top: 12px;
 }
 
 .edit-button:active {
@@ -388,6 +424,16 @@ body {
         font-size: 17px;
     }
 
+    #infoPanel {
+
+        bottom: 10px;
+
+        left: 10px;
+        right: 10px;
+
+        max-height: 70vh;
+    }
+
 }
 
 </style>
@@ -402,9 +448,7 @@ body {
 
 
 <div class="logo">
-
     🇺🇿 UZMAP
-
 </div>
 
 
@@ -512,10 +556,6 @@ const map = new maplibregl.Map({
 });
 
 
-/* =====================================================
-   НАВИГАЦИЯ
-===================================================== */
-
 map.addControl(
 
     new maplibregl.NavigationControl(),
@@ -535,6 +575,16 @@ let regionsData = null;
 
 let citiesData = null;
 
+
+/*
+ * НОВОЕ:
+ * Данные, которые мы редактируем
+ * через admin.html.
+ */
+
+let uzmapData = {};
+
+
 let selectedDistrict = null;
 
 
@@ -547,6 +597,7 @@ async function loadJSON(file) {
     const response =
         await fetch("./" + file);
 
+
     if (!response.ok) {
 
         throw new Error(
@@ -556,7 +607,67 @@ async function loadJSON(file) {
 
     }
 
+
     return await response.json();
+
+}
+
+
+/* =====================================================
+   ЗАГРУЗКА UZMAP DATA
+===================================================== */
+
+async function loadUZMAPData() {
+
+    try {
+
+        const response =
+            await fetch(
+                "./uzmap-data.json?cache=" +
+                Date.now()
+            );
+
+
+        if (!response.ok) {
+
+            console.warn(
+                "uzmap-data.json не найден."
+            );
+
+            return {};
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        if (
+            data &&
+            typeof data === "object"
+        ) {
+
+            return data;
+
+        }
+
+
+        return {};
+
+    }
+
+    catch(error) {
+
+        console.warn(
+            "Ошибка загрузки uzmap-data.json:",
+            error
+        );
+
+
+        return {};
+
+    }
 
 }
 
@@ -720,6 +831,131 @@ function getRegionName(properties) {
 
 
 /* =====================================================
+   КЛЮЧ ДАННЫХ РАЙОНА
+===================================================== */
+
+function getDistrictDataKey(properties) {
+
+    if (!properties) {
+
+        return "";
+
+    }
+
+
+    return String(
+
+        properties.shapeName ||
+
+        properties.NAME_2 ||
+
+        properties.name ||
+
+        properties.NAME ||
+
+        properties.Name ||
+
+        ""
+
+    ).trim();
+
+}
+
+
+/* =====================================================
+   НАЙТИ СОХРАНЁННЫЕ ДАННЫЕ
+===================================================== */
+
+function getSavedDistrictData(
+    properties
+) {
+
+    const key =
+        getDistrictDataKey(
+            properties
+        );
+
+
+    if (
+        !key ||
+        !uzmapData
+    ) {
+
+        return null;
+
+    }
+
+
+    /*
+     * Сначала точное совпадение.
+     */
+
+    if (
+        uzmapData[key]
+    ) {
+
+        return uzmapData[key];
+
+    }
+
+
+    /*
+     * Затем поиск без District.
+     */
+
+    const cleanKey =
+        key
+            .replace(
+                /\s+District$/i,
+                ""
+            )
+            .trim()
+            .toLowerCase();
+
+
+    const foundKey =
+
+        Object.keys(
+            uzmapData
+        ).find(
+
+            function(item) {
+
+                const cleanItem =
+                    String(item)
+                        .replace(
+                            /\s+District$/i,
+                            ""
+                        )
+                        .trim()
+                        .toLowerCase();
+
+
+                return (
+                    cleanItem ===
+                    cleanKey
+                );
+
+            }
+
+        );
+
+
+    if (foundKey) {
+
+        return uzmapData[
+            foundKey
+        ];
+
+    }
+
+
+    return null;
+
+}
+
+
+/* =====================================================
    БЕЗОПАСНЫЙ HTML
 ===================================================== */
 
@@ -805,25 +1041,25 @@ map.on(
                 cities;
 
 
+            /*
+             * Загружаем наш файл данных.
+             */
+
+            uzmapData =
+                await loadUZMAPData();
+
+
+            console.log(
+                "UZMAP DATA:",
+                uzmapData
+            );
+
+
             console.log(
                 "Районы:",
                 districts.features.length
             );
 
-            console.log(
-                "Области:",
-                regions.features.length
-            );
-
-            console.log(
-                "Города:",
-                cities.features.length
-            );
-
-
-            /* =================================================
-               ID РАЙОНОВ
-            ================================================= */
 
             districts.features.forEach(
 
@@ -979,7 +1215,7 @@ map.on(
 
 
             /* =================================================
-               КЛИКАБЕЛЬНАЯ ОБЛАСТЬ РАЙОНА
+               КЛИКАБЕЛЬНЫЙ СЛОЙ
             ================================================= */
 
             map.addLayer({
@@ -1013,7 +1249,7 @@ map.on(
 
 
             /* =================================================
-               ГРАНИЦЫ РАЙОНОВ
+               ГРАНИЦЫ
             ================================================= */
 
             map.addLayer({
@@ -1100,10 +1336,6 @@ map.on(
 
             );
 
-
-            /* =================================================
-               CURSOR РАЙОНА
-            ================================================= */
 
             map.on(
 
@@ -1211,10 +1443,6 @@ map.on(
             });
 
 
-            /* =================================================
-               КЛИК ПО ГОРОДУ
-            ================================================= */
-
             map.on(
 
                 "click",
@@ -1318,10 +1546,6 @@ map.on(
             setupBuildingInteraction();
 
 
-            /* =================================================
-               ГОТОВО
-            ================================================= */
-
             document
                 .getElementById(
                     "loading"
@@ -1374,10 +1598,6 @@ function selectDistrict(
         feature.properties._uzmap_id;
 
 
-    /* =================================================
-       ТОЛЬКО ВЫБРАННЫЙ РАЙОН ЗЕЛЁНЫЙ
-    ================================================= */
-
     map.setFilter(
 
         "uzmap-district-selected",
@@ -1404,16 +1624,34 @@ function selectDistrict(
         );
 
 
-    const regionName =
-        getRegionName(
+    /*
+     * Получаем данные из uzmap-data.json.
+     */
+
+    const saved =
+        getSavedDistrictData(
             feature.properties
         );
 
 
     /*
-     * Показываем информацию
-     * о районе.
+     * Область.
+     *
+     * Если она была отредактирована —
+     * используем сохранённую.
      */
+
+    const regionName =
+
+        saved &&
+        saved.region
+
+            ? saved.region
+
+            : getRegionName(
+                feature.properties
+            );
+
 
     showDistrictInfo(
 
@@ -1421,14 +1659,12 @@ function selectDistrict(
 
         regionName,
 
-        feature.properties
+        feature.properties,
+
+        saved
 
     );
 
-
-    /*
-     * Немного приближаем.
-     */
 
     map.flyTo({
 
@@ -1461,7 +1697,8 @@ function selectDistrict(
 function showDistrictInfo(
     districtName,
     regionName,
-    properties
+    properties,
+    saved
 ) {
 
     document
@@ -1469,22 +1706,168 @@ function showDistrictInfo(
             "infoTitle"
         )
         .textContent =
-
         "📍 " +
         districtName;
 
 
-    const body =
-        regionName ||
-        "Область не указана";
+    let html = "";
+
+
+    /*
+     * Область
+     */
+
+    if (regionName) {
+
+        html +=
+
+            "<div class='district-row'>" +
+
+                "<div class='district-label'>" +
+                    "Область" +
+                "</div>" +
+
+                "<div class='district-value'>" +
+                    escapeHTML(
+                        regionName
+                    ) +
+                "</div>" +
+
+            "</div>";
+
+    }
+
+
+    /*
+     * Административный центр
+     */
+
+    if (
+        saved &&
+        saved.center
+    ) {
+
+        html +=
+
+            "<div class='district-row'>" +
+
+                "<div class='district-label'>" +
+                    "Административный центр" +
+                "</div>" +
+
+                "<div class='district-value'>" +
+                    escapeHTML(
+                        saved.center
+                    ) +
+                "</div>" +
+
+            "</div>";
+
+    }
+
+
+    /*
+     * Население
+     */
+
+    if (
+        saved &&
+        saved.population
+    ) {
+
+        html +=
+
+            "<div class='district-row'>" +
+
+                "<div class='district-label'>" +
+                    "Население" +
+                "</div>" +
+
+                "<div class='district-value'>" +
+                    escapeHTML(
+                        saved.population
+                    ) +
+                "</div>" +
+
+            "</div>";
+
+    }
+
+
+    /*
+     * Площадь
+     */
+
+    if (
+        saved &&
+        saved.area
+    ) {
+
+        html +=
+
+            "<div class='district-row'>" +
+
+                "<div class='district-label'>" +
+                    "Площадь" +
+                "</div>" +
+
+                "<div class='district-value'>" +
+                    escapeHTML(
+                        saved.area
+                    ) +
+                    " км²" +
+                "</div>" +
+
+            "</div>";
+
+    }
+
+
+    /*
+     * Описание
+     */
+
+    if (
+        saved &&
+        saved.description
+    ) {
+
+        html +=
+
+            "<div class='district-row'>" +
+
+                "<div class='district-label'>" +
+                    "Описание" +
+                "</div>" +
+
+                "<div class='district-value'>" +
+                    escapeHTML(
+                        saved.description
+                    ) +
+                "</div>" +
+
+            "</div>";
+
+    }
+
+
+    if (!html) {
+
+        html =
+            "Дополнительная информация пока отсутствует.";
+
+    }
 
 
     document
         .getElementById(
             "infoBody"
         )
-        .textContent =
-        body;
+        .innerHTML =
+
+            "<div class='district-info'>" +
+                html +
+            "</div>";
 
 
     const editButton =
@@ -1497,41 +1880,21 @@ function showDistrictInfo(
         "block";
 
 
-    /*
-     * Передаём именно исходное имя
-     * из GeoJSON.
-     *
-     * Благодаря этому admin.html
-     * сможет найти район.
-     */
-
-    const sourceName =
-
-        String(
-
-            properties.shapeName ||
-
-            properties.NAME_2 ||
-
-            properties.name ||
-
-            properties.NAME ||
-
-            properties.Name ||
-
-            ""
-
-        ).trim();
+    const districtId =
+        properties._uzmap_id;
 
 
     editButton.onclick =
 
         function() {
 
-            if (!sourceName) {
+            if (
+                districtId === undefined ||
+                districtId === null
+            ) {
 
-                console.error(
-                    "Не удалось определить название района."
+                alert(
+                    "Не удалось определить ID района."
                 );
 
                 return;
@@ -1540,12 +1903,16 @@ function showDistrictInfo(
 
 
             const url =
-
-                "admin.html?district=" +
-
+                "admin.html?districtId=" +
                 encodeURIComponent(
-                    sourceName
+                    districtId
                 );
+
+
+            console.log(
+                "🔧 Открываем редактор:",
+                url
+            );
 
 
             window.location.href =
@@ -1572,12 +1939,6 @@ function showInfo(
     title,
     body
 ) {
-
-    /*
-     * Для улиц, городов и зданий
-     * кнопка редактирования района
-     * не нужна.
-     */
 
     document
         .getElementById(
@@ -1614,7 +1975,7 @@ function showInfo(
 
 
 /* =====================================================
-   ЗАКРЫТЬ КАРТОЧКУ
+   ЗАКРЫТЬ
 ===================================================== */
 
 function closeInfo() {
@@ -1626,10 +1987,6 @@ function closeInfo() {
         .style.display =
         "none";
 
-
-    /*
-     * Убираем кнопку редактирования.
-     */
 
     document
         .getElementById(
@@ -2178,23 +2535,18 @@ function showBuildingInfo(
 
     document
         .getElementById(
-            "infoPanel"
-        )
-        .style.display =
-        "block";
-
-
-    /*
-     * Кнопка редактирования района
-     * для здания не нужна.
-     */
-
-    document
-        .getElementById(
             "editDistrictButton"
         )
         .style.display =
         "none";
+
+
+    document
+        .getElementById(
+            "infoPanel"
+        )
+        .style.display =
+        "block";
 
 
     console.log(
@@ -2288,10 +2640,6 @@ async function searchLocation() {
     }
 
 
-    /* =================================================
-       СНАЧАЛА РАЙОНЫ
-    ================================================= */
-
     if (
         districtsData &&
         districtsData.features
@@ -2354,33 +2702,19 @@ async function searchLocation() {
     }
 
 
-    /* =================================================
-       NOMINATIM
-    ================================================= */
-
     try {
 
         const url =
 
-            "https://nominatim.openstreetmap.org/search"
+            "https://nominatim.openstreetmap.org/search" +
 
-            +
+            "?format=jsonv2" +
 
-            "?format=jsonv2"
+            "&limit=5" +
 
-            +
+            "&countrycodes=uz" +
 
-            "&limit=5"
-
-            +
-
-            "&countrycodes=uz"
-
-            +
-
-            "&accept-language=ru"
-
-            +
+            "&accept-language=ru" +
 
             "&q=" +
 
@@ -2596,7 +2930,7 @@ function getFeatureCenter(
 
 
 /* =====================================================
-   ПОДСКАЗКИ ПО РАЙОНАМ
+   ПОДСКАЗКИ
 ===================================================== */
 
 function showSearchResults(
