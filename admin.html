@@ -26,7 +26,72 @@ const $=id=>document.getElementById(id);
 function status(msg,ok=true){$('status').style.display='block';$('status').style.background=ok?'#eef9f0':'#fff0f0';$('status').style.color=ok?'#17752e':'#a00000';$('status').textContent=msg}
 function loginStatus(msg,ok=false){$('loginStatus').textContent=msg;$('loginStatus').style.color=ok?'#17752e':'#a00000'}
 function esc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')}
-async function rpc(name,body={}){const r=await fetch(URL+'/rest/v1/rpc/'+name,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(body)});if(!r.ok)throw new Error(name+' → HTTP '+r.status+': '+await r.text());return r.json()}
+async function rpc(name, body = {}) {
+
+    if (!session || !session.access_token) {
+
+        throw new Error(
+            "Нет авторизации. Выйди из админки и войди снова."
+        );
+
+    }
+
+    const response = await fetch(
+        SUPABASE_URL + "/rest/v1/rpc/" + name,
+        {
+            method: "POST",
+
+            headers: {
+                "apikey": SUPABASE_KEY,
+
+                "Authorization":
+                    "Bearer " + session.access_token,
+
+                "Content-Type":
+                    "application/json",
+
+                "Accept":
+                    "application/json"
+            },
+
+            body: JSON.stringify(body)
+        }
+    );
+
+
+    const text =
+        await response.text();
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            name +
+            " → HTTP " +
+            response.status +
+            ": " +
+            text
+        );
+
+    }
+
+
+    if (!text) {
+        return null;
+    }
+
+
+    try {
+
+        return JSON.parse(text);
+
+    } catch {
+
+        return text;
+
+    }
+
+}){const r=await fetch(URL+'/rest/v1/rpc/'+name,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(body)});if(!r.ok)throw new Error(name+' → HTTP '+r.status+': '+await r.text());return r.json()}
 async function authLogin(){const email=$('email').value.trim(),password=$('password').value;if(!email||!password)return loginStatus('Введите email и пароль.');try{const r=await fetch(URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify({email,password})});const d=await r.json();if(!r.ok)throw new Error(d.error_description||d.msg||'Ошибка входа');session=d;localStorage.setItem('naqsha_admin_session',JSON.stringify(d));await openAdmin()}catch(e){console.error(e);loginStatus('❌ '+e.message)}}
 async function openAdmin(){$('loginCard').classList.add('hidden');$('app').classList.remove('hidden');$('userEmail').textContent=session?.user?.email||'admin';await loadData()}
 function getData(f){const p=f.properties||{};return{id:p.id??'',sourceName:p.name||p.shapeName||p.NAME_2||p.NAME||'',nameRu:p.name_ru||p.name||'',nameUz:p.name_uz||'',nameEn:p.name_en||'',region:p.region_name||p.region||p.NAME_1||'',center:p.center||'',population:p.population??'',area:p.area??'',description:p.description||''}}
