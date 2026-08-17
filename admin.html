@@ -3,182 +3,152 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Naqsha — Admin</title>
+<title>Naqsha — Admin v3</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#f3f5f7;color:#111;font-family:Arial,Helvetica,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:#f3f5f7;color:#111;font-family:Arial,Helvetica,sans-serif}
 header{background:#fff;padding:18px 20px;box-shadow:0 2px 12px #0002;position:sticky;top:0;z-index:10}
-.wrap{max-width:1180px;margin:auto;padding:16px}
-.card{background:#fff;border-radius:16px;padding:20px;margin-bottom:15px;box-shadow:0 3px 15px #00000012}
-h1,h2,h3{margin:0 0 12px}
-h1{font-size:23px}h2{font-size:19px}h3{font-size:16px}
-.small{color:#73777d;font-size:13px}
-.hidden{display:none!important}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.wrap{max-width:1200px;margin:auto;padding:16px}.card{background:#fff;border-radius:16px;padding:20px;margin-bottom:15px;box-shadow:0 3px 15px #00000012}
+h1,h2,h3{margin:0 0 12px}h1{font-size:23px}h2{font-size:19px}.small{color:#73777d;font-size:13px}
+.hidden{display:none!important}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 label{display:block;font-weight:700;font-size:13px;margin:12px 0 6px}
 input,textarea,select{width:100%;padding:11px 12px;border:1px solid #d5d9de;border-radius:10px;background:#fff;font-size:15px;outline:none}
-input:focus,textarea:focus,select:focus{border-color:#1677ff}
-textarea{min-height:110px;resize:vertical}
-button{border:0;border-radius:10px;padding:11px 15px;font-weight:700;cursor:pointer}
-button:disabled{opacity:.55;cursor:not-allowed}
-.primary{background:#1677ff;color:#fff}.success{background:#18a84a;color:#fff}.danger{background:#e53935;color:#fff}.gray{background:#e9edf1;color:#111}
-.buttons{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}
-.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px}
-.tab{background:#e9edf1}.tab.active{background:#1677ff;color:#fff}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.stat{background:#f7f9fb;border-radius:12px;padding:15px}
-.stat b{display:block;font-size:25px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.stat span{font-size:13px;color:#777}
-.list{max-height:520px;overflow:auto;border:1px solid #eee;border-radius:12px}
-.item{padding:12px 14px;border-bottom:1px solid #eee;cursor:pointer}
-.item:last-child{border-bottom:0}.item:hover{background:#f5f7f9}.item.active{background:#eef5ff}
-.item b{display:block}.item small{color:#777}
-.notice{padding:11px 13px;border-radius:10px;margin-top:12px;display:none;line-height:1.4}
-.searchrow{display:grid;grid-template-columns:1fr 210px auto;gap:8px}
-.toolbar{display:flex;gap:8px;flex-wrap:wrap}
-pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-wrap;overflow:auto;font-size:12px}
-@media(max-width:800px){.stats{grid-template-columns:1fr 1fr}.grid3{grid-template-columns:1fr}.searchrow{grid-template-columns:1fr}.grid{grid-template-columns:1fr}}
+input:focus,textarea:focus,select:focus{border-color:#1677ff}input[readonly]{background:#f7f8fa}
+textarea{min-height:110px;resize:vertical}button{border:0;border-radius:10px;padding:11px 15px;font-weight:700;cursor:pointer}
+button:disabled{opacity:.55;cursor:not-allowed}.primary{background:#1677ff;color:#fff}.success{background:#18a84a;color:#fff}.gray{background:#e9edf1}
+.buttons{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px}
+.tab{background:#e9edf1}.tab.active{background:#1677ff;color:#fff}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stat{background:#f7f9fb;border-radius:12px;padding:15px}.stat b{display:block;font-size:25px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat span{font-size:13px;color:#777}.list{max-height:540px;overflow:auto;border:1px solid #eee;border-radius:12px}
+.item{padding:12px 14px;border-bottom:1px solid #eee;cursor:pointer}.item:hover{background:#f5f7f9}.item.active{background:#eef5ff}
+.item b{display:block}.item small{color:#777}.notice{padding:11px 13px;border-radius:10px;margin-top:12px;display:none;line-height:1.4}
+.searchrow{display:grid;grid-template-columns:1fr 220px auto;gap:8px}pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-wrap;overflow:auto;font-size:12px}
+@media(max-width:800px){.stats{grid-template-columns:1fr 1fr}.grid,.grid3,.searchrow{grid-template-columns:1fr}}
 @media(max-width:500px){.stats{grid-template-columns:1fr}.wrap{padding:10px}.card{padding:15px}}
 </style>
 </head>
 <body>
-<header>
-  <h1>🇺🇿 Naqsha — Admin Panel</h1>
-  <div class="small">Управление областями, районами и городами через Supabase</div>
-</header>
-
+<header><h1>🇺🇿 Naqsha — Admin Panel</h1><div class="small">Области · районы · города · Supabase</div></header>
 <div class="wrap">
 
 <section id="loginCard" class="card">
-  <h2>🔐 Вход администратора</h2>
-  <div class="small">Используется Supabase Auth.</div>
-  <label>Email</label>
-  <input id="email" type="email" autocomplete="username" placeholder="admin@example.com">
-  <label>Пароль</label>
-  <input id="password" type="password" autocomplete="current-password" placeholder="Пароль">
-  <div class="buttons"><button id="login" class="primary">Войти</button></div>
-  <div id="loginStatus" class="notice"></div>
+<h2>🔐 Вход администратора</h2>
+<p class="small">Вход выполняется через Supabase Auth.</p>
+<label>Email</label><input id="email" type="email" autocomplete="username" placeholder="admin@example.com">
+<label>Пароль</label><input id="password" type="password" autocomplete="current-password" placeholder="Пароль">
+<div class="buttons"><button id="login" class="primary">Войти</button></div>
+<div id="loginStatus" class="notice"></div>
 </section>
 
 <main id="app" class="hidden">
-
 <section class="card">
-  <div class="stats">
-    <div class="stat"><b id="regionCount">—</b><span>Областей</span></div>
-    <div class="stat"><b id="districtCount">—</b><span>Районов</span></div>
-    <div class="stat"><b id="cityCount">—</b><span>Городов</span></div>
-    <div class="stat"><b id="userEmail">—</b><span>Администратор</span></div>
-  </div>
-  <div class="buttons"><button id="refresh" class="gray">🔄 Обновить</button><button id="logout" class="gray">Выйти</button></div>
-  <div id="globalStatus" class="notice"></div>
+<div class="stats">
+<div class="stat"><b id="regionCount">—</b><span>Областей</span></div>
+<div class="stat"><b id="districtCount">—</b><span>Районов</span></div>
+<div class="stat"><b id="cityCount">—</b><span>Городов</span></div>
+<div class="stat"><b id="userEmail">—</b><span>Администратор</span></div>
+</div>
+<div class="buttons"><button id="refresh" class="gray">🔄 Обновить</button><button id="logout" class="gray">Выйти</button></div>
+<div id="globalStatus" class="notice"></div>
 </section>
 
 <div class="tabs">
-  <button class="tab active" data-tab="districts">📍 Районы</button>
-  <button class="tab" data-tab="cities">🏙️ Города</button>
-  <button class="tab" data-tab="regions">🗺️ Области</button>
+<button class="tab active" data-tab="districts">📍 Районы</button>
+<button class="tab" data-tab="cities">🏙️ Города</button>
+<button class="tab" data-tab="regions">🗺️ Области</button>
 </div>
 
 <section id="districtsTab" class="card">
-  <h2>📍 Районы</h2>
-  <div class="searchrow">
-    <input id="districtSearch" placeholder="Mingbulo, Mingbulak District...">
-    <select id="districtRegion"><option value="">Все области</option></select>
-    <button id="clearDistrictSearch" class="gray">Очистить</button>
-  </div>
-  <p id="districtInfo" class="small">Загрузка...</p>
-  <div class="grid">
-    <div class="list" id="districtList"></div>
-    <div>
-      <h3>Редактор района</h3>
-      <label>ID</label><input id="d_id" readonly>
-      <label>Исходное название (name)</label><input id="d_name">
-      <div class="grid">
-        <div><label>Название RU</label><input id="d_name_ru"></div>
-        <div><label>Название UZ</label><input id="d_name_uz"></div>
-      </div>
-      <div class="grid">
-        <div><label>Название EN</label><input id="d_name_en"></div>
-        <div><label>Область</label><input id="d_region" readonly></div>
-      </div>
-      <div class="grid">
-        <div><label>Административный центр</label><input id="d_center"></div>
-        <div><label>Население</label><input id="d_population" type="number" min="0"></div>
-      </div>
-      <div class="grid">
-        <div><label>Площадь, км²</label><input id="d_area" type="number" step="0.01" min="0"></div>
-        <div><label>Обновлено</label><input id="d_updated" readonly></div>
-      </div>
-      <label>Описание</label><textarea id="d_description"></textarea>
-      <div class="buttons"><button id="saveDistrict" class="success">💾 Сохранить</button><button id="resetDistrict" class="gray">↩️ Отменить</button></div>
-      <div id="districtStatus" class="notice"></div>
-    </div>
-  </div>
+<h2>📍 Районы</h2>
+<div class="searchrow">
+<input id="districtSearch" placeholder="Mingbulo, Mingbulak District...">
+<select id="districtRegion"><option value="">Все области</option></select>
+<button id="clearDistrictSearch" class="gray">Очистить</button>
+</div>
+<p id="districtInfo" class="small">Загрузка...</p>
+<div class="grid">
+<div class="list" id="districtList"></div>
+<div>
+<h3>Редактор района</h3>
+<label>ID</label><input id="d_id" readonly>
+<label>Исходное название (name)</label><input id="d_name">
+<div class="grid">
+<div><label>Название RU</label><input id="d_name_ru"></div>
+<div><label>Название UZ</label><input id="d_name_uz"></div>
+</div>
+<div class="grid">
+<div><label>Название EN</label><input id="d_name_en"></div>
+<div><label>Область</label><input id="d_region" readonly></div>
+</div>
+<div class="grid">
+<div><label>Административный центр</label><input id="d_center"></div>
+<div><label>Население</label><input id="d_population" type="number" min="0"></div>
+</div>
+<div class="grid">
+<div><label>Площадь, км²</label><input id="d_area" type="number" step="0.01" min="0"></div>
+<div><label>Обновлено</label><input id="d_updated" readonly></div>
+</div>
+<label>Описание</label><textarea id="d_description"></textarea>
+<div class="buttons"><button id="saveDistrict" class="success">💾 Сохранить</button><button id="resetDistrict" class="gray">↩️ Отменить</button></div>
+<div id="districtStatus" class="notice"></div>
+</div>
+</div>
 </section>
 
 <section id="citiesTab" class="card hidden">
-  <h2>🏙️ Города</h2>
-  <div class="searchrow">
-    <input id="citySearch" placeholder="Поиск города...">
-    <select id="cityRegion"><option value="">Все области</option></select>
-    <button id="clearCitySearch" class="gray">Очистить</button>
-  </div>
-  <p id="cityInfo" class="small">Загрузка...</p>
-  <div class="grid">
-    <div class="list" id="cityList"></div>
-    <div>
-      <h3>Редактор города</h3>
-      <p class="small">Если у таблицы cities нет нужных полей, админка покажет понятную ошибку вместо повреждения данных.</p>
-      <label>ID</label><input id="c_id" readonly>
-      <label>Название</label><input id="c_name">
-      <label>Название RU</label><input id="c_name_ru">
-      <label>Название UZ</label><input id="c_name_uz">
-      <label>Название EN</label><input id="c_name_en">
-      <div class="grid">
-        <div><label>Область</label><input id="c_region" readonly></div>
-        <div><label>Район</label><input id="c_district" readonly></div>
-      </div>
-      <div class="grid">
-        <div><label>Широта</label><input id="c_lat" type="number" step="any"></div>
-        <div><label>Долгота</label><input id="c_lon" type="number" step="any"></div>
-      </div>
-      <label>Описание</label><textarea id="c_description"></textarea>
-      <div class="buttons"><button id="saveCity" class="success">💾 Сохранить</button><button id="resetCity" class="gray">↩️ Отменить</button></div>
-      <div id="cityStatus" class="notice"></div>
-    </div>
-  </div>
+<h2>🏙️ Города</h2>
+<p class="small">Точная структура: id, region_id, district_id, name, name_ru, name_uz, description, population, geometry, created_at, updated_at.</p>
+<div class="searchrow">
+<input id="citySearch" placeholder="Название города...">
+<select id="cityRegion"><option value="">Все области</option></select>
+<button id="clearCitySearch" class="gray">Очистить</button>
+</div>
+<p id="cityInfo" class="small">Загрузка...</p>
+<div class="grid">
+<div class="list" id="cityList"></div>
+<div>
+<h3>Редактор города</h3>
+<label>ID</label><input id="c_id" readonly>
+<label>Исходное название (name)</label><input id="c_name">
+<div class="grid">
+<div><label>Название RU</label><input id="c_name_ru"></div>
+<div><label>Название UZ</label><input id="c_name_uz"></div>
+</div>
+<div class="grid">
+<div><label>Область</label><input id="c_region" readonly></div>
+<div><label>Район</label><input id="c_district" readonly></div>
+</div>
+<label>Население</label><input id="c_population" type="number" min="0">
+<label>Описание</label><textarea id="c_description"></textarea>
+<div class="buttons"><button id="saveCity" class="success">💾 Сохранить</button><button id="resetCity" class="gray">↩️ Отменить</button></div>
+<div id="cityStatus" class="notice"></div>
+</div>
+</div>
 </section>
 
 <section id="regionsTab" class="card hidden">
-  <h2>🗺️ Области</h2>
-  <div class="searchrow">
-    <input id="regionSearch" placeholder="Поиск области...">
-    <div></div>
-    <button id="clearRegionSearch" class="gray">Очистить</button>
-  </div>
-  <p id="regionInfo" class="small">Загрузка...</p>
-  <div class="grid">
-    <div class="list" id="regionList"></div>
-    <div>
-      <h3>Редактор области</h3>
-      <label>ID</label><input id="r_id" readonly>
-      <label>Исходное название</label><input id="r_name">
-      <label>Название RU</label><input id="r_name_ru">
-      <label>Название UZ</label><input id="r_name_uz">
-      <label>Название EN</label><input id="r_name_en">
-      <label>Описание</label><textarea id="r_description"></textarea>
-      <div class="buttons"><button id="saveRegion" class="success">💾 Сохранить</button><button id="resetRegion" class="gray">↩️ Отменить</button></div>
-      <div id="regionStatus" class="notice"></div>
-    </div>
-  </div>
+<h2>🗺️ Области</h2>
+<p class="small">Точная структура: id, name, geometry, created_at, updated_at. Поэтому здесь редактируется только реальное поле name.</p>
+<div class="searchrow">
+<input id="regionSearch" placeholder="Название области...">
+<div></div>
+<button id="clearRegionSearch" class="gray">Очистить</button>
+</div>
+<p id="regionInfo" class="small">Загрузка...</p>
+<div class="grid">
+<div class="list" id="regionList"></div>
+<div>
+<h3>Редактор области</h3>
+<label>ID</label><input id="r_id" readonly>
+<label>Название (name)</label><input id="r_name">
+<label>Обновлено</label><input id="r_updated" readonly>
+<div class="buttons"><button id="saveRegion" class="success">💾 Сохранить</button><button id="resetRegion" class="gray">↩️ Отменить</button></div>
+<div id="regionStatus" class="notice"></div>
+</div>
+</div>
 </section>
 
-<section class="card">
-  <h2>🧪 Диагностика</h2>
-  <pre id="preview">{}</pre>
-</section>
-
+<section class="card"><h2>🧪 Диагностика</h2><pre id="preview">{}</pre></section>
 </main>
 </div>
 
@@ -189,327 +159,195 @@ const SUPABASE_KEY='sb_publishable_N9MAdF7_GW-IUFOXxY2MHQ_MG1ep1vg';
 let session=null,regions=null,districts=null,cities=null;
 let selectedDistrict=null,selectedCity=null,selectedRegion=null;
 let originalDistrict=null,originalCity=null,originalRegion=null;
-
 const $=id=>document.getElementById(id);
 
 function esc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')}
-
-function showNotice(id,msg,ok=true){
-  const e=$(id); e.style.display='block';
-  e.style.background=ok?'#eef9f0':'#fff0f0';
-  e.style.color=ok?'#17752e':'#a00000';
-  e.textContent=msg;
-}
-
-function normalize(v){
-  return String(v||'').toLowerCase().trim().replace(/['’`]/g,'').replace(/\s+/g,' ');
-}
+function norm(v){return String(v||'').toLowerCase().trim().replace(/['’`]/g,'').replace(/\s+/g,' ')}
+function notice(id,msg,ok=true){const e=$(id);e.style.display='block';e.style.background=ok?'#eef9f0':'#fff0f0';e.style.color=ok?'#17752e':'#a00000';e.textContent=msg}
 
 async function rpc(name,body={}){
-  if(!session?.access_token) throw new Error('Нет авторизации. Войдите заново.');
-  const r=await fetch(SUPABASE_URL+'/rest/v1/rpc/'+name,{
-    method:'POST',
-    headers:{
-      'apikey':SUPABASE_KEY,
-      'Authorization':'Bearer '+session.access_token,
-      'Content-Type':'application/json',
-      'Accept':'application/json'
-    },
-    body:JSON.stringify(body)
-  });
-  const text=await r.text();
-  if(!r.ok) throw new Error(name+' → HTTP '+r.status+': '+text);
-  if(!text) return null;
-  try{return JSON.parse(text)}catch{return text}
+ if(!session?.access_token)throw new Error('Нет авторизации. Войдите заново.');
+ const r=await fetch(SUPABASE_URL+'/rest/v1/rpc/'+name,{method:'POST',headers:{
+  'apikey':SUPABASE_KEY,'Authorization':'Bearer '+session.access_token,
+  'Content-Type':'application/json','Accept':'application/json'
+ },body:JSON.stringify(body)});
+ const text=await r.text();
+ if(!r.ok)throw new Error(name+' → HTTP '+r.status+': '+text);
+ if(!text)return null;
+ try{return JSON.parse(text)}catch{return text}
 }
 
 async function authLogin(){
-  const email=$('email').value.trim(), password=$('password').value;
-  if(!email||!password){showNotice('loginStatus','Введите email и пароль.',false);return}
-  $('login').disabled=true;
-  try{
-    const r=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=password',{
-      method:'POST',
-      headers:{'apikey':SUPABASE_KEY,'Content-Type':'application/json'},
-      body:JSON.stringify({email,password})
-    });
-    const d=await r.json();
-    if(!r.ok) throw new Error(d.error_description||d.msg||'Ошибка входа');
-    session=d;
-    localStorage.setItem('naqsha_admin_session',JSON.stringify(d));
-    await openAdmin();
-  }catch(e){console.error(e);showNotice('loginStatus','❌ '+e.message,false)}
-  finally{$('login').disabled=false}
+ const email=$('email').value.trim(),password=$('password').value;
+ if(!email||!password){notice('loginStatus','Введите email и пароль.',false);return}
+ $('login').disabled=true;
+ try{
+  const r=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=password',{method:'POST',
+   headers:{'apikey':SUPABASE_KEY,'Content-Type':'application/json'},
+   body:JSON.stringify({email,password})});
+  const d=await r.json();
+  if(!r.ok)throw new Error(d.error_description||d.msg||'Ошибка входа');
+  session=d;localStorage.setItem('naqsha_admin_session',JSON.stringify(d));await openAdmin();
+ }catch(e){console.error(e);notice('loginStatus','❌ '+e.message,false)}
+ finally{$('login').disabled=false}
 }
 
 async function openAdmin(){
-  $('loginCard').classList.add('hidden');
-  $('app').classList.remove('hidden');
-  $('userEmail').textContent=session?.user?.email||'admin';
-  await loadAll();
+ $('loginCard').classList.add('hidden');$('app').classList.remove('hidden');
+ $('userEmail').textContent=session?.user?.email||'admin';await loadAll();
 }
 
-function featureData(f){
-  const p=f?.properties||{};
-  return {
-    id:p.id??f?.id??'',
-    name:p.name||p.shapeName||p.NAME_2||p.NAME||'',
-    name_ru:p.name_ru||'',
-    name_uz:p.name_uz||'',
-    name_en:p.name_en||'',
-    region_id:p.region_id??'',
-    region_name:p.region_name||p.region||p.NAME_1||'',
-    center:p.center||'',
-    population:p.population??'',
-    area:p.area??'',
-    description:p.description||'',
-    updated_at:p.updated_at||''
-  };
-}
-
-function fillRegionSelects(){
-  const selects=[$('districtRegion'),$('cityRegion')];
-  selects.forEach(s=>{
-    const current=s.value;
-    s.innerHTML='<option value="">Все области</option>';
-    (regions?.features||[]).forEach(f=>{
-      const d=featureData(f);
-      const o=document.createElement('option');
-      o.value=String(d.id);
-      o.textContent=d.name||d.name_ru||d.name_uz||d.name_en||d.id;
-      s.appendChild(o);
-    });
-    s.value=current;
-  });
+function fd(f){
+ const p=f?.properties||{};
+ return {
+  id:p.id??f?.id??'',name:p.name||p.shapeName||p.NAME_2||p.NAME||'',
+  name_ru:p.name_ru||'',name_uz:p.name_uz||'',name_en:p.name_en||'',
+  region_id:p.region_id??'',region_name:p.region_name||p.region||p.NAME_1||'',
+  district_id:p.district_id??'',district_name:p.district_name||'',
+  center:p.center||'',population:p.population??'',area:p.area??'',
+  description:p.description||'',updated_at:p.updated_at||''
+ };
 }
 
 async function loadAll(){
+ try{
   $('globalStatus').style.display='none';
-  try{
-    const [r,d,c]=await Promise.all([
-      rpc('get_regions_geojson'),
-      rpc('get_districts_geojson'),
-      rpc('get_cities_geojson')
-    ]);
-    regions=r; districts=d; cities=c;
-    if(!regions?.features||!districts?.features||!cities?.features) throw new Error('Одна из GeoJSON-функций вернула неправильный формат.');
-    $('regionCount').textContent=regions.features.length;
-    $('districtCount').textContent=districts.features.length;
-    $('cityCount').textContent=cities.features.length;
-    fillRegionSelects();
-    renderDistricts();
-    renderCities();
-    renderRegions();
-    $('preview').textContent=JSON.stringify({
-      regions:regions.features.length,
-      districts:districts.features.length,
-      cities:cities.features.length
-    },null,2);
-  }catch(e){
-    console.error(e);
-    showNotice('globalStatus','❌ '+e.message,false);
-  }
+  const [r,d,c]=await Promise.all([rpc('get_regions_geojson'),rpc('get_districts_geojson'),rpc('get_cities_geojson')]);
+  regions=r;districts=d;cities=c;
+  if(!regions?.features||!districts?.features||!cities?.features)throw new Error('GeoJSON RPC вернули неправильный формат.');
+  $('regionCount').textContent=regions.features.length;
+  $('districtCount').textContent=districts.features.length;
+  $('cityCount').textContent=cities.features.length;
+  fillRegionSelects();renderRegions();renderDistricts();renderCities();
+  $('preview').textContent=JSON.stringify({regions:regions.features.length,districts:districts.features.length,cities:cities.features.length},null,2);
+ }catch(e){console.error(e);notice('globalStatus','❌ '+e.message,false)}
 }
 
-const districtAliases={
-  mingbulo:'mingbulak',mingbuloq:'mingbulak',mingbulak:'mingbulak',
-  andijon:'andijan',buxoro:'bukhara',samarqand:'samarkand',toshkent:'tashkent'
-};
-
-function matches(data,q,regionId=''){
-  if(regionId && String(data.region_id)!==String(regionId)) return false;
-  if(!q) return true;
-  const alias=districtAliases[q]||q;
-  return [data.name,data.name_ru,data.name_uz,data.name_en,data.region_name]
-    .map(normalize).some(x=>x.includes(q)||x.includes(alias)||alias.includes(x));
+function fillRegionSelects(){
+ [$('districtRegion'),$('cityRegion')].forEach(s=>{
+  const cur=s.value;s.innerHTML='<option value="">Все области</option>';
+  (regions.features||[]).forEach(f=>{
+   const d=fd(f),o=document.createElement('option');o.value=String(d.id);o.textContent=d.name||d.name_ru||d.id;s.appendChild(o)
+  });s.value=cur
+ })
 }
+
+const aliases={mingbulo:'mingbulak',mingbuloq:'mingbulak',mingbulak:'mingbulak',andijon:'andijan',buxoro:'bukhara',samarqand:'samarkand',toshkent:'tashkent'};
 
 function renderDistricts(){
-  const q=normalize($('districtSearch').value);
-  const regionId=$('districtRegion').value;
-  const list=$('districtList'); list.innerHTML='';
-  const arr=(districts?.features||[]).map(featureData).filter(d=>matches(d,q,regionId));
-  $('districtInfo').textContent=`Найдено: ${arr.length} из ${(districts?.features||[]).length}`;
-  arr.slice(0,300).forEach(d=>{
-    const el=document.createElement('div');
-    el.className='item'+(selectedDistrict?.id===d.id?' active':'');
-    el.innerHTML='<b>'+esc(d.name_ru||d.name||d.name_en||d.id)+'</b><small>'+esc(d.name)+(d.region_name?' — '+esc(d.region_name):'')+'</small>';
-    el.onclick=()=>selectDistrict(d);
-    list.appendChild(el);
-  });
+ const q=norm($('districtSearch').value),rid=$('districtRegion').value,list=$('districtList');list.innerHTML='';
+ const arr=(districts.features||[]).map(fd).filter(d=>{
+  if(rid&&String(d.region_id)!==String(rid))return false;if(!q)return true;
+  const a=aliases[q]||q;return[d.name,d.name_ru,d.name_uz,d.name_en,d.region_name].map(norm).some(x=>x.includes(q)||x.includes(a)||a.includes(x))
+ });
+ $('districtInfo').textContent=`Найдено: ${arr.length} из ${districts.features.length}`;
+ arr.slice(0,300).forEach(d=>{
+  const e=document.createElement('div');e.className='item'+(selectedDistrict?.id===d.id?' active':'');
+  e.innerHTML='<b>'+esc(d.name_ru||d.name||d.name_en||d.id)+'</b><small>'+esc(d.name)+(d.region_name?' — '+esc(d.region_name):'')+'</small>';
+  e.onclick=()=>selectDistrict(d);list.appendChild(e)
+ })
 }
 
 function selectDistrict(d){
-  selectedDistrict=d; originalDistrict=JSON.parse(JSON.stringify(d));
-  $('d_id').value=d.id??'';
-  $('d_name').value=d.name??'';
-  $('d_name_ru').value=d.name_ru??'';
-  $('d_name_uz').value=d.name_uz??'';
-  $('d_name_en').value=d.name_en??'';
-  $('d_region').value=d.region_name??'';
-  $('d_center').value=d.center??'';
-  $('d_population').value=d.population??'';
-  $('d_area').value=d.area??'';
-  $('d_updated').value=d.updated_at??'';
-  $('d_description').value=d.description??'';
-  $('preview').textContent=JSON.stringify(d,null,2);
-  renderDistricts();
+ selectedDistrict=d;originalDistrict=JSON.parse(JSON.stringify(d));
+ $('d_id').value=d.id;$('d_name').value=d.name;$('d_name_ru').value=d.name_ru;$('d_name_uz').value=d.name_uz;
+ $('d_name_en').value=d.name_en;$('d_region').value=d.region_name;$('d_center').value=d.center;$('d_population').value=d.population;
+ $('d_area').value=d.area;$('d_updated').value=d.updated_at;$('d_description').value=d.description;
+ $('preview').textContent=JSON.stringify(d,null,2);renderDistricts()
 }
 
 $('saveDistrict').onclick=async()=>{
-  if(!selectedDistrict){showNotice('districtStatus','Сначала выбери район.',false);return}
-  const b=$('saveDistrict'); b.disabled=true;
-  try{
-    const d={
-      id:String(selectedDistrict.id),
-      name:$('d_name').value.trim(),
-      name_ru:$('d_name_ru').value.trim(),
-      name_uz:$('d_name_uz').value.trim(),
-      name_en:$('d_name_en').value.trim(),
-      center:$('d_center').value.trim(),
-      population:$('d_population').value.trim()===''?null:Number($('d_population').value),
-      area:$('d_area').value.trim()===''?null:Number($('d_area').value),
-      description:$('d_description').value.trim()
-    };
-    const result=await rpc('admin_update_district',{
-      p_id:d.id,p_name:d.name,p_name_ru:d.name_ru,p_name_uz:d.name_uz,p_name_en:d.name_en,
-      p_center:d.center,p_population:d.population,p_area:d.area,p_description:d.description
-    });
-    const updated=result?.district||result;
-    showNotice('districtStatus','✅ Район сохранён.');
-    await loadAll();
-    const fresh=(districts.features||[]).map(featureData).find(x=>String(x.id)===d.id);
-    if(fresh) selectDistrict(fresh);
-    console.log('admin_update_district:',result);
-  }catch(e){console.error(e);showNotice('districtStatus','❌ '+e.message,false)}
-  finally{b.disabled=false}
+ if(!selectedDistrict){notice('districtStatus','Сначала выбери район.',false);return}
+ const b=$('saveDistrict');b.disabled=true;
+ try{
+  const x={id:String(selectedDistrict.id),name:$('d_name').value.trim(),name_ru:$('d_name_ru').value.trim(),name_uz:$('d_name_uz').value.trim(),name_en:$('d_name_en').value.trim(),center:$('d_center').value.trim(),population:$('d_population').value.trim()===''?null:Number($('d_population').value),area:$('d_area').value.trim()===''?null:Number($('d_area').value),description:$('d_description').value.trim()};
+  const result=await rpc('admin_update_district',{p_id:x.id,p_name:x.name,p_name_ru:x.name_ru,p_name_uz:x.name_uz,p_name_en:x.name_en,p_center:x.center,p_population:x.population,p_area:x.area,p_description:x.description});
+  notice('districtStatus','✅ Район сохранён.');await loadAll();
+  const fresh=districts.features.map(fd).find(z=>String(z.id)===x.id);if(fresh)selectDistrict(fresh);
+  console.log(result)
+ }catch(e){console.error(e);notice('districtStatus','❌ '+e.message,false)}finally{b.disabled=false}
 };
 
 $('resetDistrict').onclick=()=>{if(originalDistrict)selectDistrict(originalDistrict)};
 
 function renderCities(){
-  const q=normalize($('citySearch').value), regionId=$('cityRegion').value;
-  const list=$('cityList'); list.innerHTML='';
-  const arr=(cities?.features||[]).map(featureData).filter(d=>{
-    if(regionId && String(d.region_id)!==String(regionId)) return false;
-    if(!q)return true;
-    return [d.name,d.name_ru,d.name_uz,d.name_en,d.region_name].map(normalize).some(x=>x.includes(q));
-  });
-  $('cityInfo').textContent=`Найдено: ${arr.length} из ${(cities?.features||[]).length}`;
-  arr.slice(0,300).forEach(d=>{
-    const el=document.createElement('div'); el.className='item'+(selectedCity?.id===d.id?' active':'');
-    el.innerHTML='<b>'+esc(d.name_ru||d.name||d.name_en||d.id)+'</b><small>'+esc(d.name)+(d.region_name?' — '+esc(d.region_name):'')+'</small>';
-    el.onclick=()=>selectCity(d); list.appendChild(el);
-  });
+ const q=norm($('citySearch').value),rid=$('cityRegion').value,list=$('cityList');list.innerHTML='';
+ const arr=(cities.features||[]).map(fd).filter(d=>{
+  if(rid&&String(d.region_id)!==String(rid))return false;if(!q)return true;
+  return[d.name,d.name_ru,d.name_uz,d.region_name,d.district_name].map(norm).some(x=>x.includes(q))
+ });
+ $('cityInfo').textContent=`Найдено: ${arr.length} из ${cities.features.length}`;
+ arr.slice(0,300).forEach(d=>{
+  const e=document.createElement('div');e.className='item'+(selectedCity?.id===d.id?' active':'');
+  e.innerHTML='<b>'+esc(d.name_ru||d.name||d.id)+'</b><small>'+esc(d.name)+(d.region_name?' — '+esc(d.region_name):'')+(d.district_name?' — '+esc(d.district_name):'')+'</small>';
+  e.onclick=()=>selectCity(d);list.appendChild(e)
+ })
 }
 
 function selectCity(d){
-  selectedCity=d; originalCity=JSON.parse(JSON.stringify(d));
-  $('c_id').value=d.id??'';$('c_name').value=d.name??'';$('c_name_ru').value=d.name_ru??'';
-  $('c_name_uz').value=d.name_uz??'';$('c_name_en').value=d.name_en??'';
-  $('c_region').value=d.region_name??'';$('c_district').value=d.district_name??'';
-  $('c_lat').value=d.lat??'';$('c_lon').value=d.lon??'';$('c_description').value=d.description??'';
-  $('preview').textContent=JSON.stringify(d,null,2);renderCities();
+ selectedCity=d;originalCity=JSON.parse(JSON.stringify(d));
+ $('c_id').value=d.id;$('c_name').value=d.name;$('c_name_ru').value=d.name_ru;$('c_name_uz').value=d.name_uz;
+ $('c_region').value=d.region_name;$('c_district').value=d.district_name;$('c_population').value=d.population;$('c_description').value=d.description;
+ $('preview').textContent=JSON.stringify(d,null,2);renderCities()
 }
 
 $('saveCity').onclick=async()=>{
-  if(!selectedCity){showNotice('cityStatus','Сначала выбери город.',false);return}
-  const b=$('saveCity');b.disabled=true;
-  try{
-    const result=await rpc('admin_update_city',{
-      p_id:String(selectedCity.id),
-      p_name:$('c_name').value.trim(),
-      p_name_ru:$('c_name_ru').value.trim(),
-      p_name_uz:$('c_name_uz').value.trim(),
-      p_name_en:$('c_name_en').value.trim(),
-      p_lat:$('c_lat').value.trim()===''?null:Number($('c_lat').value),
-      p_lon:$('c_lon').value.trim()===''?null:Number($('c_lon').value),
-      p_description:$('c_description').value.trim()
-    });
-    showNotice('cityStatus','✅ Город сохранён.');
-    await loadAll();
-    const fresh=(cities.features||[]).map(featureData).find(x=>String(x.id)===String(selectedCity.id));
-    if(fresh)selectCity(fresh);
-    console.log('admin_update_city:',result);
-  }catch(e){console.error(e);showNotice('cityStatus','❌ '+e.message,false)}
-  finally{b.disabled=false}
+ if(!selectedCity){notice('cityStatus','Сначала выбери город.',false);return}
+ const b=$('saveCity');b.disabled=true;
+ try{
+  const x={id:String(selectedCity.id),name:$('c_name').value.trim(),name_ru:$('c_name_ru').value.trim(),name_uz:$('c_name_uz').value.trim(),population:$('c_population').value.trim()===''?null:Number($('c_population').value),description:$('c_description').value.trim()};
+  const result=await rpc('admin_update_city',{p_id:x.id,p_name:x.name,p_name_ru:x.name_ru,p_name_uz:x.name_uz,p_population:x.population,p_description:x.description});
+  notice('cityStatus','✅ Город сохранён.');await loadAll();
+  const fresh=cities.features.map(fd).find(z=>String(z.id)===x.id);if(fresh)selectCity(fresh);console.log(result)
+ }catch(e){console.error(e);notice('cityStatus','❌ '+e.message,false)}finally{b.disabled=false}
 };
 
 $('resetCity').onclick=()=>{if(originalCity)selectCity(originalCity)};
 
 function renderRegions(){
-  const q=normalize($('regionSearch').value);
-  const list=$('regionList');list.innerHTML='';
-  const arr=(regions?.features||[]).map(featureData).filter(d=>!q||[d.name,d.name_ru,d.name_uz,d.name_en].map(normalize).some(x=>x.includes(q)));
-  $('regionInfo').textContent=`Найдено: ${arr.length} из ${(regions?.features||[]).length}`;
-  arr.forEach(d=>{
-    const el=document.createElement('div');el.className='item'+(selectedRegion?.id===d.id?' active':'');
-    el.innerHTML='<b>'+esc(d.name_ru||d.name||d.name_en||d.id)+'</b><small>'+esc(d.name_en||d.name||'')+'</small>';
-    el.onclick=()=>selectRegion(d);list.appendChild(el);
-  });
+ const q=norm($('regionSearch').value),list=$('regionList');list.innerHTML='';
+ const arr=(regions.features||[]).map(fd).filter(d=>!q||norm(d.name).includes(q));
+ $('regionInfo').textContent=`Найдено: ${arr.length} из ${regions.features.length}`;
+ arr.forEach(d=>{
+  const e=document.createElement('div');e.className='item'+(selectedRegion?.id===d.id?' active':'');
+  e.innerHTML='<b>'+esc(d.name)+'</b><small>ID: '+esc(d.id)+'</small>';e.onclick=()=>selectRegion(d);list.appendChild(e)
+ })
 }
 
 function selectRegion(d){
-  selectedRegion=d;originalRegion=JSON.parse(JSON.stringify(d));
-  $('r_id').value=d.id??'';$('r_name').value=d.name??'';$('r_name_ru').value=d.name_ru??'';
-  $('r_name_uz').value=d.name_uz??'';$('r_name_en').value=d.name_en??'';$('r_description').value=d.description??'';
-  $('preview').textContent=JSON.stringify(d,null,2);renderRegions();
+ selectedRegion=d;originalRegion=JSON.parse(JSON.stringify(d));$('r_id').value=d.id;$('r_name').value=d.name;$('r_updated').value=d.updated_at;
+ $('preview').textContent=JSON.stringify(d,null,2);renderRegions()
 }
 
 $('saveRegion').onclick=async()=>{
-  if(!selectedRegion){showNotice('regionStatus','Сначала выбери область.',false);return}
-  const b=$('saveRegion');b.disabled=true;
-  try{
-    const result=await rpc('admin_update_region',{
-      p_id:String(selectedRegion.id),
-      p_name:$('r_name').value.trim(),
-      p_name_ru:$('r_name_ru').value.trim(),
-      p_name_uz:$('r_name_uz').value.trim(),
-      p_name_en:$('r_name_en').value.trim(),
-      p_description:$('r_description').value.trim()
-    });
-    showNotice('regionStatus','✅ Область сохранена.');
-    await loadAll();
-    const fresh=(regions.features||[]).map(featureData).find(x=>String(x.id)===String(selectedRegion.id));
-    if(fresh)selectRegion(fresh);
-    console.log('admin_update_region:',result);
-  }catch(e){console.error(e);showNotice('regionStatus','❌ '+e.message,false)}
-  finally{b.disabled=false}
+ if(!selectedRegion){notice('regionStatus','Сначала выбери область.',false);return}
+ const b=$('saveRegion');b.disabled=true;
+ try{
+  const x={id:String(selectedRegion.id),name:$('r_name').value.trim()};
+  const result=await rpc('admin_update_region',{p_id:x.id,p_name:x.name});
+  notice('regionStatus','✅ Область сохранена.');await loadAll();
+  const fresh=regions.features.map(fd).find(z=>String(z.id)===x.id);if(fresh)selectRegion(fresh);console.log(result)
+ }catch(e){console.error(e);notice('regionStatus','❌ '+e.message,false)}finally{b.disabled=false}
 };
 
 $('resetRegion').onclick=()=>{if(originalRegion)selectRegion(originalRegion)};
 
-document.querySelectorAll('.tab').forEach(btn=>{
-  btn.onclick=()=>{
-    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-    document.querySelectorAll('[id$="Tab"]').forEach(x=>x.classList.add('hidden'));
-    btn.classList.add('active');$(btn.dataset.tab+'Tab').classList.remove('hidden');
-  };
+document.querySelectorAll('.tab').forEach(btn=>btn.onclick=()=>{
+ document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+ document.querySelectorAll('[id$="Tab"]').forEach(x=>x.classList.add('hidden'));
+ btn.classList.add('active');$(btn.dataset.tab+'Tab').classList.remove('hidden')
 });
 
-$('districtSearch').oninput=renderDistricts;
-$('districtRegion').onchange=renderDistricts;
-$('citySearch').oninput=renderCities;
-$('cityRegion').onchange=renderCities;
-$('regionSearch').oninput=renderRegions;
-
+$('districtSearch').oninput=renderDistricts;$('districtRegion').onchange=renderDistricts;
+$('citySearch').oninput=renderCities;$('cityRegion').onchange=renderCities;$('regionSearch').oninput=renderRegions;
 $('clearDistrictSearch').onclick=()=>{$('districtSearch').value='';$('districtRegion').value='';renderDistricts()};
 $('clearCitySearch').onclick=()=>{$('citySearch').value='';$('cityRegion').value='';renderCities()};
 $('clearRegionSearch').onclick=()=>{$('regionSearch').value='';renderRegions()};
 $('refresh').onclick=loadAll;
+$('logout').onclick=()=>{localStorage.removeItem('naqsha_admin_session');session=null;location.reload()};
+$('login').onclick=authLogin;$('password').onkeydown=e=>{if(e.key==='Enter')authLogin()};
 
-$('logout').onclick=()=>{
-  localStorage.removeItem('naqsha_admin_session');
-  session=null;location.reload();
-};
-
-$('login').onclick=authLogin;
-$('password').onkeydown=e=>{if(e.key==='Enter')authLogin()};
-
-(async()=>{
-  try{session=JSON.parse(localStorage.getItem('naqsha_admin_session')||'null')}catch{session=null}
-  if(session?.access_token)await openAdmin();
-})();
+(async()=>{try{session=JSON.parse(localStorage.getItem('naqsha_admin_session')||'null')}catch{session=null}if(session?.access_token)await openAdmin()})();
 </script>
 </body>
 </html>
