@@ -5,54 +5,43 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Naqsha — Admin Panel</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#f3f5f7;color:#111;font:15px Arial,Helvetica,sans-serif}
-header{background:#fff;padding:18px 20px;position:sticky;top:0;z-index:10;box-shadow:0 2px 12px #0002}
-.wrap{max-width:1250px;margin:auto;padding:16px}
-.card{background:#fff;border-radius:17px;padding:20px;margin-bottom:15px;box-shadow:0 3px 15px #0001}
-h1,h2,h3{margin:0 0 12px}h1{font-size:23px}h2{font-size:19px}h3{font-size:16px}
-.small{color:#747a80;font-size:13px;line-height:1.45}
-.hidden{display:none!important}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+*{box-sizing:border-box}body{margin:0;background:#f3f5f7;color:#111;font:15px Arial,sans-serif}
+header{background:#fff;padding:18px 20px;box-shadow:0 2px 12px #0002;position:sticky;top:0;z-index:10}
+.wrap{max-width:1250px;margin:auto;padding:16px}.card{background:#fff;border-radius:17px;padding:20px;margin-bottom:15px;box-shadow:0 3px 15px #00000012}
+h1,h2,h3{margin:0 0 12px}h1{font-size:23px}h2{font-size:20px}h3{font-size:16px}
+.small{color:#777;font-size:13px;line-height:1.45}.hidden{display:none!important}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 label{display:block;font-weight:700;font-size:13px;margin:12px 0 6px}
-input,textarea,select{width:100%;padding:11px 12px;border:1px solid #d5d9de;border-radius:10px;background:#fff;font-size:15px;outline:none}
-input:focus,textarea:focus,select:focus{border-color:#1677ff}
-input[readonly]{background:#f7f8fa}
-textarea{min-height:100px;resize:vertical}
-button{border:0;border-radius:10px;padding:11px 15px;font-weight:700;cursor:pointer}
-button:disabled{opacity:.55;cursor:not-allowed}
-.primary{background:#1677ff;color:#fff}.success{background:#18a84a;color:#fff}.danger{background:#e53935;color:#fff}.gray{background:#e9edf1}
+input,textarea,select{width:100%;padding:11px 12px;border:1px solid #d5d9de;border-radius:10px;font-size:15px;background:#fff;outline:none}
+input:focus,textarea:focus,select:focus{border-color:#1677ff}input[readonly]{background:#f7f8fa}
+textarea{min-height:100px;resize:vertical}button{border:0;border-radius:10px;padding:11px 15px;font-weight:700;cursor:pointer}
+button:disabled{opacity:.55;cursor:not-allowed}.primary{background:#1677ff;color:#fff}.success{background:#18a84a;color:#fff}
+.danger{background:#e53935;color:#fff}.gray{background:#e9edf1}
 .buttons,.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}
-.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px}
-.tab{background:#e9edf1}.tab.active{background:#1677ff;color:#fff}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.stat{background:#f7f9fb;border-radius:12px;padding:15px}.stat b{display:block;font-size:25px}.stat span{font-size:13px;color:#777}
-.list{max-height:560px;overflow:auto;border:1px solid #eee;border-radius:12px}
-.item{padding:12px 14px;border-bottom:1px solid #eee;cursor:pointer}.item:hover{background:#f5f7f9}.item.active{background:#eef5ff}
-.item b{display:block}.item small{color:#777}
-.layout{display:grid;grid-template-columns:1fr 1.2fr;gap:15px}
-.searchrow{display:grid;grid-template-columns:1fr 230px auto;gap:8px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px}.tab{background:#e9edf1}.tab.active{background:#1677ff;color:#fff}
+.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}.stat{background:#f7f9fb;border-radius:12px;padding:14px}
+.stat b{display:block;font-size:24px}.stat span{font-size:12px;color:#777}
+.list{max-height:560px;overflow:auto;border:1px solid #eee;border-radius:12px}.item{padding:12px 14px;border-bottom:1px solid #eee;cursor:pointer}
+.item:hover{background:#f5f7f9}.item.active{background:#eef5ff}.item b{display:block}.item small{color:#777}
+.layout{display:grid;grid-template-columns:1fr 1.2fr;gap:15px}.searchrow{display:grid;grid-template-columns:1fr 230px auto;gap:8px}
 .notice{display:none;margin-top:12px;padding:11px 13px;border-radius:10px;line-height:1.45}
-.error{border-color:#e53935!important;background:#fff7f7}
-.required{color:#d22}
+.error{border-color:#e53935!important;background:#fff7f7}.required{color:#d22}
 .filebox{border:2px dashed #cfd5dc;border-radius:12px;padding:18px;text-align:center;background:#fafbfc}
-.layer-meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:7px}
-.badge{display:inline-block;padding:5px 8px;border-radius:8px;background:#eef2f5;font-size:12px}
+.badge{display:inline-block;padding:5px 8px;border-radius:8px;background:#eef2f5;font-size:12px;margin:3px}
 .badge.on{background:#e8f7ed;color:#17752e}.badge.off{background:#fff1e8;color:#a54a00}
 pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-wrap;overflow:auto;font-size:12px}
-@media(max-width:850px){.layout,.grid,.grid3,.searchrow{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}}
-@media(max-width:500px){.stats{grid-template-columns:1fr}.wrap{padding:10px}.card{padding:15px}}
+@media(max-width:950px){.layout,.grid,.grid3,.searchrow{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:500px){.stats{grid-template-columns:1fr 1fr}.wrap{padding:10px}.card{padding:15px}}
 </style>
 </head>
 <body>
-<header><h1>🇺🇿 Naqsha — Admin Panel</h1><div class="small">Области · районы · города · слои карты</div></header>
+<header><h1>🇺🇿 Naqsha — Admin Panel</h1><div class="small">Области · районы · города · улицы · здания · слои</div></header>
 <div class="wrap">
 
 <section id="loginCard" class="card">
 <h2>🔐 Вход администратора</h2>
-<label>Email</label><input id="email" type="email" autocomplete="username" placeholder="admin@example.com">
-<label>Пароль</label><input id="password" type="password" autocomplete="current-password" placeholder="Пароль">
+<label>Email</label><input id="email" type="email" autocomplete="username">
+<label>Пароль</label><input id="password" type="password" autocomplete="current-password">
 <div class="buttons"><button id="login" class="primary">Войти</button></div>
 <div id="loginStatus" class="notice"></div>
 </section>
@@ -63,6 +52,8 @@ pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-w
 <div class="stat"><b id="regionCount">—</b><span>Областей</span></div>
 <div class="stat"><b id="districtCount">—</b><span>Районов</span></div>
 <div class="stat"><b id="cityCount">—</b><span>Городов</span></div>
+<div class="stat"><b id="streetCount">—</b><span>Улиц</span></div>
+<div class="stat"><b id="buildingCount">—</b><span>Зданий</span></div>
 <div class="stat"><b id="layerCount">—</b><span>Слоёв</span></div>
 </div>
 <div class="buttons"><span class="small" id="userEmail" style="padding:11px 0"></span><button id="refresh" class="gray">🔄 Обновить</button><button id="logout" class="gray">Выйти</button></div>
@@ -73,70 +64,91 @@ pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-w
 <button class="tab active" data-tab="regions">🗺️ Области</button>
 <button class="tab" data-tab="districts">📍 Районы</button>
 <button class="tab" data-tab="cities">🏙️ Города</button>
+<button class="tab" data-tab="streets">🛣️ Улицы</button>
+<button class="tab" data-tab="buildings">🏠 Здания / дома</button>
 <button class="tab" data-tab="layers">🧩 Слои</button>
 </div>
 
+<!-- REGIONS -->
 <section id="regionsTab" class="card">
 <h2>🗺️ Области</h2>
 <div class="searchrow"><input id="regionSearch" placeholder="Поиск области..."><div></div><button id="newRegion" class="primary">＋ Новая область</button></div>
 <p id="regionInfo" class="small"></p>
 <div class="layout"><div class="list" id="regionList"></div><div>
 <h3 id="regionEditorTitle">Новая область</h3>
-<label>ID <span class="required">*</span></label><input id="r_id">
-<label>Название EN <span class="required">*</span></label><input id="r_name">
+<label>ID *</label><input id="r_id"><label>Название EN *</label><input id="r_name">
 <div class="grid3"><div><label>RU *</label><input id="r_name_ru"></div><div><label>UZ Latin *</label><input id="r_name_uz"></div><div><label>UZ Кирилл *</label><input id="r_name_uz_cy"></div></div>
 <div class="actions"><button id="saveRegion" class="success">💾 Сохранить</button><button id="deleteRegion" class="danger hidden">🗑️ Удалить</button><button id="resetRegion" class="gray">↩️ Сбросить</button></div>
 <div id="regionStatus" class="notice"></div></div></div>
 </section>
 
+<!-- DISTRICTS -->
 <section id="districtsTab" class="card hidden">
 <h2>📍 Районы</h2>
 <div class="searchrow"><input id="districtSearch" placeholder="Поиск района..."><select id="districtFilter"><option value="">Все области</option></select><button id="newDistrict" class="primary">＋ Новый район</button></div>
 <p id="districtInfo" class="small"></p>
 <div class="layout"><div class="list" id="districtList"></div><div>
-<h3 id="districtEditorTitle">Новый район</h3>
-<label>ID *</label><input id="d_id">
-<label>Область *</label><select id="d_region"><option value="">Выберите область</option></select>
-<label>Название EN *</label><input id="d_name">
-<div class="grid3"><div><label>RU *</label><input id="d_name_ru"></div><div><label>UZ Latin *</label><input id="d_name_uz"></div><div><label>UZ Кирилл *</label><input id="d_name_uz_cy"></div></div>
-<label>Административный центр</label><input id="d_center">
-<div class="grid"><div><label>Население</label><input id="d_population" type="number" min="0"></div><div><label>Площадь, км²</label><input id="d_area" type="number" min="0" step="0.01"></div></div>
+<h3 id="districtEditorTitle">Новый район</h3><label>ID *</label><input id="d_id"><label>Область *</label><select id="d_region"><option value="">Выберите область</option></select>
+<label>Название EN *</label><input id="d_name"><div class="grid3"><div><label>RU *</label><input id="d_name_ru"></div><div><label>UZ Latin *</label><input id="d_name_uz"></div><div><label>UZ Кирилл *</label><input id="d_name_uz_cy"></div></div>
+<label>Административный центр</label><input id="d_center"><div class="grid"><div><label>Население</label><input id="d_population" type="number" min="0"></div><div><label>Площадь, км²</label><input id="d_area" type="number" min="0" step="0.01"></div></div>
 <label>Описание</label><textarea id="d_description"></textarea>
 <div class="actions"><button id="saveDistrict" class="success">💾 Сохранить</button><button id="deleteDistrict" class="danger hidden">🗑️ Удалить</button><button id="resetDistrict" class="gray">↩️ Сбросить</button></div>
 <div id="districtStatus" class="notice"></div></div></div>
 </section>
 
+<!-- CITIES -->
 <section id="citiesTab" class="card hidden">
 <h2>🏙️ Города</h2>
 <div class="searchrow"><input id="citySearch" placeholder="Поиск города..."><select id="cityFilter"><option value="">Все области</option></select><button id="newCity" class="primary">＋ Новый город</button></div>
 <p id="cityInfo" class="small"></p>
 <div class="layout"><div class="list" id="cityList"></div><div>
-<h3 id="cityEditorTitle">Новый город</h3>
-<label>ID (пусто = автоматически)</label><input id="c_id" type="number" min="1">
-<label>Название EN *</label><input id="c_name">
-<div class="grid3"><div><label>RU *</label><input id="c_name_ru"></div><div><label>UZ Latin *</label><input id="c_name_uz"></div><div><label>UZ Кирилл *</label><input id="c_name_uz_cy"></div></div>
-<label>Область *</label><select id="c_region"><option value="">Выберите область</option></select>
-<label>Район</label><select id="c_district"><option value="">Без района</option></select>
-<label>Население</label><input id="c_population" type="number" min="0">
-<label>Описание</label><textarea id="c_description"></textarea>
+<h3 id="cityEditorTitle">Новый город</h3><label>ID (пусто = автоматически)</label><input id="c_id" type="number" min="1">
+<label>Название EN *</label><input id="c_name"><div class="grid3"><div><label>RU *</label><input id="c_name_ru"></div><div><label>UZ Latin *</label><input id="c_name_uz"></div><div><label>UZ Кирилл *</label><input id="c_name_uz_cy"></div></div>
+<label>Область *</label><select id="c_region"><option value="">Выберите область</option></select><label>Район</label><select id="c_district"><option value="">Без района</option></select>
+<label>Население</label><input id="c_population" type="number" min="0"><label>Описание</label><textarea id="c_description"></textarea>
 <div class="actions"><button id="saveCity" class="success">💾 Сохранить</button><button id="deleteCity" class="danger hidden">🗑️ Удалить</button><button id="resetCity" class="gray">↩️ Сбросить</button></div>
 <div id="cityStatus" class="notice"></div></div></div>
 </section>
 
+<!-- STREETS -->
+<section id="streetsTab" class="card hidden">
+<h2>🛣️ Улицы</h2>
+<div class="searchrow"><input id="streetSearch" placeholder="Поиск улицы..."><select id="streetFilter"><option value="">Все города</option></select><button id="newStreet" class="primary">＋ Новая улица</button></div>
+<p id="streetInfo" class="small"></p>
+<div class="layout"><div class="list" id="streetList"></div><div>
+<h3 id="streetEditorTitle">Новая улица</h3>
+<label>Название EN *</label><input id="s_name"><div class="grid3"><div><label>RU *</label><input id="s_name_ru"></div><div><label>UZ Latin *</label><input id="s_name_uz"></div><div><label>UZ Кирилл *</label><input id="s_name_uz_cy"></div></div>
+<label>Область *</label><select id="s_region"><option value="">Выберите область</option></select><label>Район</label><select id="s_district"><option value="">Без района</option></select><label>Город</label><select id="s_city"><option value="">Без города</option></select>
+<label>Тип улицы</label><input id="s_type" placeholder="Street, Avenue, Road..."><label>Описание</label><textarea id="s_description"></textarea>
+<div class="actions"><button id="saveStreet" class="success">💾 Сохранить</button><button id="deleteStreet" class="danger hidden">🗑️ Удалить</button><button id="resetStreet" class="gray">↩️ Сбросить</button></div>
+<div id="streetStatus" class="notice"></div></div></div>
+</section>
+
+<!-- BUILDINGS -->
+<section id="buildingsTab" class="card hidden">
+<h2>🏠 Здания / дома</h2>
+<div class="searchrow"><input id="buildingSearch" placeholder="Поиск дома, адреса..."><select id="buildingFilter"><option value="">Все города</option></select><button id="newBuilding" class="primary">＋ Новый дом</button></div>
+<p id="buildingInfo" class="small"></p>
+<div class="layout"><div class="list" id="buildingList"></div><div>
+<h3 id="buildingEditorTitle">Новый дом</h3>
+<div class="grid"><div><label>Номер дома *</label><input id="b_house"></div><div><label>Название EN</label><input id="b_name"></div></div>
+<div class="grid3"><div><label>RU</label><input id="b_name_ru"></div><div><label>UZ Latin</label><input id="b_name_uz"></div><div><label>UZ Кирилл</label><input id="b_name_uz_cy"></div></div>
+<label>Название EN</label><input id="b_name_en">
+<label>Область</label><select id="b_region"><option value="">Выберите область</option></select><label>Район</label><select id="b_district"><option value="">Без района</option></select><label>Город</label><select id="b_city"><option value="">Без города</option></select><label>Улица</label><select id="b_street"><option value="">Без улицы</option></select>
+<div class="grid"><div><label>Адрес</label><input id="b_address"></div><div><label>Почтовый индекс</label><input id="b_postal"></div></div>
+<div class="grid"><div><label>Тип здания</label><input id="b_type"></div><div><label>Этажей</label><input id="b_floors" type="number" min="0"></div></div>
+<label>Описание</label><textarea id="b_description"></textarea>
+<div class="actions"><button id="saveBuilding" class="success">💾 Сохранить</button><button id="deleteBuilding" class="danger hidden">🗑️ Удалить</button><button id="resetBuilding" class="gray">↩️ Сбросить</button></div>
+<div id="buildingStatus" class="notice"></div></div></div>
+</section>
+
+<!-- LAYERS -->
 <section id="layersTab" class="card hidden">
-<h2>🧩 Слои карты</h2>
-<p class="small">GeoJSON можно загружать прямо отсюда. GitHub для обновления слоёв не нужен.</p>
-<div class="grid">
-<div><label>Название слоя *</label><input id="layerName" placeholder="Например: Районы Узбекистана"></div>
-<div><label>Тип *</label><select id="layerType"><option value="regions">Области</option><option value="districts">Районы</option><option value="cities">Города</option><option value="other">Другой</option></select></div>
-</div>
-<label>Описание</label><input id="layerDescription" placeholder="Описание слоя">
-<label>GeoJSON *</label>
-<div class="filebox"><input id="layerFile" type="file" accept=".geojson,.json,application/geo+json,application/json"><div id="fileInfo" class="small" style="margin-top:8px">Выбери файл GeoJSON (до 20 MB)</div></div>
+<h2>🧩 Слои карты</h2><p class="small">GeoJSON загружается прямо через админку. Тестовый слой не требуется.</p>
+<div class="grid"><div><label>Название слоя *</label><input id="layerName"></div><div><label>Тип *</label><select id="layerType"><option value="regions">Области</option><option value="districts">Районы</option><option value="cities">Города</option><option value="streets">Улицы</option><option value="buildings">Здания / дома</option><option value="other">Другой</option></select></div></div>
+<label>Описание</label><input id="layerDescription"><label>GeoJSON *</label><div class="filebox"><input id="layerFile" type="file" accept=".geojson,.json,application/geo+json,application/json"><div id="fileInfo" class="small">Выбери файл GeoJSON (до 20 MB)</div></div>
 <div class="actions"><button id="uploadLayer" class="success">⬆️ Загрузить слой</button><button id="refreshLayers" class="gray">🔄 Обновить список</button></div>
-<div id="layerStatus" class="notice"></div>
-<h3 style="margin-top:22px">Загруженные слои</h3>
-<div class="list" id="layerList"></div>
+<div id="layerStatus" class="notice"></div><h3 style="margin-top:22px">Загруженные слои</h3><div class="list" id="layerList"></div>
 </section>
 
 <section class="card"><h2>🧪 Состояние</h2><pre id="preview">{}</pre></section>
@@ -145,17 +157,42 @@ pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-w
 <script>
 const SUPABASE_URL='https://vhrhtykcrjqqiwwggomi.supabase.co';
 const SUPABASE_KEY='sb_publishable_N9MAdF7_GW-IUFOXxY2MHQ_MG1ep1vg';
-let session=null,regions=[],districts=[],cities=[],layers=[],selected={r:null,d:null,c:null},mode={r:'new',d:'new',c:'new'};
+let session=null,regions=[],districts=[],cities=[],streets=[],buildings=[],layers=[];
+let selected={r:null,d:null,c:null,s:null,b:null};
+let mode={r:'new',d:'new',c:'new',s:'new',b:'new'};
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const norm=v=>String(v??'').toLowerCase().trim();
+
 function notice(id,msg,ok=true){const e=$(id);e.style.display='block';e.style.background=ok?'#eef9f0':'#fff0f0';e.style.color=ok?'#17752e':'#a00000';e.textContent=msg}
-function norm(v){return String(v??'').toLowerCase().trim()}
 function required(ids){let ok=true;ids.forEach(id=>{const e=$(id);e.classList.remove('error');if(!e.value.trim()){e.classList.add('error');ok=false}});return ok}
-async function rpc(name,body={}){
- if(!session?.access_token)throw Error('Нет авторизации. Войдите заново.');
- const r=await fetch(SUPABASE_URL+'/rest/v1/rpc/'+name,{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},body:JSON.stringify(body)});
+
+async function refreshSession(){
+ if(!session?.refresh_token) throw Error('Сессия истекла. Войдите заново.');
+ const r=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:session.refresh_token})});
+ const d=await r.json();if(!r.ok)throw Error(d.error_description||d.msg||'Не удалось обновить сессию');
+ session={...session,...d};
+ localStorage.setItem('naqsha_admin_session',JSON.stringify(session));
+ return session;
+}
+
+async function api(path,options={},retry=true){
+ const headers={...(options.headers||{}),apikey:SUPABASE_KEY,Authorization:'Bearer '+(session?.access_token||''),'Content-Type':options.body instanceof FormData?undefined:(options.headers?.['Content-Type']||'application/json')};
+ if(headers['Content-Type']===undefined)delete headers['Content-Type'];
+ const r=await fetch(SUPABASE_URL+path,{...options,headers});
+ if(r.status===401&&retry){await refreshSession();return api(path,options,false)}
+ const text=await r.text();
+ if(!r.ok)throw Error(path+' → HTTP '+r.status+': '+text);
+ if(!text)return null;try{return JSON.parse(text)}catch{return text}
+}
+
+async function rpc(name,body={},retry=true){
+ if(!session?.access_token)throw Error('Нет авторизации.');
+ const r=await fetch(SUPABASE_URL+'/rest/v1/rpc/'+name,{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+session.access_token,'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(body)});
+ if(r.status===401&&retry){await refreshSession();return rpc(name,body,false)}
  const t=await r.text();if(!r.ok)throw Error(name+' → HTTP '+r.status+': '+t);if(!t)return null;try{return JSON.parse(t)}catch{return t}
 }
+
 async function login(){
  try{
   const r=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({email:$('email').value.trim(),password:$('password').value})});
@@ -163,88 +200,137 @@ async function login(){
   session=d;localStorage.setItem('naqsha_admin_session',JSON.stringify(d));await openAdmin();
  }catch(e){notice('loginStatus','❌ '+e.message,false)}
 }
+
 function parseFeature(f){
- const p=f.properties||{};return{id:p.id??f.id??'',name:p.name||'',name_ru:p.name_ru||'',name_uz:p.name_uz||'',name_uz_cy:p.name_uz_cy||'',name_en:p.name_en||'',region_id:p.region_id??'',region_name:p.region_name||'',district_id:p.district_id??'',district_name:p.district_name||'',center:p.center||'',population:p.population??'',area:p.area??'',description:p.description||''}
+ const p=f.properties||{};
+ return {id:p.id??f.id??'',name:p.name||'',name_ru:p.name_ru||'',name_uz:p.name_uz||'',name_uz_cy:p.name_uz_cy||'',name_en:p.name_en||'',region_id:p.region_id??'',region_name:p.region_name||'',district_id:p.district_id??'',district_name:p.district_name||'',city_id:p.city_id??'',city_name:p.city_name||'',center:p.center||'',population:p.population??'',area:p.area??'',description:p.description||'',street_type:p.street_type||'',house_number:p.house_number||'',address:p.address||'',postal_code:p.postal_code||'',building_type:p.building_type||'',floors:p.floors??'',street_id:p.street_id??''};
 }
+
 async function loadData(){
- const [r,d,c]=await Promise.all([rpc('get_regions_geojson'),rpc('get_districts_geojson'),rpc('get_cities_geojson')]);
+ const [r,d,c,s,b]=await Promise.all([
+  rpc('get_regions_geojson'),rpc('get_districts_geojson'),rpc('get_cities_geojson'),
+  rpc('get_streets_admin'),rpc('get_buildings_admin')
+ ]);
  regions=(r.features||[]).map(parseFeature);districts=(d.features||[]).map(parseFeature);cities=(c.features||[]).map(parseFeature);
- $('regionCount').textContent=regions.length;$('districtCount').textContent=districts.length;$('cityCount').textContent=cities.length;
- fillRegions();renderRegions();renderDistricts();renderCities();await loadLayers();
- $('preview').textContent=JSON.stringify({regions:regions.length,districts:districts.length,cities:cities.length,layers:layers.length},null,2);
+ streets=(Array.isArray(s)?s:[]).map(x=>parseFeature({properties:x}));buildings=(Array.isArray(b)?b:[]).map(x=>parseFeature({properties:x}));
+ $('regionCount').textContent=regions.length;$('districtCount').textContent=districts.length;$('cityCount').textContent=cities.length;$('streetCount').textContent=streets.length;$('buildingCount').textContent=buildings.length;
+ fillAllSelects();renderAll();await loadLayers();$('preview').textContent=JSON.stringify({regions:regions.length,districts:districts.length,cities:cities.length,streets:streets.length,buildings:buildings.length,layers:layers.length},null,2);
 }
-function fillRegions(){
- [['districtFilter',true],['d_region',false],['cityFilter',true],['c_region',false]].forEach(([id,all])=>{
-  const s=$(id),old=s.value;s.innerHTML='<option value="">'+(all?'Все области':'Выберите область')+'</option>';
-  regions.forEach(r=>{const o=document.createElement('option');o.value=r.id;o.textContent=r.name_ru||r.name;s.appendChild(o)});
-  if([...s.options].some(o=>o.value==old))s.value=old;
- })
+
+function setOptions(id,items,placeholder,selected=''){
+ const s=$(id);s.innerHTML='<option value="">'+placeholder+'</option>';
+ items.forEach(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=x.name_ru||x.name||x.name_en||x.id;s.appendChild(o)});
+ if([...s.options].some(o=>String(o.value)===String(selected)))s.value=selected;
 }
+function fillAllSelects(){
+ setOptions('districtFilter',regions,'Все области');setOptions('d_region',regions,'Выберите область');setOptions('cityFilter',regions,'Все области');setOptions('c_region',regions,'Выберите область');
+ setOptions('streetFilter',cities,'Все города');setOptions('buildingFilter',cities,'Все города');setOptions('s_region',regions,'Выберите область');setOptions('b_region',regions,'Выберите область');
+ fillDistrictSelect('d_region','d_district');fillCityDistricts('c_region','c_district');fillCityDistricts('s_region','s_district');fillCitySelect('s_region','s_city');fillCityDistricts('b_region','b_district');fillCitySelect('b_region','b_city');
+}
+
+function fillDistrictSelect(regionEl,districtEl,chosen=''){
+ const rid=$(regionEl).value,s=$(districtEl);s.innerHTML='<option value="">Без района</option>';
+ if(!rid){s.disabled=true;return}s.disabled=false;
+ districts.filter(x=>String(x.region_id)===String(rid)).forEach(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=x.name_ru||x.name;s.appendChild(o)});s.value=chosen;
+}
+function fillCityDistricts(regionEl,districtEl,chosen=''){fillDistrictSelect(regionEl,districtEl,chosen)}
+function fillCitySelect(regionEl,cityEl,chosen=''){
+ const rid=$(regionEl).value,s=$(cityEl);s.innerHTML='<option value="">Без города</option>';s.disabled=!rid;
+ cities.filter(x=>!rid||String(x.region_id)===String(rid)).forEach(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=x.name_ru||x.name;s.appendChild(o)});if(chosen)s.value=chosen;
+}
+function fillBuildingStreet(cityId,chosen=''){
+ const s=$('b_street');s.innerHTML='<option value="">Без улицы</option>';s.disabled=!cityId;
+ streets.filter(x=>!cityId||String(x.city_id)===String(cityId)).forEach(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=x.name_ru||x.name;s.appendChild(o)});if(chosen)s.value=chosen;
+}
+
+function renderAll(){renderRegions();renderDistricts();renderCities();renderStreets();renderBuildings()}
+
 function renderRegions(){
- const q=norm($('regionSearch').value);const a=regions.filter(x=>[x.id,x.name,x.name_ru,x.name_uz,x.name_uz_cy].some(v=>norm(v).includes(q)));$('regionInfo').textContent='Найдено: '+a.length+' из '+regions.length;$('regionList').innerHTML='';
- a.forEach(x=>{const e=document.createElement('div');e.className='item'+(selected.r?.id==x.id?' active':'');e.innerHTML='<b>'+esc(x.name_ru||x.name)+'</b><small>'+esc(x.name)+' · '+esc(x.id)+'</small>';e.onclick=()=>editRegion(x);$('regionList').appendChild(e)})
+ const q=norm($('regionSearch').value),a=regions.filter(x=>[x.id,x.name,x.name_ru,x.name_uz,x.name_uz_cy,x.name_en].some(v=>norm(v).includes(q)));
+ $('regionInfo').textContent='Найдено: '+a.length+' из '+regions.length;$('regionList').innerHTML='';
+ a.forEach(x=>{const e=document.createElement('div');e.className='item'+(selected.r?.id==x.id?' active':'');e.innerHTML='<b>'+esc(x.name_ru||x.name)+'</b><small>'+esc(x.name_en||x.name)+' · '+esc(x.id)+'</small>';e.onclick=()=>editRegion(x);$('regionList').appendChild(e)})
 }
 function editRegion(x){selected.r=x;mode.r='edit';$('regionEditorTitle').textContent='Редактирование области';$('r_id').value=x.id;$('r_id').readOnly=true;$('r_name').value=x.name;$('r_name_ru').value=x.name_ru;$('r_name_uz').value=x.name_uz;$('r_name_uz_cy').value=x.name_uz_cy;$('deleteRegion').classList.remove('hidden');renderRegions()}
 function resetRegion(){selected.r=null;mode.r='new';$('regionEditorTitle').textContent='Новая область';['r_id','r_name','r_name_ru','r_name_uz','r_name_uz_cy'].forEach(x=>$(x).value='');$('r_id').readOnly=false;$('deleteRegion').classList.add('hidden');$('regionStatus').style.display='none';renderRegions()}
-$('saveRegion').onclick=async()=>{if(!required(['r_id','r_name','r_name_ru','r_name_uz','r_name_uz_cy']))return notice('regionStatus','❌ Заполни все обязательные поля.',false);try{const b={p_id:$('r_id').value.trim(),p_name:$('r_name').value.trim(),p_name_ru:$('r_name_ru').value.trim(),p_name_uz:$('r_name_uz').value.trim(),p_name_uz_cy:$('r_name_uz_cy').value.trim()};await rpc(mode.r==='new'?'admin_create_region':'admin_update_region',b);notice('regionStatus','✅ Область сохранена');await loadData();resetRegion()}catch(e){notice('regionStatus','❌ '+e.message,false)}};
-$('deleteRegion').onclick=async()=>{if(!selected.r||!confirm('Удалить область?'))return;try{await rpc('admin_delete_region',{p_id:selected.r.id});notice('regionStatus','✅ Область удалена');await loadData();resetRegion()}catch(e){notice('regionStatus','❌ '+e.message,false)}};$('newRegion').onclick=resetRegion;$('resetRegion').onclick=resetRegion;$('regionSearch').oninput=renderRegions;
+$('saveRegion').onclick=async()=>{if(!required(['r_id','r_name','r_name_ru','r_name_uz','r_name_uz_cy']))return notice('regionStatus','❌ Заполни обязательные поля.',false);try{const b={p_id:$('r_id').value.trim(),p_name:$('r_name').value.trim(),p_name_ru:$('r_name_ru').value.trim(),p_name_uz:$('r_name_uz').value.trim(),p_name_uz_cy:$('r_name_uz_cy').value.trim()};await rpc(mode.r==='new'?'admin_create_region':'admin_update_region',b);await loadData();resetRegion();notice('regionStatus','✅ Область сохранена')}catch(e){notice('regionStatus','❌ '+e.message,false)}};$('deleteRegion').onclick=async()=>{if(!selected.r||!confirm('Удалить область?'))return;try{await rpc('admin_delete_region',{p_id:selected.r.id});await loadData();resetRegion();notice('regionStatus','✅ Область удалена')}catch(e){notice('regionStatus','❌ '+e.message,false)}};$('newRegion').onclick=resetRegion;$('resetRegion').onclick=resetRegion;$('regionSearch').oninput=renderRegions;
 
-function renderDistricts(){const q=norm($('districtSearch').value),rid=$('districtFilter').value,a=districts.filter(x=>(!rid||String(x.region_id)==String(rid))&&[x.id,x.name,x.name_ru,x.name_uz,x.name_uz_cy,x.region_name].some(v=>norm(v).includes(q)));$('districtInfo').textContent='Найдено: '+a.length+' из '+districts.length;$('districtList').innerHTML='';a.forEach(x=>{const e=document.createElement('div');e.className='item'+(selected.d?.id==x.id?' active':'');e.innerHTML='<b>'+esc(x.name_ru||x.name)+'</b><small>'+esc(x.region_name)+' · '+esc(x.id)+'</small>';e.onclick=()=>editDistrict(x);$('districtList').appendChild(e)})}
+function renderDistricts(){
+ const q=norm($('districtSearch').value),rid=$('districtFilter').value,a=districts.filter(x=>(!rid||String(x.region_id)==String(rid))&&[x.id,x.name,x.name_ru,x.name_uz,x.name_uz_cy,x.name_en,x.region_name].some(v=>norm(v).includes(q)));
+ $('districtInfo').textContent='Найдено: '+a.length+' из '+districts.length;$('districtList').innerHTML='';
+ a.forEach(x=>{const e=document.createElement('div');e.className='item'+(selected.d?.id==x.id?' active':'');e.innerHTML='<b>'+esc(x.name_ru||x.name)+'</b><small>'+esc(x.region_name)+' · '+esc(x.id)+'</small>';e.onclick=()=>editDistrict(x);$('districtList').appendChild(e)})
+}
 function editDistrict(x){selected.d=x;mode.d='edit';$('districtEditorTitle').textContent='Редактирование района';$('d_id').value=x.id;$('d_id').readOnly=true;$('d_region').value=x.region_id;$('d_name').value=x.name;$('d_name_ru').value=x.name_ru;$('d_name_uz').value=x.name_uz;$('d_name_uz_cy').value=x.name_uz_cy;$('d_center').value=x.center;$('d_population').value=x.population;$('d_area').value=x.area;$('d_description').value=x.description;$('deleteDistrict').classList.remove('hidden');renderDistricts()}
 function resetDistrict(){selected.d=null;mode.d='new';$('districtEditorTitle').textContent='Новый район';['d_id','d_name','d_name_ru','d_name_uz','d_name_uz_cy','d_center','d_population','d_area','d_description'].forEach(x=>$(x).value='');$('d_id').readOnly=false;$('d_region').value='';$('deleteDistrict').classList.add('hidden');$('districtStatus').style.display='none';renderDistricts()}
-$('saveDistrict').onclick=async()=>{if(!required(['d_id','d_region','d_name','d_name_ru','d_name_uz','d_name_uz_cy']))return notice('districtStatus','❌ Заполни обязательные поля.',false);try{const pop=$('d_population').value===''?null:Number($('d_population').value),area=$('d_area').value===''?null:Number($('d_area').value);if(pop!==null&&(pop<0||!Number.isInteger(pop)))throw Error('Население должно быть целым неотрицательным числом');if(area!==null&&area<0)throw Error('Площадь не может быть отрицательной');const b={p_id:$('d_id').value.trim(),p_region_id:$('d_region').value,p_name:$('d_name').value.trim(),p_name_ru:$('d_name_ru').value.trim(),p_name_uz:$('d_name_uz').value.trim(),p_name_en:$('d_name').value.trim(),p_name_uz_cy:$('d_name_uz_cy').value.trim(),p_center:$('d_center').value.trim(),p_population:pop,p_area:area,p_description:$('d_description').value.trim()};await rpc(mode.d==='new'?'admin_create_district':'admin_update_district',b);notice('districtStatus','✅ Район сохранён');await loadData();resetDistrict()}catch(e){notice('districtStatus','❌ '+e.message,false)}};
-$('deleteDistrict').onclick=async()=>{if(!selected.d||!confirm('Удалить район?'))return;try{await rpc('admin_delete_district',{p_id:selected.d.id});notice('districtStatus','✅ Район удалён');await loadData();resetDistrict()}catch(e){notice('districtStatus','❌ '+e.message,false)}};$('newDistrict').onclick=resetDistrict;$('resetDistrict').onclick=resetDistrict;$('districtSearch').oninput=renderDistricts;$('districtFilter').onchange=renderDistricts;
+$('saveDistrict').onclick=async()=>{if(!required(['d_id','d_region','d_name','d_name_ru','d_name_uz','d_name_uz_cy']))return notice('districtStatus','❌ Заполни обязательные поля.',false);try{const pop=$('d_population').value===''?null:Number($('d_population').value),area=$('d_area').value===''?null:Number($('d_area').value);if(pop!==null&&(!Number.isInteger(pop)||pop<0))throw Error('Население должно быть целым неотрицательным числом');if(area!==null&&area<0)throw Error('Площадь не может быть отрицательной');const b={p_id:$('d_id').value.trim(),p_region_id:$('d_region').value,p_name:$('d_name').value.trim(),p_name_ru:$('d_name_ru').value.trim(),p_name_uz:$('d_name_uz').value.trim(),p_name_en:$('d_name').value.trim(),p_name_uz_cy:$('d_name_uz_cy').value.trim(),p_center:$('d_center').value.trim(),p_population:pop,p_area:area,p_description:$('d_description').value.trim()};await rpc(mode.d==='new'?'admin_create_district':'admin_update_district',b);await loadData();resetDistrict();notice('districtStatus','✅ Район сохранён')}catch(e){notice('districtStatus','❌ '+e.message,false)}};$('deleteDistrict').onclick=async()=>{if(!selected.d||!confirm('Удалить район?'))return;try{await rpc('admin_delete_district',{p_id:selected.d.id});await loadData();resetDistrict();notice('districtStatus','✅ Район удалён')}catch(e){notice('districtStatus','❌ '+e.message,false)}};$('newDistrict').onclick=resetDistrict;$('resetDistrict').onclick=resetDistrict;$('districtSearch').oninput=renderDistricts;$('districtFilter').onchange=renderDistricts;$('d_region').onchange=()=>fillDistrictSelect('d_region','d_district');
 
-function fillCityDistricts(rid,chosen=''){const s=$('c_district');s.innerHTML='<option value="">Без района</option>';if(!rid){s.disabled=true;return}const a=districts.filter(x=>String(x.region_id)===String(rid)).sort((a,b)=>String(a.name_ru).localeCompare(String(b.name_ru)));s.disabled=false;a.forEach(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=x.name_ru||x.name;s.appendChild(o)});if(chosen)s.value=chosen}
-function renderCities(){const q=norm($('citySearch').value),rid=$('cityFilter').value,a=cities.filter(x=>(!rid||String(x.region_id)==String(rid))&&[x.id,x.name,x.name_ru,x.name_uz,x.name_uz_cy,x.region_name,x.district_name].some(v=>norm(v).includes(q)));$('cityInfo').textContent='Найдено: '+a.length+' из '+cities.length;$('cityList').innerHTML='';a.forEach(x=>{const e=document.createElement('div');e.className='item'+(selected.c?.id==x.id?' active':'');e.innerHTML='<b>'+esc(x.name_ru||x.name)+'</b><small>'+esc(x.region_name)+(x.district_name?' · '+esc(x.district_name):'')+' · ID '+esc(x.id)+'</small>';e.onclick=()=>editCity(x);$('cityList').appendChild(e)})}
-function editCity(x){selected.c=x;mode.c='edit';$('cityEditorTitle').textContent='Редактирование города';$('c_id').value=x.id;$('c_id').readOnly=true;$('c_name').value=x.name;$('c_name_ru').value=x.name_ru;$('c_name_uz').value=x.name_uz;$('c_name_uz_cy').value=x.name_uz_cy;$('c_region').value=x.region_id;fillCityDistricts(x.region_id,x.district_id);$('c_population').value=x.population;$('c_description').value=x.description;$('deleteCity').classList.remove('hidden');renderCities()}
-function resetCity(){selected.c=null;mode.c='new';$('cityEditorTitle').textContent='Новый город';['c_id','c_name','c_name_ru','c_name_uz','c_name_uz_cy','c_population','c_description'].forEach(x=>$(x).value='');$('c_id').readOnly=false;$('c_region').value='';fillCityDistricts('');$('deleteCity').classList.add('hidden');$('cityStatus').style.display='none';renderCities()}
-$('c_region').onchange=()=>fillCityDistricts($('c_region').value);$('saveCity').onclick=async()=>{if(!required(['c_name','c_name_ru','c_name_uz','c_name_uz_cy','c_region']))return notice('cityStatus','❌ Заполни обязательные поля.',false);try{const pop=$('c_population').value===''?null:Number($('c_population').value);if(pop!==null&&(!Number.isInteger(pop)||pop<0))throw Error('Население должно быть целым неотрицательным числом');const raw=$('c_id').value.trim();const b={p_id:raw===''?null:Number(raw),p_region_id:$('c_region').value,p_district_id:$('c_district').value||null,p_name:$('c_name').value.trim(),p_name_ru:$('c_name_ru').value.trim(),p_name_uz:$('c_name_uz').value.trim(),p_name_uz_cy:$('c_name_uz_cy').value.trim(),p_population:pop,p_description:$('c_description').value.trim()};await rpc(mode.c==='new'?'admin_create_city':'admin_update_city',b);notice('cityStatus','✅ Город сохранён');await loadData();resetCity()}catch(e){notice('cityStatus','❌ '+e.message,false)}};
-$('deleteCity').onclick=async()=>{if(!selected.c||!confirm('Удалить город?'))return;try{await rpc('admin_delete_city',{p_id:Number(selected.c.id)});notice('cityStatus','✅ Город удалён');await loadData();resetCity()}catch(e){notice('cityStatus','❌ '+e.message,false)}};$('newCity').onclick=resetCity;$('resetCity').onclick=resetCity;$('citySearch').oninput=renderCities;$('cityFilter').onchange=renderCities;
+function renderCities(){
+ const q=norm($('citySearch').value),rid=$('cityFilter').value,a=cities.filter(x=>(!rid||String(x.region_id)==String(rid))&&[x.id,x.name,x.name_ru,x.name_uz,x.name_uz_cy,x.name_en,x.region_name,x.district_name].some(v=>norm(v).includes(q)));
+ $('cityInfo').textContent='Найдено: '+a.length+' из '+cities.length;$('cityList').innerHTML='';
+ a.forEach(x=>{const e=document.createElement('div');e.className='item'+(selected.c?.id==x.id?' active':'');e.innerHTML='<b>'+esc(x.name_ru||x.name)+'</b><small>'+esc(x.region_name)+(x.district_name?' · '+esc(x.district_name):'')+' · ID '+esc(x.id)+'</small>';e.onclick=()=>editCity(x);$('cityList').appendChild(e)})
+}
+function editCity(x){selected.c=x;mode.c='edit';$('cityEditorTitle').textContent='Редактирование города';$('c_id').value=x.id;$('c_id').readOnly=true;$('c_name').value=x.name;$('c_name_ru').value=x.name_ru;$('c_name_uz').value=x.name_uz;$('c_name_uz_cy').value=x.name_uz_cy;$('c_region').value=x.region_id;fillCityDistricts('c_region','c_district',x.district_id);$('c_population').value=x.population;$('c_description').value=x.description;$('deleteCity').classList.remove('hidden');renderCities()}
+function resetCity(){selected.c=null;mode.c='new';$('cityEditorTitle').textContent='Новый город';['c_id','c_name','c_name_ru','c_name_uz','c_name_uz_cy','c_population','c_description'].forEach(x=>$(x).value='');$('c_id').readOnly=false;$('c_region').value='';$('c_district').innerHTML='<option value="">Без района</option>';$('c_district').disabled=true;$('deleteCity').classList.add('hidden');$('cityStatus').style.display='none';renderCities()}
+$('c_region').onchange=()=>fillCityDistricts('c_region','c_district');$('saveCity').onclick=async()=>{if(!required(['c_name','c_name_ru','c_name_uz','c_name_uz_cy','c_region']))return notice('cityStatus','❌ Заполни обязательные поля.',false);try{const pop=$('c_population').value===''?null:Number($('c_population').value);if(pop!==null&&(!Number.isInteger(pop)||pop<0))throw Error('Население должно быть целым неотрицательным числом');const raw=$('c_id').value.trim();const b={p_id:raw===''?null:Number(raw),p_region_id:$('c_region').value,p_district_id:$('c_district').value||null,p_name:$('c_name').value.trim(),p_name_ru:$('c_name_ru').value.trim(),p_name_uz:$('c_name_uz').value.trim(),p_name_uz_cy:$('c_name_uz_cy').value.trim(),p_population:pop,p_description:$('c_description').value.trim()};await rpc(mode.c==='new'?'admin_create_city':'admin_update_city',b);await loadData();resetCity();notice('cityStatus','✅ Город сохранён')}catch(e){notice('cityStatus','❌ '+e.message,false)}};$('deleteCity').onclick=async()=>{if(!selected.c||!confirm('Удалить город?'))return;try{await rpc('admin_delete_city',{p_id:Number(selected.c.id)});await loadData();resetCity();notice('cityStatus','✅ Город удалён')}catch(e){notice('cityStatus','❌ '+e.message,false)}};$('newCity').onclick=resetCity;$('resetCity').onclick=resetCity;$('citySearch').oninput=renderCities;$('cityFilter').onchange=renderCities;
 
-async function loadLayers(){
- const r=await fetch(SUPABASE_URL+'/rest/v1/map_layers?select=*&order=id.asc',{headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+session.access_token}});
- const t=await r.text();if(!r.ok)throw Error('map_layers → HTTP '+r.status+': '+t);
- layers=JSON.parse(t);$('layerCount').textContent=layers.length;renderLayers();
+/* STREETS */
+function renderStreets(){
+ const q=norm($('streetSearch').value),cid=$('streetFilter').value,a=streets.filter(x=>(!cid||String(x.city_id)==String(cid))&&[x.id,x.name,x.name_ru,x.name_uz,x.name_uz_cy,x.name_en,x.region_name,x.district_name,x.city_name].some(v=>norm(v).includes(q)));
+ $('streetInfo').textContent='Найдено: '+a.length+' из '+streets.length;$('streetList').innerHTML='';
+ a.forEach(x=>{const e=document.createElement('div');e.className='item'+(selected.s?.id==x.id?' active':'');e.innerHTML='<b>'+esc(x.name_ru||x.name)+'</b><small>'+esc(x.city_name||'Без города')+(x.district_name?' · '+esc(x.district_name):'')+' · ID '+esc(x.id)+'</small>';e.onclick=()=>editStreet(x);$('streetList').appendChild(e)})
 }
-function formatBytes(n){if(n==null)return'—';if(n<1024)return n+' B';if(n<1024*1024)return(n/1024).toFixed(1)+' KB';return(n/1024/1024).toFixed(2)+' MB'}
-function renderLayers(){
- const l=$('layerList');l.innerHTML='';
- if(!layers.length){l.innerHTML='<div class="item"><small>Слоёв пока нет.</small></div>';return}
- layers.forEach(x=>{
-  const e=document.createElement('div');e.className='item';e.style.cursor='default';
-  e.innerHTML='<b>'+esc(x.name)+'</b><div class="layer-meta"><span class="badge">'+esc(x.layer_type)+'</span><span class="badge">'+(x.feature_count??'—')+' объектов</span><span class="badge">'+formatBytes(x.file_size)+'</span><span class="badge '+(x.is_active?'on':'off')+'">'+(x.is_active?'✅ Активен':'⏸️ Выключен')+'</span></div>'+(x.description?'<small>'+esc(x.description)+'</small>':'');
-  const a=document.createElement('div');a.className='actions';
-  const toggle=document.createElement('button');toggle.className='gray';toggle.textContent=x.is_active?'⏸️ Отключить':'▶️ Включить';
-  toggle.onclick=async()=>{try{await rpc('admin_update_map_layer',{p_id:x.id,p_name:x.name,p_layer_type:x.layer_type,p_description:x.description||'',p_feature_count:x.feature_count,p_file_size:x.file_size,p_is_active:!x.is_active});await loadLayers()}catch(e){notice('layerStatus','❌ '+e.message,false)}};
-  const del=document.createElement('button');del.className='danger';del.textContent='🗑️ Удалить';
-  del.onclick=async()=>{if(!confirm('Удалить слой «'+x.name+'»?'))return;try{const r=await rpc('admin_delete_map_layer',{p_id:x.id});const path=r?.file_path;if(path){const sr=await fetch(SUPABASE_URL+'/storage/v1/object/map-layers/'+encodeURIComponent(path),{method:'DELETE',headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+session.access_token}});if(!sr.ok)console.warn(await sr.text())}await loadLayers();notice('layerStatus','✅ Слой удалён')}catch(e){notice('layerStatus','❌ '+e.message,false)}};
-  a.append(toggle,del);e.appendChild(a);l.appendChild(e);
- })
+function editStreet(x){selected.s=x;mode.s='edit';$('streetEditorTitle').textContent='Редактирование улицы';$('s_name').value=x.name;$('s_name_ru').value=x.name_ru;$('s_name_uz').value=x.name_uz;$('s_name_uz_cy').value=x.name_uz_cy;$('s_region').value=x.region_id;fillDistrictSelect('s_region','s_district',x.district_id);fillCitySelect('s_region','s_city',x.city_id);$('s_type').value=x.street_type;$('s_description').value=x.description;$('deleteStreet').classList.remove('hidden');renderStreets()}
+function resetStreet(){selected.s=null;mode.s='new';$('streetEditorTitle').textContent='Новая улица';['s_name','s_name_ru','s_name_uz','s_name_uz_cy','s_type','s_description'].forEach(x=>$(x).value='');$('s_region').value='';fillDistrictSelect('s_region','s_district');fillCitySelect('s_region','s_city');$('deleteStreet').classList.add('hidden');$('streetStatus').style.display='none';renderStreets()}
+$('s_region').onchange=()=>{fillDistrictSelect('s_region','s_district');fillCitySelect('s_region','s_city')};
+$('saveStreet').onclick=async()=>{if(!required(['s_name','s_name_ru','s_name_uz','s_name_uz_cy','s_region']))return notice('streetStatus','❌ Заполни обязательные поля.',false);try{const b={p_name:$('s_name').value.trim(),p_name_ru:$('s_name_ru').value.trim(),p_name_uz:$('s_name_uz').value.trim(),p_name_uz_cy:$('s_name_uz_cy').value.trim(),p_name_en:$('s_name').value.trim(),p_region_id:$('s_region').value,p_district_id:$('s_district').value||null,p_city_id:$('s_city').value?Number($('s_city').value):null,p_street_type:$('s_type').value.trim(),p_description:$('s_description').value.trim()};if(mode.s==='new'){await rpc('admin_create_street',b)}else{await rpc('admin_update_street',{p_id:Number(selected.s.id),...b})}await loadData();resetStreet();notice('streetStatus','✅ Улица сохранена')}catch(e){notice('streetStatus','❌ '+e.message,false)}};
+$('deleteStreet').onclick=async()=>{if(!selected.s||!confirm('Удалить улицу?'))return;try{await rpc('admin_delete_street',{p_id:Number(selected.s.id)});await loadData();resetStreet();notice('streetStatus','✅ Улица удалена')}catch(e){notice('streetStatus','❌ '+e.message,false)}};$('newStreet').onclick=resetStreet;$('resetStreet').onclick=resetStreet;$('streetSearch').oninput=renderStreets;$('streetFilter').onchange=renderStreets;
+
+/* BUILDINGS */
+function renderBuildings(){
+ const q=norm($('buildingSearch').value),cid=$('buildingFilter').value,a=buildings.filter(x=>(!cid||String(x.city_id)==String(cid))&&[x.id,x.house_number,x.address,x.name,x.name_ru,x.name_uz,x.name_uz_cy,x.name_en,x.postal_code,x.building_type].some(v=>norm(v).includes(q)));
+ $('buildingInfo').textContent='Найдено: '+a.length+' из '+buildings.length;$('buildingList').innerHTML='';
+ a.forEach(x=>{const e=document.createElement('div');e.className='item'+(selected.b?.id==x.id?' active':'');e.innerHTML='<b>№ '+esc(x.house_number)+(x.name_ru?' — '+esc(x.name_ru):'')+'</b><small>'+esc(x.address||x.city_name||'Без адреса')+' · ID '+esc(x.id)+'</small>';e.onclick=()=>editBuilding(x);$('buildingList').appendChild(e)})
 }
-$('layerFile').onchange=()=>{const f=$('layerFile').files[0];if(!f){$('fileInfo').textContent='Выбери файл GeoJSON (до 20 MB)';return}$('fileInfo').textContent=f.name+' · '+formatBytes(f.size);if(f.size>20*1024*1024)notice('layerStatus','❌ Максимальный размер файла — 20 MB.',false)};
-$('uploadLayer').onclick=async()=>{
- const f=$('layerFile').files[0],name=$('layerName').value.trim(),type=$('layerType').value,desc=$('layerDescription').value.trim();
- if(!name||!f)return notice('layerStatus','❌ Укажи название и выбери GeoJSON.',false);
- if(f.size>20*1024*1024)return notice('layerStatus','❌ Максимальный размер — 20 MB.',false);
+function editBuilding(x){selected.b=x;mode.b='edit';$('buildingEditorTitle').textContent='Редактирование дома';$('b_house').value=x.house_number;$('b_name').value=x.name;$('b_name_ru').value=x.name_ru;$('b_name_uz').value=x.name_uz;$('b_name_uz_cy').value=x.name_uz_cy;$('b_name_en').value=x.name_en;$('b_region').value=x.region_id;fillDistrictSelect('b_region','b_district',x.district_id);fillCitySelect('b_region','b_city',x.city_id);fillBuildingStreet(x.city_id,x.street_id);$('b_address').value=x.address;$('b_postal').value=x.postal_code;$('b_type').value=x.building_type;$('b_floors').value=x.floors;$('b_description').value=x.description;$('deleteBuilding').classList.remove('hidden');renderBuildings()}
+function resetBuilding(){selected.b=null;mode.b='new';$('buildingEditorTitle').textContent='Новый дом';['b_house','b_name','b_name_ru','b_name_uz','b_name_uz_cy','b_name_en','b_address','b_postal','b_type','b_floors','b_description'].forEach(x=>$(x).value='');$('b_region').value='';fillDistrictSelect('b_region','b_district');fillCitySelect('b_region','b_city');fillBuildingStreet('');$('deleteBuilding').classList.add('hidden');$('buildingStatus').style.display='none';renderBuildings()}
+$('b_region').onchange=()=>{fillDistrictSelect('b_region','b_district');fillCitySelect('b_region','b_city');fillBuildingStreet('')};
+$('b_city').onchange=()=>fillBuildingStreet($('b_city').value);
+$('saveBuilding').onclick=async()=>{
+ if(!required(['b_house']))return notice('buildingStatus','❌ Номер дома обязателен.',false);
  try{
-  const text=await f.text();let geo;try{geo=JSON.parse(text)}catch{throw Error('Файл не является корректным JSON/GeoJSON')}
-  if(geo.type!=='FeatureCollection'||!Array.isArray(geo.features))throw Error('Нужен GeoJSON FeatureCollection');
-  const safe=f.name.replace(/[^a-zA-Z0-9._-]/g,'_'),path=Date.now()+'_'+safe;
-  const up=await fetch(SUPABASE_URL+'/storage/v1/object/map-layers/'+encodeURIComponent(path),{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+session.access_token,'Content-Type':'application/geo+json','x-upsert':'false'},body:f});
-  if(!up.ok)throw Error('Storage → HTTP '+up.status+': '+await up.text());
-  await rpc('admin_create_map_layer',{p_name:name,p_layer_type:type,p_file_path:path,p_description:desc,p_feature_count:geo.features.length,p_file_size:f.size});
-  $('layerName').value='';$('layerDescription').value='';$('layerFile').value='';$('fileInfo').textContent='Выбери файл GeoJSON (до 20 MB)';
-  await loadLayers();notice('layerStatus','✅ Слой загружен. Объектов: '+geo.features.length);
- }catch(e){notice('layerStatus','❌ '+e.message,false)}
+  const floors=$('b_floors').value===''?null:Number($('b_floors').value);if(floors!==null&&(!Number.isInteger(floors)||floors<0))throw Error('Этажи должны быть целым неотрицательным числом');
+  const b={p_name:$('b_name').value.trim()||null,p_name_ru:$('b_name_ru').value.trim()||null,p_name_uz:$('b_name_uz').value.trim()||null,p_name_uz_cy:$('b_name_uz_cy').value.trim()||null,p_name_en:$('b_name_en').value.trim()||null,p_house_number:$('b_house').value.trim(),p_address:$('b_address').value.trim()||null,p_postal_code:$('b_postal').value.trim()||null,p_building_type:$('b_type').value.trim()||null,p_floors:floors,p_street_id:$('b_street').value?Number($('b_street').value):null,p_region_id:$('b_region').value||null,p_district_id:$('b_district').value||null,p_city_id:$('b_city').value?Number($('b_city').value):null,p_description:$('b_description').value.trim()||null};
+  if(mode.b==='new')await rpc('admin_create_building',b);else await rpc('admin_update_building',{p_id:Number(selected.b.id),...b});
+  await loadData();resetBuilding();notice('buildingStatus','✅ Дом сохранён');
+ }catch(e){notice('buildingStatus','❌ '+e.message,false)}
 };
-$('refreshLayers').onclick=async()=>{try{await loadLayers();notice('layerStatus','✅ Список слоёв обновлён')}catch(e){notice('layerStatus','❌ '+e.message,false)}};
+$('deleteBuilding').onclick=async()=>{if(!selected.b||!confirm('Удалить дом?'))return;try{await rpc('admin_delete_building',{p_id:Number(selected.b.id)});await loadData();resetBuilding();notice('buildingStatus','✅ Дом удалён')}catch(e){notice('buildingStatus','❌ '+e.message,false)}};$('newBuilding').onclick=resetBuilding;$('resetBuilding').onclick=resetBuilding;$('buildingSearch').oninput=renderBuildings;$('buildingFilter').onchange=renderBuildings;
 
-document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('main>section.card:not(:last-child)').forEach(x=>x.classList.add('hidden'));b.classList.add('active');$(b.dataset.tab+'Tab').classList.remove('hidden');if(b.dataset.tab==='layers')loadLayers()});
+/* LAYERS */
+function formatBytes(n){if(n==null)return'—';if(n<1024)return n+' B';if(n<1048576)return(n/1024).toFixed(1)+' KB';return(n/1048576).toFixed(2)+' MB'}
+async function loadLayers(){
+ try{
+  layers=await api('/rest/v1/map_layers?select=*&order=id.asc');layers=Array.isArray(layers)?layers:[];$('layerCount').textContent=layers.length;renderLayers();
+ }catch(e){layers=[];$('layerCount').textContent='—';throw e}
+}
+function renderLayers(){
+ const l=$('layerList');l.innerHTML='';if(!layers.length){l.innerHTML='<div class="item"><small>Слоёв пока нет — это нормально.</small></div>';return}
+ layers.forEach(x=>{const e=document.createElement('div');e.className='item';e.style.cursor='default';e.innerHTML='<b>'+esc(x.name)+'</b><div>'+('<span class="badge">'+esc(x.layer_type)+'</span>')+('<span class="badge">'+(x.feature_count??'—')+' объектов</span>')+('<span class="badge">'+formatBytes(x.file_size)+'</span>')+('<span class="badge '+(x.is_active?'on':'off')+'">'+(x.is_active?'✅ Активен':'⏸️ Выключен')+'</span>')+'</div>'+(x.description?'<small>'+esc(x.description)+'</small>':'');const a=document.createElement('div');a.className='actions';
+ const t=document.createElement('button');t.className='gray';t.textContent=x.is_active?'⏸️ Отключить':'▶️ Включить';t.onclick=async()=>{try{await rpc('admin_update_map_layer',{p_id:x.id,p_name:x.name,p_layer_type:x.layer_type,p_description:x.description||'',p_feature_count:x.feature_count,p_file_size:x.file_size,p_is_active:!x.is_active});await loadLayers()}catch(e){notice('layerStatus','❌ '+e.message,false)}};
+ const d=document.createElement('button');d.className='danger';d.textContent='🗑️ Удалить';d.onclick=async()=>{if(!confirm('Удалить слой?'))return;try{const r=await rpc('admin_delete_map_layer',{p_id:x.id});if(r?.file_path){await api('/storage/v1/object/map-layers/'+encodeURIComponent(r.file_path),{method:'DELETE'})}await loadLayers();notice('layerStatus','✅ Слой удалён')}catch(e){notice('layerStatus','❌ '+e.message,false)}};a.append(t,d);e.appendChild(a);l.appendChild(e)})
+}
+$('layerFile').onchange=()=>{const f=$('layerFile').files[0];$('fileInfo').textContent=f?f.name+' · '+formatBytes(f.size):'Выбери файл GeoJSON (до 20 MB)'};
+$('uploadLayer').onclick=async()=>{const f=$('layerFile').files[0],name=$('layerName').value.trim();if(!f||!name)return notice('layerStatus','❌ Укажи название и выбери файл.',false);if(f.size>20*1048576)return notice('layerStatus','❌ Максимальный размер — 20 MB.',false);try{const geo=JSON.parse(await f.text());if(geo.type!=='FeatureCollection'||!Array.isArray(geo.features))throw Error('Нужен GeoJSON FeatureCollection');const safe=f.name.replace(/[^a-zA-Z0-9._-]/g,'_'),path=Date.now()+'_'+safe;await api('/storage/v1/object/map-layers/'+encodeURIComponent(path),{method:'POST',headers:{'Content-Type':'application/geo+json','x-upsert':'false'},body:f});await rpc('admin_create_map_layer',{p_name:name,p_layer_type:$('layerType').value,p_file_path:path,p_description:$('layerDescription').value.trim(),p_feature_count:geo.features.length,p_file_size:f.size});$('layerName').value='';$('layerDescription').value='';$('layerFile').value='';await loadLayers();notice('layerStatus','✅ Слой загружен: '+geo.features.length+' объектов')}catch(e){notice('layerStatus','❌ '+e.message,false)}};
+$('refreshLayers').onclick=async()=>{try{await loadLayers();notice('layerStatus','✅ Список обновлён')}catch(e){notice('layerStatus','❌ '+e.message,false)}};
+
+/* TABS */
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('main>section.card').forEach(x=>x.classList.add('hidden'));b.classList.add('active');$(b.dataset.tab+'Tab').classList.remove('hidden')});
 $('refresh').onclick=async()=>{const b=$('refresh');b.disabled=true;try{await loadData();notice('globalStatus','✅ Данные обновлены')}catch(e){notice('globalStatus','❌ '+e.message,false)}finally{b.disabled=false}};
 $('logout').onclick=()=>{localStorage.removeItem('naqsha_admin_session');location.reload()};$('login').onclick=login;$('password').onkeydown=e=>{if(e.key==='Enter')login()};
 
-async function openAdmin(){$('loginCard').classList.add('hidden');$('app').classList.remove('hidden');$('userEmail').textContent=session?.user?.email||'admin';try{await loadData()}catch(e){notice('globalStatus','❌ '+e.message,false)}}
+async function openAdmin(){
+ $('loginCard').classList.add('hidden');$('app').classList.remove('hidden');$('userEmail').textContent=session?.user?.email||'admin';
+ try{await loadData()}catch(e){notice('globalStatus','❌ '+e.message,false)}
+}
 (async()=>{try{session=JSON.parse(localStorage.getItem('naqsha_admin_session')||'null')}catch{session=null}if(session?.access_token)await openAdmin()})();
 </script>
 </body>
