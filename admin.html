@@ -101,6 +101,23 @@ pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-w
 <h2>🏙️ Города</h2>
 <div class="searchrow"><input id="citySearch" placeholder="Поиск города..."><select id="cityFilter"><option value="">Все области</option></select><button id="newCity" class="primary">＋ Новый город</button></div>
 <p id="cityInfo" class="small"></p>
+<div class="card" style="margin:12px 0;background:#f8fafc">
+  <h3>⬆️ Массовый импорт городов</h3>
+  <div class="small">
+    Загрузите CSV или JSON. Перед записью Naqsha проверит дубликаты,
+    области, обязательные языки и покажет результат.
+  </div>
+  <label>Файл городов</label>
+  <input id="cityImportFile" type="file" accept=".csv,.json,text/csv,application/json">
+  <div id="cityImportInfo" class="small" style="margin-top:7px">Формат CSV: id,name,name_ru,name_uz,name_uz_cy,region_id,district_id,population,description (name = EN)</div>
+  <div class="actions">
+    <button id="previewCityImport" class="gray">🔎 Проверить файл</button>
+    <button id="runCityImport" class="success" disabled>⬆️ Импортировать</button>
+  </div>
+  <div id="cityImportStatus" class="notice"></div>
+  <pre id="cityImportPreview" class="hidden"></pre>
+</div>
+
 <div class="layout"><div class="list" id="cityList"></div><div>
 <h3 id="cityEditorTitle">Новый город</h3><label>ID (пусто = автоматически)</label><input id="c_id" type="number" min="1">
 <label>Название EN *</label><input id="c_name"><div class="grid3"><div><label>RU *</label><input id="c_name_ru"></div><div><label>UZ Latin *</label><input id="c_name_uz"></div><div><label>UZ Кирилл *</label><input id="c_name_uz_cy"></div></div>
@@ -271,6 +288,119 @@ function renderCities(){
 function editCity(x){selected.c=x;mode.c='edit';$('cityEditorTitle').textContent='Редактирование города';$('c_id').value=x.id;$('c_id').readOnly=true;$('c_name').value=x.name;$('c_name_ru').value=x.name_ru;$('c_name_uz').value=x.name_uz;$('c_name_uz_cy').value=x.name_uz_cy;$('c_region').value=x.region_id;fillCityDistricts('c_region','c_district',x.district_id);$('c_population').value=x.population;$('c_description').value=x.description;$('deleteCity').classList.remove('hidden');renderCities()}
 function resetCity(){selected.c=null;mode.c='new';$('cityEditorTitle').textContent='Новый город';['c_id','c_name','c_name_ru','c_name_uz','c_name_uz_cy','c_population','c_description'].forEach(x=>$(x).value='');$('c_id').readOnly=false;$('c_region').value='';$('c_district').innerHTML='<option value="">Без района</option>';$('c_district').disabled=true;$('deleteCity').classList.add('hidden');$('cityStatus').style.display='none';renderCities()}
 $('c_region').onchange=()=>fillCityDistricts('c_region','c_district');$('saveCity').onclick=async()=>{if(!required(['c_name','c_name_ru','c_name_uz','c_name_uz_cy','c_region']))return notice('cityStatus','❌ Заполни обязательные поля.',false);try{const pop=$('c_population').value===''?null:Number($('c_population').value);if(pop!==null&&(!Number.isInteger(pop)||pop<0))throw Error('Население должно быть целым неотрицательным числом');const raw=$('c_id').value.trim();const b={p_id:raw===''?null:Number(raw),p_region_id:$('c_region').value,p_district_id:$('c_district').value||null,p_name:$('c_name').value.trim(),p_name_ru:$('c_name_ru').value.trim(),p_name_uz:$('c_name_uz').value.trim(),p_name_uz_cy:$('c_name_uz_cy').value.trim(),p_population:pop,p_description:$('c_description').value.trim()};await rpc(mode.c==='new'?'admin_create_city':'admin_update_city',b);await loadData();resetCity();notice('cityStatus','✅ Город сохранён')}catch(e){notice('cityStatus','❌ '+e.message,false)}};$('deleteCity').onclick=async()=>{if(!selected.c||!confirm('Удалить город?'))return;try{await rpc('admin_delete_city',{p_id:Number(selected.c.id)});await loadData();resetCity();notice('cityStatus','✅ Город удалён')}catch(e){notice('cityStatus','❌ '+e.message,false)}};$('newCity').onclick=resetCity;$('resetCity').onclick=resetCity;$('citySearch').oninput=renderCities;$('cityFilter').onchange=renderCities;
+
+
+/* MASS CITY IMPORT */
+let cityImportRows=[];
+
+function csvParse(text){
+  const rows=[]; let row=[], cell='', quoted=false;
+  for(let i=0;i<text.length;i++){
+    const ch=text[i], nx=text[i+1];
+    if(ch=='"' && quoted && nx=='"'){cell+='"';i++;continue}
+    if(ch=='"'){quoted=!quoted;continue}
+    if(ch==',' && !quoted){row.push(cell);cell='';continue}
+    if((ch=='\n'||ch=='\r')&&!quoted){
+      if(ch=='\r'&&nx=='\n')i++;
+      row.push(cell);cell='';
+      if(row.some(v=>v.trim()!==''))rows.push(row);
+      row=[];continue;
+    }
+    cell+=ch;
+  }
+  if(cell!==''||row.length){row.push(cell);if(row.some(v=>v.trim()!==''))rows.push(row)}
+  if(!rows.length)return [];
+  const headers=rows.shift().map(x=>norm(x).replace(/^\uFEFF/,''));
+  return rows.map(r=>Object.fromEntries(headers.map((h,i)=>[h,(r[i]??'').trim()])));
+}
+
+async function readCityImportFile(){
+  const f=$('cityImportFile').files[0];
+  if(!f)throw Error('Выберите CSV или JSON файл.');
+  if(f.size>10*1048576)throw Error('Максимальный размер файла — 10 MB.');
+  const text=await f.text();
+  let rows;
+  if(/\.json$/i.test(f.name)){
+    const d=JSON.parse(text); rows=Array.isArray(d)?d:(Array.isArray(d.cities)?d.cities:null);
+    if(!rows)throw Error('JSON должен содержать массив городов или объект {cities:[...]}');
+  }else{
+    rows=csvParse(text);
+  }
+  return rows.map((x,i)=>({
+    line:i+2,
+    id:x.id===''||x.id==null?null:Number(x.id),
+    name:x.name||x.name_en||'',
+    name_ru:x.name_ru||'',
+    name_uz:x.name_uz||'',
+    name_uz_cy:x.name_uz_cy||'',
+    region_id:x.region_id||'',
+    district_id:x.district_id||null,
+    population:x.population===''||x.population==null?null:Number(x.population),
+    description:x.description||''
+  }));
+}
+
+function validateCityImport(rows){
+  const errors=[],seen=new Set();
+  rows.forEach((x,i)=>{
+    const p='Строка '+x.line+': ';
+    if(!x.name)errors.push(p+'нет name');
+    if(!x.name_ru)errors.push(p+'нет name_ru');
+    if(!x.name_uz)errors.push(p+'нет name_uz');
+    if(!x.name_uz_cy)errors.push(p+'нет name_uz_cy');
+    if(!x.region_id)errors.push(p+'нет region_id');
+    if(x.id!=null&&(!Number.isInteger(x.id)||x.id<=0))errors.push(p+'некорректный id');
+    if(x.population!=null&&(!Number.isInteger(x.population)||x.population<0))errors.push(p+'некорректное population');
+    const key=(x.id!=null?'id:'+x.id:'name:'+norm(x.name)+'|region:'+x.region_id);
+    if(seen.has(key))errors.push(p+'дубликат внутри файла'); seen.add(key);
+    const reg=regions.find(r=>String(r.id)===String(x.region_id));
+    if(!reg)errors.push(p+'region_id '+x.region_id+' не найден в Naqsha');
+    if(x.district_id && !districts.some(d=>String(d.id)===String(x.district_id)&&String(d.region_id)===String(x.region_id)))
+      errors.push(p+'district_id не существует или не относится к выбранной области');
+  });
+  return errors;
+}
+
+$('previewCityImport').onclick=async()=>{
+  try{
+    cityImportRows=await readCityImportFile();
+    const errors=validateCityImport(cityImportRows);
+    const existing=cityImportRows.filter(x=>cities.some(c=>
+      (x.id!=null&&String(c.id)===String(x.id)) ||
+      (norm(c.name)===norm(x.name)&&String(c.region_id)===String(x.region_id))
+    ));
+    $('cityImportPreview').classList.remove('hidden');
+    $('cityImportPreview').textContent=JSON.stringify({
+      всего:cityImportRows.length,
+      ошибок:errors.length,
+      уже_существуют:existing.length,
+      готовы_к_импорту:Math.max(0,cityImportRows.length-errors.length-existing.length),
+      ошибки:errors.slice(0,100),
+      пример:cityImportRows.slice(0,5)
+    },null,2);
+    $('runCityImport').disabled=errors.length>0;
+    notice('cityImportStatus',errors.length?'❌ Исправьте ошибки перед импортом.':'✅ Проверка пройдена. Можно импортировать.');
+  }catch(e){
+    $('runCityImport').disabled=true;
+    notice('cityImportStatus','❌ '+e.message,false);
+  }
+};
+
+$('runCityImport').onclick=async()=>{
+  if(!cityImportRows.length)return;
+  if(!confirm('Импортировать проверенные города? Уже существующие записи будут пропущены.'))return;
+  const fresh=cityImportRows.filter(x=>!cities.some(c=>
+    (x.id!=null&&String(c.id)===String(x.id)) ||
+    (norm(c.name)===norm(x.name)&&String(c.region_id)===String(x.region_id))
+  ));
+  try{
+    const result=await rpc('admin_bulk_create_cities',{p_cities:fresh});
+    const n=result?.inserted_count??result?.inserted??fresh.length;
+    notice('cityImportStatus','✅ Импорт завершён. Добавлено: '+n+'.');
+    await loadData();
+    $('cityImportPreview').textContent=JSON.stringify(result,null,2);
+  }catch(e){notice('cityImportStatus','❌ '+e.message,false)}
+};
 
 /* STREETS */
 function renderStreets(){
