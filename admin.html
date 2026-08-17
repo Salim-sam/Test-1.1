@@ -470,24 +470,45 @@ function validateUniversal(rows,type){
  });
  return errors;
 }
+/* IMPORT MATCHING v9 — multilingual, accent/apostrophe tolerant, and safe for legacy district IDs */
+const CYR_TO_LAT={
+ 'а':'a','б':'b','в':'v','г':'g','д':'d','е':'e','ё':'yo','ж':'zh','з':'z','и':'i','й':'y','к':'k','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ф':'f','х':'kh','ц':'ts','ч':'ch','ш':'sh','щ':'shch','ъ':'','ы':'y','ь':'','э':'e','ю':'yu','я':'ya',
+ 'ғ':'g','қ':'q','ҳ':'h','ў':'o','ё':'yo','Ғ':'g','Қ':'q','Ҳ':'h','Ў':'o','Ё':'yo'
+};
+function translitCyr(v){return String(v||'').split('').map(ch=>CYR_TO_LAT[ch]??CYR_TO_LAT[ch.toLowerCase()]??ch).join('')}
 function importNameKey(v){
- return norm(String(v||''))
-  .replace(/\b(district|район|tuman|tumani)\b/g,'')
-  .replace(/[^\p{L}\p{N}]+/gu,'')
-  .trim();
+ let s=String(v??'').toLowerCase().normalize('NFKC');
+ s=s.replace(/[ʻʼ’‘`´]/g,'').replace(/\u02bb/g,'');
+ s=translitCyr(s).toLowerCase();
+ s=s.replace(/\b(district|rayon|район|tuman|tumani|туман|тумани)\b/g,'');
+ /* Russian adjectival district forms: Андижанский → Андижан, Бухарский → Бухар… */
+ s=s.replace(/(skiy|skij|ский|ская|ское|ские)$/,'');
+ s=s.replace(/(ski|ский|skaya|skoye)$/,'');
+ s=s.replace(/[^a-z0-9]+/g,'').trim();
+ /* common Uzbek/Russian transliteration differences */
+ s=s.replace(/kh/g,'h').replace(/q/g,'k').replace(/w/g,'v');
+ return s;
 }
-function sameRegion(a,b){return String(a||'')===String(b||'');}
+function sameRegion(a,b){return String(a||'').trim().toLowerCase()===String(b||'').trim().toLowerCase();}
+function fieldKeys(x, fields=['name','name_ru','name_uz','name_uz_cy','name_en']){
+ return [...new Set(fields.map(k=>importNameKey(x?.[k])).filter(Boolean))];
+}
 function sameDistrictByName(row,x){
  if(!sameRegion(row.region_id,x.region_id))return false;
- const incoming=[row.name,row.name_ru,row.name_uz,row.name_uz_cy,row.name_en].filter(Boolean).map(importNameKey);
- const existing=[x.name,x.name_ru,x.name_uz,x.name_uz_cy,x.name_en].filter(Boolean).map(importNameKey);
- return incoming.some(a=>a && existing.includes(a));
+ const incoming=fieldKeys(row), existing=fieldKeys(x);
+ if(!incoming.length||!existing.length)return false;
+ return incoming.some(a=>existing.some(b=>a===b || (a.length>=5&&b.length>=5&&(a.startsWith(b)||b.startsWith(a)))));
+}
+function sameEntityByName(row,x,fields=['name','name_ru','name_uz','name_uz_cy','name_en']){
+ if(!sameRegion(row.region_id,x.region_id))return false;
+ const a=fieldKeys(row,fields),b=fieldKeys(x,fields);
+ return a.some(x=>b.some(y=>x===y || (x.length>=5&&y.length>=5&&(x.startsWith(y)||y.startsWith(x)))));
 }
 function existingUniversal(row,type){
- if(type==='regions')return regions.some(x=>String(x.id)===String(row.id)||importNameKey(x.name)===importNameKey(row.name));
+ if(type==='regions')return regions.some(x=>String(x.id)===String(row.id)||sameEntityByName(row,x));
  if(type==='districts')return districts.some(x=>String(x.id)===String(row.id)||sameDistrictByName(row,x));
- if(type==='cities')return cities.some(x=>(row.id&&String(x.id)===String(row.id))||(sameRegion(row.region_id,x.region_id)&&[row.name,row.name_ru,row.name_uz,row.name_uz_cy,row.name_en].filter(Boolean).map(importNameKey).some(a=>a&&[x.name,x.name_ru,x.name_uz,x.name_uz_cy,x.name_en].filter(Boolean).map(importNameKey).includes(a))));
- if(type==='streets')return streets.some(x=>(importNameKey(x.name)===importNameKey(row.name)||importNameKey(x.name_ru)===importNameKey(row.name_ru)||importNameKey(x.name_uz)===importNameKey(row.name_uz))&&String(x.city_id||'')===String(row.city_id||'')&&String(x.district_id||'')===String(row.district_id||''));
+ if(type==='cities')return cities.some(x=>(row.id&&String(x.id)===String(row.id))||sameEntityByName(row,x));
+ if(type==='streets')return streets.some(x=>sameEntityByName(row,x)&&String(x.city_id||'')===String(row.city_id||'')&&String(x.district_id||'')===String(row.district_id||''));
  if(type==='buildings')return buildings.some(x=>norm(x.house_number)===norm(row.house_number)&&String(x.street_id||'')===String(row.street_id||'')&&String(x.city_id||'')===String(row.city_id||''));
  return false;
 }
@@ -513,12 +534,14 @@ $('checkImport').onclick=async()=>{
   universalImportRows=await parseUniversalFile();
   const errors=validateUniversal(universalImportRows,universalImportType);
   const existing=universalImportRows.filter(x=>existingUniversal(x,universalImportType));
+  const fresh=universalImportRows.filter(x=>!existingUniversal(x,universalImportType));
   $('importPreview').classList.remove('hidden');
   $('importPreview').textContent=JSON.stringify({
     раздел:universalImportType,
     всего:universalImportRows.length,
     ошибок:errors.length,
     уже_существуют:existing.length,
+    новых: fresh.length,
     готовы_к_импорту:Math.max(0,universalImportRows.length-errors.length-existing.length),
     ошибки:errors.slice(0,100)
   },null,2);
