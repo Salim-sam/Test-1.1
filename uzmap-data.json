@@ -1,1 +1,1266 @@
-{}
+{
+  "Ulugnor District": {
+    "nameRu": "Улугнорский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Pap District": {
+    "nameRu": "Pap District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Dangara District": {
+    "nameRu": "Дангаринский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Qo'ng'irot District": {
+    "nameRu": "Кунградский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Uchkuduk District": {
+    "nameRu": "Uchkuduk District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Kumkurghon District": {
+    "nameRu": "Kumkurghon District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Nurobod District": {
+    "nameRu": "Нурабадский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Saikhunabad District": {
+    "nameRu": "Saikhunabad District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Forish District": {
+    "nameRu": "Фаришский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Peshku District": {
+    "nameRu": "Пешкунский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Muborak District": {
+    "nameRu": "Мубарекский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Tashkent City": {
+    "nameRu": "Tashkent City",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Jalalkuduk District": {
+    "nameRu": "Jalalkuduk District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Kurgontepa District": {
+    "nameRu": "Kurgontepa District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Khodjaobad District": {
+    "nameRu": "Khodjaobad District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Buloqboshi District": {
+    "nameRu": "Булакбашинский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Marhamat District": {
+    "nameRu": "Мархаматский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Asaka District": {
+    "nameRu": "Асакинский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Shakhrihon District": {
+    "nameRu": "Shakhrihon District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Oltinkol District": {
+    "nameRu": "Oltinkol District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Andijan District": {
+    "nameRu": "Andijan District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Pakhtaabad District": {
+    "nameRu": "Pakhtaabad District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Izboskan District": {
+    "nameRu": "Избасканский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Baliqchi District": {
+    "nameRu": "Балыкчинский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Boz District": {
+    "nameRu": "Бозский район",
+    "region": "Андижанская",
+    "center": "Боз",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Uchkurgan District": {
+    "nameRu": "Uchkurgan District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Naryn District": {
+    "nameRu": "Naryn District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Uychi District": {
+    "nameRu": "Уйчинский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Namangan District": {
+    "nameRu": "Наманганский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Chartak District": {
+    "nameRu": "Chartak District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Yangikurgan District": {
+    "nameRu": "Yangikurgan District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Kasansay District": {
+    "nameRu": "Kasansay District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Turakurgan District": {
+    "nameRu": "Turakurgan District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Chust District": {
+    "nameRu": "Чустский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Mingbulak District": {
+    "nameRu": "Mingbulak District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Quva District": {
+    "nameRu": "Кувинский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Tashlaq District": {
+    "nameRu": "Tashlaq District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Qo'shtepa District": {
+    "nameRu": "Куштепинский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Fergana District": {
+    "nameRu": "Fergana District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Altuariq District": {
+    "nameRu": "Altuariq District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Rishton District": {
+    "nameRu": "Риштанский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Baghdad District": {
+    "nameRu": "Baghdad District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Buvayda District": {
+    "nameRu": "Бувайдинский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Uchkuprik District": {
+    "nameRu": "Uchkuprik District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Uzbekistan District": {
+    "nameRu": "Uzbekistan District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Beshariq District": {
+    "nameRu": "Бешарыкский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Furqat District": {
+    "nameRu": "Фуркатский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Parkent District": {
+    "nameRu": "Паркентский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Chinaz District": {
+    "nameRu": "Chinaz",
+    "region": "Ташкентская область",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Yangiyol District": {
+    "nameRu": "Янгиюльский район",
+    "region": "Ташкентская область",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Quyi Chirchiq District": {
+    "nameRu": "Quyi Chirchiq District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Oqqurgan District": {
+    "nameRu": "Oqqurgan District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Bekabad District": {
+    "nameRu": "Bekabad District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Buka District": {
+    "nameRu": "Buka District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Okhangaron District": {
+    "nameRu": "Ахангаранский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Piskent  District": {
+    "nameRu": "Пскентский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Sirdaryo District": {
+    "nameRu": "Сырдарьинский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Sardoba District": {
+    "nameRu": "Сардобский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Gulistan District": {
+    "nameRu": "Gulistan District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Bayaut District": {
+    "nameRu": "Bayaut District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Mirzaabad District": {
+    "nameRu": "Mirzaabad District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Khavast District": {
+    "nameRu": "Khavast District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Akaltyn District": {
+    "nameRu": "Akaltyn District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Yangiabad District": {
+    "nameRu": "Yangiabad District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Zarbdar District": {
+    "nameRu": "Zarbdar District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Zaamin District": {
+    "nameRu": "Zaamin District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Bakhmal District": {
+    "nameRu": "Bakhmal District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Gallaorol District": {
+    "nameRu": "Галляаральский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Jizzkah District": {
+    "nameRu": "Jizzkah District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Mirzachul District": {
+    "nameRu": "Mirzachul District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Dustlik District": {
+    "nameRu": "Dustlik District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Pakhtakor District": {
+    "nameRu": "Pakhtakor District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Zafarobod District": {
+    "nameRu": "Зафарабадский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Arnasay District": {
+    "nameRu": "Arnasay District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Termiz District": {
+    "nameRu": "Термезский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Angor District": {
+    "nameRu": "Ангорский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Jarkurghon District": {
+    "nameRu": "Jarkurghon District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Kizirik District": {
+    "nameRu": "Kizirik District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Bandixon District": {
+    "nameRu": "Бандиханский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Sherobod District": {
+    "nameRu": "Шерабадский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Boysun District": {
+    "nameRu": "Байсунский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Sariosiyo District": {
+    "nameRu": "Сариасийский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Denov District": {
+    "nameRu": "Денауский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Uzun District": {
+    "nameRu": "Узунский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Oltinsoy District": {
+    "nameRu": "Алтынсайский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Shurchi District": {
+    "nameRu": "Shurchi District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Dehkanabad District": {
+    "nameRu": "Dehkanabad District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Nishon District": {
+    "nameRu": "Нишанский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Guzar District": {
+    "nameRu": "Guzar District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Karshi District": {
+    "nameRu": "Karshi District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Kamashi District": {
+    "nameRu": "Kamashi District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Yakkabog District": {
+    "nameRu": "Яккабагский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Shakhrisabz District": {
+    "nameRu": "Shakhrisabz District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Myrishkor District": {
+    "nameRu": "Myrishkor District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Chirakchi District": {
+    "nameRu": "Chirakchi District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Kasby District": {
+    "nameRu": "Kasby District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Koson District": {
+    "nameRu": "Касанский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Urgut District": {
+    "nameRu": "Ургутский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Bulungur District": {
+    "nameRu": "Булунгурский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Jomboy District": {
+    "nameRu": "Джамбайский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Toyloq District": {
+    "nameRu": "Тайлакский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Samarqand District": {
+    "nameRu": "Самаркандский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Pastdargom District": {
+    "nameRu": "Пастдаргомский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Oqdarya District": {
+    "nameRu": "Oqdarya District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Ishtikhon District": {
+    "nameRu": "Ishtikhon District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Payarid District": {
+    "nameRu": "Payarid District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Korshrabot District": {
+    "nameRu": "Korshrabot District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Pakhtachi District": {
+    "nameRu": "Pakhtachi District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Narpay District": {
+    "nameRu": "Нарпайский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Kattakurgan District": {
+    "nameRu": "Kattakurgan District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Khatyrchi District": {
+    "nameRu": "Khatyrchi District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Navbakhor District": {
+    "nameRu": "Navbakhor District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Kanimekh District": {
+    "nameRu": "Kanimekh District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Navoiy District": {
+    "nameRu": "Navoiy District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Kyzyltepa District": {
+    "nameRu": "Kyzyltepa District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Nurata District": {
+    "nameRu": "Nurata District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Tamdy District": {
+    "nameRu": "Tamdy District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Gijduvan District": {
+    "nameRu": "Gijduvan District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Vabkent District": {
+    "nameRu": "Vabkent District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Kagan District": {
+    "nameRu": "Kagan District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Karaulbazar District": {
+    "nameRu": "Karaulbazar District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Bukhara District": {
+    "nameRu": "Bukhara District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Alat District": {
+    "nameRu": "Alat District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Romitan District": {
+    "nameRu": "Ромитанский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Karakul District": {
+    "nameRu": "Karakul District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Jondor District": {
+    "nameRu": "Жондорский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Shafirkan District": {
+    "nameRu": "Shafirkan District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Hazorasp District": {
+    "nameRu": "Hazorasp District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Bog'ot District": {
+    "nameRu": "Багатский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Yangiariq District": {
+    "nameRu": "Янгиарыкский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Xonqa District": {
+    "nameRu": "Ханкинский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Khiva District": {
+    "nameRu": "Khiva District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Qo'shko'pir District": {
+    "nameRu": "Кошкупырский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Urganch District": {
+    "nameRu": "Ургенчский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Shovot District": {
+    "nameRu": "Шаватский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Yangibozor District": {
+    "nameRu": "Янгибазарский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "To'rtko'l District": {
+    "nameRu": "Турткульский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Ellikqala District": {
+    "nameRu": "Элликкалинский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Beruniy District": {
+    "nameRu": "Берунийский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Amudaryo District": {
+    "nameRu": "Амударьинский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Xo'jayli District": {
+    "nameRu": "Ходжейлийский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Nukus District": {
+    "nameRu": "Нукусский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Kegeyli District": {
+    "nameRu": "Кегейлийский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Chimboy District": {
+    "nameRu": "Чимбайский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Shumanay District": {
+    "nameRu": "Шуманайский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Qonliko'l District": {
+    "nameRu": "Qonliko'l District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Qorao'zak District": {
+    "nameRu": "Караузякский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Taxtako'pir District": {
+    "nameRu": "Тахтакупырский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Mo'ynoq District": {
+    "nameRu": "Муйнакский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Yukori Chirchiq District": {
+    "nameRu": "Yukori Chirchiq District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Zangiata District": {
+    "nameRu": "Zangiata District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Orta Chirchiq District": {
+    "nameRu": "Уртачирчикский район",
+    "region": "Ташкентская область",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Sokh District": {
+    "nameRu": "Sokh District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Yozyovon District": {
+    "nameRu": "Язъяванский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Bostanliq District": {
+    "nameRu": "Бостанлыкский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Muzrabot District": {
+    "nameRu": "Музрабадский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Gurlen District": {
+    "nameRu": "Gurlen District",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  },
+  "Qibray District": {
+    "nameRu": "Кибрайский район",
+    "region": "",
+    "center": "",
+    "population": "",
+    "area": "",
+    "description": ""
+  }
+}
