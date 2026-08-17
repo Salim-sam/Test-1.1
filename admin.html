@@ -4,103 +4,1567 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Naqsha — Admin Panel</title>
+
 <style>
-*{box-sizing:border-box}body{margin:0;background:#f3f5f7;color:#111;font-family:Arial,sans-serif}header{background:#fff;padding:18px 20px;box-shadow:0 2px 12px #0002;position:sticky;top:0;z-index:5}.wrap{max-width:1000px;margin:auto;padding:16px}.card{background:#fff;border-radius:17px;padding:20px;margin-bottom:15px;box-shadow:0 3px 15px #00000012}h1,h2{margin:0 0 12px}h1{font-size:23px}h2{font-size:20px}p.small{color:#777;font-size:13px}label{display:block;font-weight:700;font-size:14px;margin:12px 0 6px}input,textarea{width:100%;padding:12px;border:1px solid #d5d9de;border-radius:10px;font-size:16px}textarea{min-height:120px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.buttons{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}button{border:0;border-radius:10px;padding:12px 16px;font-weight:700;cursor:pointer}.primary{background:#1677ff;color:#fff}.success{background:#18a84a;color:#fff}.gray{background:#e9edf1}.hidden{display:none!important}#results{max-height:350px;overflow:auto}.result{padding:13px;border-bottom:1px solid #eee;cursor:pointer}.result:hover{background:#f5f7f9}#status{display:none;margin-top:12px;padding:12px;border-radius:10px}pre{background:#111;color:#eee;padding:15px;border-radius:10px;white-space:pre-wrap;overflow:auto}.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}.stat{padding:16px;background:#f7f9fb;border-radius:12px}.stat b{display:block;font-size:25px}.stat span{color:#777;font-size:13px}@media(max-width:600px){.grid,.stats{grid-template-columns:1fr}}
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:#f3f5f7;
+  color:#111;
+  font-family:Arial,Helvetica,sans-serif;
+}
+
+header{
+  background:#fff;
+  padding:18px 20px;
+  box-shadow:0 2px 12px #0002;
+  position:sticky;
+  top:0;
+  z-index:5;
+}
+
+.wrap{
+  max-width:1000px;
+  margin:auto;
+  padding:16px;
+}
+
+.card{
+  background:#fff;
+  border-radius:17px;
+  padding:20px;
+  margin-bottom:15px;
+  box-shadow:0 3px 15px #00000012;
+}
+
+h1,h2{margin:0 0 12px}
+h1{font-size:23px}
+h2{font-size:20px}
+
+.small{
+  color:#777;
+  font-size:13px;
+}
+
+label{
+  display:block;
+  font-weight:700;
+  font-size:14px;
+  margin:12px 0 6px;
+}
+
+input,textarea{
+  width:100%;
+  padding:12px;
+  border:1px solid #d5d9de;
+  border-radius:10px;
+  font-size:16px;
+  outline:none;
+}
+
+input:focus,textarea:focus{
+  border-color:#1677ff;
+}
+
+textarea{
+  min-height:120px;
+  resize:vertical;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+.buttons{
+  display:flex;
+  gap:9px;
+  flex-wrap:wrap;
+  margin-top:16px;
+}
+
+button{
+  border:0;
+  border-radius:10px;
+  padding:12px 16px;
+  font-weight:700;
+  cursor:pointer;
+}
+
+button:disabled{
+  opacity:.6;
+  cursor:not-allowed;
+}
+
+.primary{
+  background:#1677ff;
+  color:#fff;
+}
+
+.success{
+  background:#18a84a;
+  color:#fff;
+}
+
+.gray{
+  background:#e9edf1;
+  color:#111;
+}
+
+.hidden{
+  display:none!important;
+}
+
+#results{
+  max-height:350px;
+  overflow:auto;
+  margin-top:8px;
+}
+
+.result{
+  padding:13px;
+  border-bottom:1px solid #eee;
+  cursor:pointer;
+}
+
+.result:hover{
+  background:#f5f7f9;
+}
+
+.result small{
+  color:#777;
+}
+
+#status{
+  display:none;
+  margin-top:12px;
+  padding:12px;
+  border-radius:10px;
+  line-height:1.4;
+}
+
+#loginStatus{
+  min-height:18px;
+}
+
+pre{
+  background:#111;
+  color:#eee;
+  padding:15px;
+  border-radius:10px;
+  white-space:pre-wrap;
+  overflow:auto;
+  font-size:13px;
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:12px;
+}
+
+.stat{
+  padding:16px;
+  background:#f7f9fb;
+  border-radius:12px;
+  overflow:hidden;
+}
+
+.stat b{
+  display:block;
+  font-size:25px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.stat span{
+  color:#777;
+  font-size:13px;
+}
+
+@media(max-width:600px){
+  .grid,.stats{
+    grid-template-columns:1fr;
+  }
+
+  .wrap{
+    padding:10px;
+  }
+
+  .card{
+    padding:15px;
+  }
+}
 </style>
 </head>
+
 <body>
-<header><h1>🇺🇿 Naqsha — Admin Panel</h1><p>Управление районами через Supabase</p></header>
+
+<header>
+  <h1>🇺🇿 Naqsha — Admin Panel</h1>
+  <p class="small">Управление районами через Supabase</p>
+</header>
+
 <div class="wrap">
-<section id="loginCard" class="card"><h2>🔐 Вход администратора</h2><p class="small">Вход выполняется через Supabase Auth.</p><label>Email</label><input id="email" type="email" placeholder="admin@example.com"><label>Пароль</label><input id="password" type="password" placeholder="Пароль"><div class="buttons"><button id="login" class="primary">Войти</button></div><p id="loginStatus"></p></section>
-<main id="app" class="hidden">
-<section class="card"><h2>📊 Dashboard</h2><div class="stats"><div class="stat"><b id="districtCount">—</b><span>Районов</span></div><div class="stat"><b id="cityCount">—</b><span>Городов</span></div><div class="stat"><b id="userEmail">—</b><span>Администратор</span></div></div><div class="buttons"><button id="logout" class="gray">Выйти</button></div></section>
-<section class="card"><h2>🔎 Найти район</h2><input id="search" placeholder="Mingbuloq, Mingbulak District..."><div id="results"></div><p id="loadInfo" class="small">Загрузка...</p></section>
-<section class="card"><h2>📍 Редактор района</h2><label>Исходное название</label><input id="sourceName" readonly><div class="grid"><div><label>Название RU</label><input id="nameRu"></div><div><label>Название UZ</label><input id="nameUz"></div></div><div class="grid"><div><label>Название EN</label><input id="nameEn"></div><div><label>Область</label><input id="region"></div></div><div class="grid"><div><label>Административный центр</label><input id="center"></div><div><label>Население</label><input id="population" type="number"></div></div><div class="grid"><div><label>Площадь, км²</label><input id="area" type="number" step="0.01"></div><div><label>ID</label><input id="id" readonly></div></div><label>Описание</label><textarea id="description"></textarea><div class="buttons"><button id="save" class="success">💾 Сохранить в Supabase</button><button id="reset" class="gray">↩️ Отменить</button></div><div id="status"></div></section>
-<section class="card"><h2>🧪 Текущие данные</h2><pre id="preview">{}</pre></section>
-</main></div>
+
+  <!-- LOGIN -->
+  <section id="loginCard" class="card">
+
+    <h2>🔐 Вход администратора</h2>
+
+    <p class="small">
+      Вход выполняется через Supabase Auth.
+    </p>
+
+    <label>Email</label>
+    <input
+      id="email"
+      type="email"
+      placeholder="admin@example.com"
+      autocomplete="username"
+    >
+
+    <label>Пароль</label>
+    <input
+      id="password"
+      type="password"
+      placeholder="Пароль"
+      autocomplete="current-password"
+    >
+
+    <div class="buttons">
+      <button id="login" class="primary">
+        Войти
+      </button>
+    </div>
+
+    <p id="loginStatus"></p>
+
+  </section>
+
+
+  <!-- ADMIN -->
+  <main id="app" class="hidden">
+
+    <!-- DASHBOARD -->
+    <section class="card">
+
+      <h2>📊 Dashboard</h2>
+
+      <div class="stats">
+
+        <div class="stat">
+          <b id="districtCount">—</b>
+          <span>Районов</span>
+        </div>
+
+        <div class="stat">
+          <b id="cityCount">—</b>
+          <span>Городов</span>
+        </div>
+
+        <div class="stat">
+          <b id="userEmail">—</b>
+          <span>Администратор</span>
+        </div>
+
+      </div>
+
+      <div class="buttons">
+        <button id="logout" class="gray">
+          Выйти
+        </button>
+      </div>
+
+    </section>
+
+
+    <!-- SEARCH -->
+    <section class="card">
+
+      <h2>🔎 Найти район</h2>
+
+      <input
+        id="search"
+        placeholder="Mingbuloq, Mingbulak District..."
+        autocomplete="off"
+      >
+
+      <div id="results"></div>
+
+      <p id="loadInfo" class="small">
+        Загрузка...
+      </p>
+
+    </section>
+
+
+    <!-- EDITOR -->
+    <section class="card">
+
+      <h2>📍 Редактор района</h2>
+
+      <label>Исходное название</label>
+
+      <input
+        id="sourceName"
+        readonly
+      >
+
+
+      <div class="grid">
+
+        <div>
+          <label>Название RU</label>
+          <input id="nameRu">
+        </div>
+
+        <div>
+          <label>Название UZ</label>
+          <input id="nameUz">
+        </div>
+
+      </div>
+
+
+      <div class="grid">
+
+        <div>
+          <label>Название EN</label>
+          <input id="nameEn">
+        </div>
+
+        <div>
+          <label>Область</label>
+          <input id="region">
+        </div>
+
+      </div>
+
+
+      <div class="grid">
+
+        <div>
+          <label>Административный центр</label>
+          <input id="center">
+        </div>
+
+        <div>
+          <label>Население</label>
+          <input
+            id="population"
+            type="number"
+            min="0"
+          >
+        </div>
+
+      </div>
+
+
+      <div class="grid">
+
+        <div>
+          <label>Площадь, км²</label>
+          <input
+            id="area"
+            type="number"
+            step="0.01"
+            min="0"
+          >
+        </div>
+
+        <div>
+          <label>ID</label>
+          <input
+            id="id"
+            readonly
+          >
+        </div>
+
+      </div>
+
+
+      <label>Описание</label>
+
+      <textarea id="description"></textarea>
+
+
+      <div class="buttons">
+
+        <button
+          id="save"
+          class="success"
+        >
+          💾 Сохранить в Supabase
+        </button>
+
+        <button
+          id="reset"
+          class="gray"
+        >
+          ↩️ Отменить
+        </button>
+
+      </div>
+
+
+      <div id="status"></div>
+
+    </section>
+
+
+    <!-- PREVIEW -->
+    <section class="card">
+
+      <h2>🧪 Текущие данные</h2>
+
+      <pre id="preview">{}</pre>
+
+    </section>
+
+  </main>
+
+</div>
+
+
 <script>
-const URL='https://vhrhtykcrjqqiwwggomi.supabase.co';
-const KEY='sb_publishable_N9MAdF7_GW-IUFOXxY2MHQ_MG1ep1vg';
-let session=null,districts=null,cities=null,selected=null,original=null;
-const $=id=>document.getElementById(id);
-function status(msg,ok=true){$('status').style.display='block';$('status').style.background=ok?'#eef9f0':'#fff0f0';$('status').style.color=ok?'#17752e':'#a00000';$('status').textContent=msg}
-function loginStatus(msg,ok=false){$('loginStatus').textContent=msg;$('loginStatus').style.color=ok?'#17752e':'#a00000'}
-function esc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')}
-async function rpc(name, body = {}) {
 
-    if (!session || !session.access_token) {
 
-        throw new Error(
-            "Нет авторизации. Выйди из админки и войди снова."
-        );
+// ============================================================
+// SUPABASE
+// ============================================================
 
-    }
+const SUPABASE_URL =
+  'https://vhrhtykcrjqqiwwggomi.supabase.co';
 
-    const response = await fetch(
-        SUPABASE_URL + "/rest/v1/rpc/" + name,
-        {
-            method: "POST",
+const SUPABASE_KEY =
+  'sb_publishable_N9MAdF7_GW-IUFOXxY2MHQ_MG1ep1vg';
 
-            headers: {
-                "apikey": SUPABASE_KEY,
 
-                "Authorization":
-                    "Bearer " + session.access_token,
+// ============================================================
+// STATE
+// ============================================================
 
-                "Content-Type":
-                    "application/json",
+let session = null;
+let districts = null;
+let cities = null;
+let selected = null;
+let original = null;
 
-                "Accept":
-                    "application/json"
-            },
 
-            body: JSON.stringify(body)
-        }
+// ============================================================
+// SHORTCUT
+// ============================================================
+
+const $ = id =>
+  document.getElementById(id);
+
+
+// ============================================================
+// STATUS
+// ============================================================
+
+function status(message, ok = true){
+
+  const el =
+    $('status');
+
+  el.style.display =
+    'block';
+
+  el.style.background =
+    ok
+      ? '#eef9f0'
+      : '#fff0f0';
+
+  el.style.color =
+    ok
+      ? '#17752e'
+      : '#a00000';
+
+  el.textContent =
+    message;
+}
+
+
+function loginStatus(message, ok = false){
+
+  const el =
+    $('loginStatus');
+
+  el.textContent =
+    message;
+
+  el.style.color =
+    ok
+      ? '#17752e'
+      : '#a00000';
+}
+
+
+// ============================================================
+// ESCAPE HTML
+// ============================================================
+
+function esc(value){
+
+  return String(value ?? '')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#039;');
+
+}
+
+
+// ============================================================
+// SUPABASE RPC
+// ============================================================
+
+async function rpc(name, body = {}){
+
+  if(
+    !session ||
+    !session.access_token
+  ){
+
+    throw new Error(
+      'Нет авторизации. Выйди из админки и войди снова.'
+    );
+
+  }
+
+
+  const response =
+    await fetch(
+      SUPABASE_URL +
+      '/rest/v1/rpc/' +
+      name,
+      {
+        method:'POST',
+
+        headers:{
+
+          'apikey':
+            SUPABASE_KEY,
+
+          /*
+           * ВАЖНО:
+           * Здесь НЕ SUPABASE_KEY.
+           * Здесь токен вошедшего пользователя.
+           */
+          'Authorization':
+            'Bearer ' +
+            session.access_token,
+
+          'Content-Type':
+            'application/json',
+
+          'Accept':
+            'application/json'
+
+        },
+
+        body:
+          JSON.stringify(body)
+
+      }
     );
 
 
-    const text =
-        await response.text();
+  const text =
+    await response.text();
 
 
-    if (!response.ok) {
+  if(!response.ok){
 
-        throw new Error(
-            name +
-            " → HTTP " +
-            response.status +
-            ": " +
-            text
+    throw new Error(
+      name +
+      ' → HTTP ' +
+      response.status +
+      ': ' +
+      text
+    );
+
+  }
+
+
+  if(!text){
+
+    return null;
+
+  }
+
+
+  try{
+
+    return JSON.parse(text);
+
+  }catch{
+
+    return text;
+
+  }
+
+}
+
+
+// ============================================================
+// LOGIN
+// ============================================================
+
+async function authLogin(){
+
+  const email =
+    $('email')
+      .value
+      .trim();
+
+  const password =
+    $('password')
+      .value;
+
+
+  if(!email || !password){
+
+    loginStatus(
+      'Введите email и пароль.'
+    );
+
+    return;
+
+  }
+
+
+  const button =
+    $('login');
+
+  button.disabled =
+    true;
+
+  button.textContent =
+    'Вход...';
+
+
+  try{
+
+    const response =
+      await fetch(
+
+        SUPABASE_URL +
+        '/auth/v1/token?grant_type=password',
+
+        {
+          method:'POST',
+
+          headers:{
+            'apikey':
+              SUPABASE_KEY,
+
+            'Content-Type':
+              'application/json'
+          },
+
+          body:
+            JSON.stringify({
+              email,
+              password
+            })
+        }
+
+      );
+
+
+    const data =
+      await response.json();
+
+
+    if(!response.ok){
+
+      throw new Error(
+        data.error_description ||
+        data.msg ||
+        'Ошибка входа'
+      );
+
+    }
+
+
+    session =
+      data;
+
+
+    localStorage.setItem(
+      'naqsha_admin_session',
+      JSON.stringify(session)
+    );
+
+
+    loginStatus(
+      '✅ Вход выполнен',
+      true
+    );
+
+
+    await openAdmin();
+
+
+  }catch(error){
+
+    console.error(error);
+
+    loginStatus(
+      '❌ ' +
+      error.message
+    );
+
+  }finally{
+
+    button.disabled =
+      false;
+
+    button.textContent =
+      'Войти';
+
+  }
+
+}
+
+
+// ============================================================
+// OPEN ADMIN
+// ============================================================
+
+async function openAdmin(){
+
+  $('loginCard')
+    .classList
+    .add('hidden');
+
+  $('app')
+    .classList
+    .remove('hidden');
+
+
+  $('userEmail')
+    .textContent =
+    session?.user?.email ||
+    'admin';
+
+
+  await loadData();
+
+}
+
+
+// ============================================================
+// GET DISTRICT DATA
+// ============================================================
+
+function getData(feature){
+
+  const p =
+    feature.properties ||
+    {};
+
+
+  return{
+
+    id:
+      p.id ??
+      feature.id ??
+      '',
+
+    sourceName:
+      p.name ||
+      p.shapeName ||
+      p.NAME_2 ||
+      p.NAME ||
+      '',
+
+    nameRu:
+      p.name_ru ||
+      '',
+
+    nameUz:
+      p.name_uz ||
+      '',
+
+    nameEn:
+      p.name_en ||
+      '',
+
+    region:
+      p.region_name ||
+      p.region ||
+      p.NAME_1 ||
+      '',
+
+    center:
+      p.center ||
+      '',
+
+    population:
+      p.population ??
+      '',
+
+    area:
+      p.area ??
+      '',
+
+    description:
+      p.description ||
+      ''
+
+  };
+
+}
+
+
+// ============================================================
+// LOAD DATA
+// ============================================================
+
+async function loadData(){
+
+  try{
+
+    $('loadInfo')
+      .textContent =
+      '⏳ Загрузка районов...';
+
+
+    districts =
+      await rpc(
+        'get_districts_geojson'
+      );
+
+
+    if(
+      !districts ||
+      !Array.isArray(
+        districts.features
+      )
+    ){
+
+      throw new Error(
+        'get_districts_geojson вернул неправильный формат'
+      );
+
+    }
+
+
+    // --------------------------------------------------------
+    // CITIES
+    // --------------------------------------------------------
+
+    try{
+
+      cities =
+        await rpc(
+          'get_cities_geojson'
         );
 
-    }
+    }catch(error){
 
+      console.warn(
+        'get_cities_geojson недоступна:',
+        error
+      );
 
-    if (!text) {
-        return null;
-    }
-
-
-    try {
-
-        return JSON.parse(text);
-
-    } catch {
-
-        return text;
+      cities = {
+        features:[]
+      };
 
     }
 
-}){const r=await fetch(URL+'/rest/v1/rpc/'+name,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(body)});if(!r.ok)throw new Error(name+' → HTTP '+r.status+': '+await r.text());return r.json()}
-async function authLogin(){const email=$('email').value.trim(),password=$('password').value;if(!email||!password)return loginStatus('Введите email и пароль.');try{const r=await fetch(URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify({email,password})});const d=await r.json();if(!r.ok)throw new Error(d.error_description||d.msg||'Ошибка входа');session=d;localStorage.setItem('naqsha_admin_session',JSON.stringify(d));await openAdmin()}catch(e){console.error(e);loginStatus('❌ '+e.message)}}
-async function openAdmin(){$('loginCard').classList.add('hidden');$('app').classList.remove('hidden');$('userEmail').textContent=session?.user?.email||'admin';await loadData()}
-function getData(f){const p=f.properties||{};return{id:p.id??'',sourceName:p.name||p.shapeName||p.NAME_2||p.NAME||'',nameRu:p.name_ru||p.name||'',nameUz:p.name_uz||'',nameEn:p.name_en||'',region:p.region_name||p.region||p.NAME_1||'',center:p.center||'',population:p.population??'',area:p.area??'',description:p.description||''}}
-async function loadData(){try{districts=await rpc('get_districts_geojson');if(!districts?.features)throw new Error('get_districts_geojson вернул неправильный формат');try{cities=await rpc('get_cities_geojson')}catch(e){cities={features:[]};console.warn(e)}$('districtCount').textContent=districts.features.length;$('cityCount').textContent=cities.features?.length||0;$('loadInfo').textContent='✅ Районов: '+districts.features.length+' | городов: '+(cities.features?.length||0)}catch(e){$('loadInfo').textContent='❌ '+e.message;console.error(e)}}
-function fill(d){selected=d;original=JSON.parse(JSON.stringify(d));for(const k of ['sourceName','nameRu','nameUz','nameEn','region','center','population','area','id','description'])$(k).value=d[k]??'';$('preview').textContent=JSON.stringify(d,null,2)}
-$('search').addEventListener('input',function(){const q=this.value.trim().toLowerCase();$('results').innerHTML='';if(!q||!districts)return;districts.features.forEach(f=>{const d=getData(f);const text=(d.sourceName+' '+d.nameRu+' '+d.nameUz+' '+d.nameEn+' '+d.region).toLowerCase();if(!text.includes(q))return;const el=document.createElement('div');el.className='result';el.innerHTML='<b>'+esc(d.nameRu||d.sourceName)+'</b><br><small>'+esc(d.sourceName)+(d.region?' — '+esc(d.region):'')+'</small>';el.onclick=()=>{fill(d);$('search').value=d.nameRu||d.sourceName;$('results').innerHTML=''};$('results').appendChild(el)})});
-$('save').onclick=async()=>{if(!selected)return status('Сначала выбери район.',false);const d={id:selected.id,sourceName:$('sourceName').value.trim(),nameRu:$('nameRu').value.trim(),nameUz:$('nameUz').value.trim(),nameEn:$('nameEn').value.trim(),region:$('region').value.trim(),center:$('center').value.trim(),population:$('population').value.trim(),area:$('area').value.trim(),description:$('description').value.trim()};try{await rpc('admin_update_district',{p_id:String(d.id),p_name_ru:d.nameRu,p_name_uz:d.nameUz,p_name_en:d.nameEn,p_region:d.region,p_center:d.center,p_population:d.population===''?null:Number(d.population),p_area:d.area===''?null:Number(d.area),p_description:d.description});fill(d);status('✅ Сохранено в Supabase.')}catch(e){console.error(e);status('❌ '+e.message,false)}};
-$('reset').onclick=()=>{if(original)fill(original)};
-$('logout').onclick=()=>{localStorage.removeItem('naqsha_admin_session');location.reload()};$('login').onclick=authLogin;$('password').onkeydown=e=>{if(e.key==='Enter')authLogin()};
-(async()=>{try{session=JSON.parse(localStorage.getItem('naqsha_admin_session')||'null')}catch{session=null}if(session?.access_token){await openAdmin()}})();
+
+    $('districtCount')
+      .textContent =
+      districts.features.length;
+
+
+    $('cityCount')
+      .textContent =
+      cities?.features?.length ||
+      0;
+
+
+    $('loadInfo')
+      .textContent =
+      '✅ Районов: ' +
+      districts.features.length +
+      ' | городов: ' +
+      (
+        cities?.features?.length ||
+        0
+      );
+
+
+    console.log(
+      'Naqsha готов',
+      {
+        districts:
+          districts.features.length,
+
+        cities:
+          cities?.features?.length ||
+          0
+      }
+    );
+
+
+  }catch(error){
+
+    console.error(error);
+
+    $('loadInfo')
+      .textContent =
+      '❌ ' +
+      error.message;
+
+  }
+
+}
+
+
+// ============================================================
+// FILL EDITOR
+// ============================================================
+
+function fill(data){
+
+  selected =
+    data;
+
+
+  original =
+    JSON.parse(
+      JSON.stringify(data)
+    );
+
+
+  $('sourceName').value =
+    data.sourceName ??
+    '';
+
+  $('nameRu').value =
+    data.nameRu ??
+    '';
+
+  $('nameUz').value =
+    data.nameUz ??
+    '';
+
+  $('nameEn').value =
+    data.nameEn ??
+    '';
+
+  $('region').value =
+    data.region ??
+    '';
+
+  $('center').value =
+    data.center ??
+    '';
+
+  $('population').value =
+    data.population ??
+    '';
+
+  $('area').value =
+    data.area ??
+    '';
+
+  $('id').value =
+    data.id ??
+    '';
+
+  $('description').value =
+    data.description ??
+    '';
+
+
+  $('preview')
+    .textContent =
+    JSON.stringify(
+      data,
+      null,
+      2
+    );
+
+}
+
+
+// ============================================================
+// SEARCH NORMALIZATION
+// ============================================================
+
+const SEARCH_ALIASES = {
+
+  mingbulo:
+    'mingbulak',
+
+  mingbuloq:
+    'mingbulak',
+
+  mingbulak:
+    'mingbulak',
+
+  tashkent:
+    'tashkent',
+
+  toshkent:
+    'tashkent',
+
+  andijan:
+    'andijan',
+
+  andijon:
+    'andijan',
+
+  bukhara:
+    'bukhara',
+
+  buxoro:
+    'bukhara',
+
+  samarkand:
+    'samarkand',
+
+  samarqand:
+    'samarkand'
+
+};
+
+
+function normalizeSearchText(text){
+
+  return String(
+    text || ''
+  )
+  .toLowerCase()
+  .trim()
+  .replace(
+    /['’`]/g,
+    ''
+  )
+  .replace(
+    /\s+/g,
+    ' '
+  );
+
+}
+
+
+// ============================================================
+// SEARCH
+// ============================================================
+
+$('search')
+  .addEventListener(
+    'input',
+    function(){
+
+      const originalQuery =
+        normalizeSearchText(
+          this.value
+        );
+
+
+      $('results')
+        .innerHTML =
+        '';
+
+
+      if(
+        !originalQuery ||
+        !districts ||
+        !Array.isArray(
+          districts.features
+        )
+      ){
+
+        return;
+
+      }
+
+
+      const alias =
+        SEARCH_ALIASES[
+          originalQuery
+        ] ||
+        originalQuery;
+
+
+      const matches =
+        [];
+
+
+      districts.features.forEach(
+        function(feature){
+
+          const data =
+            getData(feature);
+
+
+          const names = [
+
+            data.sourceName,
+            data.nameRu,
+            data.nameUz,
+            data.nameEn,
+            data.region
+
+          ];
+
+
+          const found =
+            names.some(
+              function(name){
+
+                const normalized =
+                  normalizeSearchText(
+                    name
+                  );
+
+
+                return(
+
+                  normalized.includes(
+                    originalQuery
+                  )
+
+                  ||
+
+                  normalized.includes(
+                    alias
+                  )
+
+                  ||
+
+                  alias.includes(
+                    normalized
+                  )
+
+                );
+
+              }
+            );
+
+
+          if(found){
+
+            matches.push(
+              data
+            );
+
+          }
+
+        }
+      );
+
+
+      console.log(
+        '🔎 Поиск:',
+        originalQuery
+      );
+
+      console.log(
+        '🔎 Найдено:',
+        matches.length
+      );
+
+
+      matches
+        .slice(0,20)
+        .forEach(
+          function(data){
+
+            const el =
+              document.createElement(
+                'div'
+              );
+
+
+            el.className =
+              'result';
+
+
+            el.innerHTML =
+              '<b>' +
+
+              esc(
+                data.nameRu ||
+                data.sourceName
+              ) +
+
+              '</b><br>' +
+
+              '<small>' +
+
+              esc(
+                data.sourceName
+              ) +
+
+              (
+                data.region
+                  ? ' — ' +
+                    esc(
+                      data.region
+                    )
+                  : ''
+              ) +
+
+              '</small>';
+
+
+            el.onclick =
+              function(){
+
+                fill(data);
+
+                $('search')
+                  .value =
+                  data.nameRu ||
+                  data.sourceName;
+
+                $('results')
+                  .innerHTML =
+                  '';
+
+              };
+
+
+            $('results')
+              .appendChild(
+                el
+              );
+
+          }
+        );
+
+
+      if(
+        matches.length === 0
+      ){
+
+        $('results')
+          .innerHTML =
+          '<div style="padding:13px;color:#777">' +
+          'Ничего не найдено' +
+          '</div>';
+
+      }
+
+    }
+  );
+
+
+// ============================================================
+// SAVE DISTRICT
+// ============================================================
+
+$('save')
+  .addEventListener(
+    'click',
+    async function(){
+
+      if(!selected){
+
+        status(
+          'Сначала выбери район.',
+          false
+        );
+
+        return;
+
+      }
+
+
+      const data = {
+
+        id:
+          selected.id,
+
+        sourceName:
+          $('sourceName')
+            .value
+            .trim(),
+
+        nameRu:
+          $('nameRu')
+            .value
+            .trim(),
+
+        nameUz:
+          $('nameUz')
+            .value
+            .trim(),
+
+        nameEn:
+          $('nameEn')
+            .value
+            .trim(),
+
+        region:
+          $('region')
+            .value
+            .trim(),
+
+        center:
+          $('center')
+            .value
+            .trim(),
+
+        population:
+          $('population')
+            .value
+            .trim(),
+
+        area:
+          $('area')
+            .value
+            .trim(),
+
+        description:
+          $('description')
+            .value
+            .trim()
+
+      };
+
+
+      const button =
+        $('save');
+
+      button.disabled =
+        true;
+
+
+      try{
+
+        status(
+          '⏳ Сохраняем...',
+          true
+        );
+
+
+        const result =
+          await rpc(
+            'admin_update_district',
+            {
+
+              p_id:
+                String(
+                  data.id
+                ),
+
+              p_name_ru:
+                data.nameRu,
+
+              p_name_uz:
+                data.nameUz,
+
+              p_name_en:
+                data.nameEn,
+
+              p_region:
+                data.region,
+
+              p_center:
+                data.center,
+
+              p_population:
+                data.population === ''
+                  ? null
+                  : Number(
+                      data.population
+                    ),
+
+              p_area:
+                data.area === ''
+                  ? null
+                  : Number(
+                      data.area
+                    ),
+
+              p_description:
+                data.description
+
+            }
+          );
+
+
+        console.log(
+          '✅ Supabase response:',
+          result
+        );
+
+
+        fill(data);
+
+
+        status(
+          '✅ Сохранено в Supabase.'
+        );
+
+
+      }catch(error){
+
+        console.error(error);
+
+        status(
+          '❌ ' +
+          error.message,
+          false
+        );
+
+
+      }finally{
+
+        button.disabled =
+          false;
+
+      }
+
+    }
+  );
+
+
+// ============================================================
+// RESET
+// ============================================================
+
+$('reset')
+  .addEventListener(
+    'click',
+    function(){
+
+      if(original){
+
+        fill(
+          original
+        );
+
+      }
+
+    }
+  );
+
+
+// ============================================================
+// LOGOUT
+// ============================================================
+
+$('logout')
+  .addEventListener(
+    'click',
+    function(){
+
+      localStorage.removeItem(
+        'naqsha_admin_session'
+      );
+
+      session =
+        null;
+
+      location.reload();
+
+    }
+  );
+
+
+// ============================================================
+// LOGIN
+// ============================================================
+
+$('login')
+  .addEventListener(
+    'click',
+    authLogin
+  );
+
+
+$('password')
+  .addEventListener(
+    'keydown',
+    function(event){
+
+      if(
+        event.key ===
+        'Enter'
+      ){
+
+        authLogin();
+
+      }
+
+    }
+  );
+
+
+// ============================================================
+// RESTORE SESSION
+// ============================================================
+
+(async function(){
+
+  try{
+
+    const saved =
+      localStorage.getItem(
+        'naqsha_admin_session'
+      );
+
+
+    session =
+      saved
+        ? JSON.parse(saved)
+        : null;
+
+
+  }catch{
+
+    session =
+      null;
+
+  }
+
+
+  if(
+    session &&
+    session.access_token
+  ){
+
+    try{
+
+      await openAdmin();
+
+    }catch(error){
+
+      console.error(
+        error
+      );
+
+      localStorage.removeItem(
+        'naqsha_admin_session'
+      );
+
+      session =
+        null;
+
+    }
+
+  }
+
+})();
+
 </script>
-</body></html>
+
+</body>
+</html>
