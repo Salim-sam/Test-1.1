@@ -202,7 +202,7 @@ pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-w
       </div>
     </div>
     <div class="small" style="margin-top:8px">
-      CSV должен иметь строку заголовков. JSON — массив объектов. Сначала выполняется полная проверка, затем запись.
+      CSV должен иметь строку заголовков. JSON — массив объектов. Сначала выполняется полная проверка, затем запись. Для районов и городов дубль определяется по области + совпадению названия на любом из языков, даже если ID в файле отличается.
     </div>
     <div class="actions">
       <button id="checkImport" class="gray">🔎 Проверить</button>
@@ -470,11 +470,24 @@ function validateUniversal(rows,type){
  });
  return errors;
 }
+function importNameKey(v){
+ return norm(String(v||''))
+  .replace(/\b(district|район|tuman|tumani)\b/g,'')
+  .replace(/[^\p{L}\p{N}]+/gu,'')
+  .trim();
+}
+function sameRegion(a,b){return String(a||'')===String(b||'');}
+function sameDistrictByName(row,x){
+ if(!sameRegion(row.region_id,x.region_id))return false;
+ const incoming=[row.name,row.name_ru,row.name_uz,row.name_uz_cy,row.name_en].filter(Boolean).map(importNameKey);
+ const existing=[x.name,x.name_ru,x.name_uz,x.name_uz_cy,x.name_en].filter(Boolean).map(importNameKey);
+ return incoming.some(a=>a && existing.includes(a));
+}
 function existingUniversal(row,type){
- if(type==='regions')return regions.some(x=>String(x.id)===String(row.id));
- if(type==='districts')return districts.some(x=>String(x.id)===String(row.id));
- if(type==='cities')return cities.some(x=>(row.id&&String(x.id)===String(row.id))||(norm(x.name)===norm(row.name)&&String(x.region_id)===String(row.region_id)));
- if(type==='streets')return streets.some(x=>(norm(x.name)===norm(row.name))&&String(x.city_id||'')===String(row.city_id||'')&&String(x.district_id||'')===String(row.district_id||''));
+ if(type==='regions')return regions.some(x=>String(x.id)===String(row.id)||importNameKey(x.name)===importNameKey(row.name));
+ if(type==='districts')return districts.some(x=>String(x.id)===String(row.id)||sameDistrictByName(row,x));
+ if(type==='cities')return cities.some(x=>(row.id&&String(x.id)===String(row.id))||(sameRegion(row.region_id,x.region_id)&&[row.name,row.name_ru,row.name_uz,row.name_uz_cy,row.name_en].filter(Boolean).map(importNameKey).some(a=>a&&[x.name,x.name_ru,x.name_uz,x.name_uz_cy,x.name_en].filter(Boolean).map(importNameKey).includes(a))));
+ if(type==='streets')return streets.some(x=>(importNameKey(x.name)===importNameKey(row.name)||importNameKey(x.name_ru)===importNameKey(row.name_ru)||importNameKey(x.name_uz)===importNameKey(row.name_uz))&&String(x.city_id||'')===String(row.city_id||'')&&String(x.district_id||'')===String(row.district_id||''));
  if(type==='buildings')return buildings.some(x=>norm(x.house_number)===norm(row.house_number)&&String(x.street_id||'')===String(row.street_id||'')&&String(x.city_id||'')===String(row.city_id||''));
  return false;
 }
