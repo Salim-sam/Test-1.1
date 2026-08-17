@@ -120,7 +120,7 @@ pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-w
 <label>Исходное название (name)</label>
 <input id="d_name">
 
-<div class="grid">
+<div class="grid3">
 <div>
 <label>Название RU</label>
 <input id="d_name_ru">
@@ -128,6 +128,10 @@ pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-w
 <div>
 <label>Название UZ</label>
 <input id="d_name_uz">
+</div>
+<div>
+<label>Название UZ Кирилл</label>
+<input id="d_name_uz_cy">
 </div>
 </div>
 
@@ -209,7 +213,7 @@ pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-w
 <label>Исходное название (name)</label>
 <input id="c_name">
 
-<div class="grid">
+<div class="grid3">
 <div>
 <label>Название RU</label>
 <input id="c_name_ru">
@@ -217,6 +221,10 @@ pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-w
 <div>
 <label>Название UZ</label>
 <input id="c_name_uz">
+</div>
+<div>
+<label>Название UZ Кирилл</label>
+<input id="c_name_uz_cy">
 </div>
 </div>
 
@@ -278,7 +286,7 @@ pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-w
 <label>Название (name) / EN</label>
 <input id="r_name">
 
-<div class="grid">
+<div class="grid3">
 <div>
 <label>Название RU</label>
 <input id="r_name_ru">
@@ -286,6 +294,10 @@ pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-w
 <div>
 <label>Название UZ</label>
 <input id="r_name_uz">
+</div>
+<div>
+<label>Название UZ Кирилл</label>
+<input id="r_name_uz_cy">
 </div>
 </div>
 
@@ -452,6 +464,7 @@ function fd(f){
   name:p.name||'',
   name_ru:p.name_ru||'',
   name_uz:p.name_uz||'',
+  name_uz_cy:p.name_uz_cy||'',
   name_en:p.name_en||'',
 
   region_id:p.region_id??'',
@@ -736,6 +749,7 @@ function selectDistrict(d){
  $('d_name').value=d.name;
  $('d_name_ru').value=d.name_ru;
  $('d_name_uz').value=d.name_uz;
+ $('d_name_uz_cy').value=d.name_uz_cy;
  $('d_name_en').value=d.name_en;
  $('d_region').value=d.region_name;
  $('d_center').value=d.center;
@@ -777,6 +791,8 @@ $('saveDistrict').onclick=async()=>{
 
    name_uz:$('d_name_uz').value.trim(),
 
+   name_uz_cy:$('d_name_uz_cy').value.trim(),
+
    name_en:$('d_name_en').value.trim(),
 
    center:$('d_center').value.trim(),
@@ -803,6 +819,7 @@ $('saveDistrict').onclick=async()=>{
     p_name_ru:x.name_ru,
     p_name_uz:x.name_uz,
     p_name_en:x.name_en,
+    p_name_uz_cy:x.name_uz_cy,
     p_center:x.center,
     p_population:x.population,
     p_area:x.area,
@@ -926,6 +943,7 @@ function selectCity(c){
  $('c_name').value=c.name;
  $('c_name_ru').value=c.name_ru;
  $('c_name_uz').value=c.name_uz;
+ $('c_name_uz_cy').value=c.name_uz_cy;
 
  $('c_region').value=
   String(c.region_id||'');
@@ -984,6 +1002,8 @@ $('saveCity').onclick=async()=>{
 
    name_uz:$('c_name_uz').value.trim(),
 
+   name_uz_cy:$('c_name_uz_cy').value.trim(),
+
    district_id:
     districtId===''?null:districtId,
 
@@ -1003,6 +1023,7 @@ $('saveCity').onclick=async()=>{
     p_name:x.name,
     p_name_ru:x.name_ru,
     p_name_uz:x.name_uz,
+    p_name_uz_cy:x.name_uz_cy,
     p_district_id:x.district_id,
     p_population:x.population,
     p_description:x.description
@@ -1093,6 +1114,7 @@ function selectRegion(r){
  $('r_name').value=r.name;
  $('r_name_ru').value=r.name_ru||'';
  $('r_name_uz').value=r.name_uz||'';
+ $('r_name_uz_cy').value=r.name_uz_cy||'';
  $('r_updated').value=r.updated_at;
 
  $('preview').textContent=
@@ -1123,7 +1145,8 @@ $('saveRegion').onclick=async()=>{
    id:String(selectedRegion.id),
    name:$('r_name').value.trim(),
    name_ru:$('r_name_ru').value.trim(),
-   name_uz:$('r_name_uz').value.trim()
+   name_uz:$('r_name_uz').value.trim(),
+   name_uz_cy:$('r_name_uz_cy').value.trim()
   };
 
   await rpc(
@@ -1132,7 +1155,8 @@ $('saveRegion').onclick=async()=>{
     p_id:x.id,
     p_name:x.name,
     p_name_ru:x.name_ru,
-    p_name_uz:x.name_uz
+    p_name_uz:x.name_uz,
+    p_name_uz_cy:x.name_uz_cy
    }
   );
 
