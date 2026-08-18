@@ -368,6 +368,17 @@ $('saveBuilding').onclick=async()=>{
 $('deleteBuilding').onclick=async()=>{if(!selected.b||!confirm('Удалить дом?'))return;try{await rpc('admin_delete_building',{p_id:Number(selected.b.id)});await loadData();resetBuilding();notice('buildingStatus','✅ Дом удалён')}catch(e){notice('buildingStatus','❌ '+e.message,false)}};$('newBuilding').onclick=resetBuilding;$('resetBuilding').onclick=resetBuilding;$('buildingSearch').oninput=renderBuildings;$('buildingFilter').onchange=renderBuildings;
 
 
+
+/* IMPORTER HELPERS — self contained */
+function importNorm(v){
+  return String(v ?? '').trim().toLowerCase()
+    .replace(/\s+/g,' ')
+    .replace(/[ʻʼ’`']/g,"'");
+}
+function importVal(obj,key){
+  return obj && obj[key] !== undefined && obj[key] !== null
+    ? String(obj[key]).trim() : '';
+}
 /* UNIVERSAL MASS IMPORT v11 — SAFE REGION + DISTRICT NAME */
 let universalImportRows=[];
 let universalImportType='cities';
@@ -400,7 +411,7 @@ $('importModal').onclick=e=>{if(e.target===$('importModal'))closeImport()};
 
 function normalizeImportObject(x){
  const o={};
- Object.keys(x||{}).forEach(k=>o[norm(k).replace(/[\s-]+/g,'_')]=String(x[k]??'').trim());
+ Object.keys(x||{}).forEach(k=>o[importNorm(k).replace(/[\s-]+/g,'_')]=String(x[k]??'').trim());
  return o;
 }
 
@@ -480,64 +491,89 @@ async function parseUniversalFile(){
 }
 
 function validateUniversal(rows,type){
- const s=importSchemas[type],errors=[],keys=new Set();
+ const s=importSchemas[type],errors=[],keys=new Map();
+
+ function addError(x,field,message){
+   const value=field ? importVal(x,field) : '';
+   errors.push(
+     'Строка '+x.__line+
+     ' | Поле: '+(field||'—')+
+     ' | Значение: '+(value||'∅')+
+     ' | '+message
+   );
+ }
 
  rows.forEach(x=>{
-  const line='Строка '+x.__line+': ';
-  s.required.forEach(k=>{if(!val(x,k))errors.push(line+'нет '+k)});
+  s.required.forEach(k=>{
+    if(!importVal(x,k)) addError(x,k,'обязательное поле не заполнено');
+  });
 
   let key='';
-  if(type==='regions')key='r:'+val(x,'id');
+  if(type==='regions')key='r:'+importVal(x,'id');
   if(type==='districts')key='d:'+districtIdentity(x);
-  if(type==='cities')key='c:'+norm(val(x,'name'))+'|'+val(x,'region_id');
-  if(type==='streets')key='s:'+norm(val(x,'name'))+'|'+val(x,'city_id')+'|'+val(x,'district_id');
-  if(type==='buildings')key='b:'+norm(val(x,'house_number'))+'|'+val(x,'street_id')+'|'+val(x,'city_id');
+  if(type==='cities')key='c:'+importNorm(importVal(x,'name'))+'|'+importVal(x,'region_id');
+  if(type==='streets')key='s:'+importNorm(importVal(x,'name'))+'|'+importVal(x,'city_id')+'|'+importVal(x,'district_id');
+  if(type==='buildings')key='b:'+importNorm(importVal(x,'house_number'))+'|'+importVal(x,'street_id')+'|'+importVal(x,'city_id');
 
-  if(keys.has(key))errors.push(line+'дубликат внутри файла');
-  keys.add(key);
+  if(keys.has(key)){
+    addError(x, type==='districts'?'name':'id',
+      'дубликат внутри файла; первая такая запись находится в строке '+keys.get(key));
+  }else{
+    keys.set(key,x.__line);
+  }
 
-  if(type!=='regions' && val(x,'region_id') &&
-     !regions.some(r=>String(r.id).toUpperCase()===String(val(x,'region_id')).toUpperCase()))
-    errors.push(line+'region_id '+val(x,'region_id')+' не найден');
+  if(type!=='regions' && importVal(x,'region_id') &&
+     !regions.some(r=>String(r.id).toUpperCase()===String(importVal(x,'region_id')).toUpperCase())){
+    addError(x,'region_id','область с таким ID не найдена в базе');
+  }
 
   if(type==='districts'){
-    const regionExists=regions.some(r=>String(r.id).toUpperCase()===String(x.region_id).toUpperCase());
-    if(!regionExists)errors.push(line+'region_id не найден в областях');
+    const regionExists=regions.some(r=>
+      String(r.id).toUpperCase()===String(importVal(x,'region_id')).toUpperCase()
+    );
+    if(!regionExists) addError(x,'region_id','область не найдена');
   }
 
-  if(['cities','streets','buildings'].includes(type) && val(x,'district_id')){
-    if(!districts.some(d=>String(d.id)===String(val(x,'district_id')) &&
-      String(d.region_id||'').toUpperCase()===String(val(x,'region_id')||'').toUpperCase()))
-      errors.push(line+'district_id не найден или не относится к области');
+  if(['cities','streets','buildings'].includes(type) && importVal(x,'district_id')){
+    const d=districts.find(d=>
+      String(d.id)===String(importVal(x,'district_id')) &&
+      String(d.region_id||'').toUpperCase()===String(importVal(x,'region_id')||'').toUpperCase()
+    );
+    if(!d) addError(x,'district_id','район не найден или не относится к указанной области');
   }
 
-  if(['streets','buildings'].includes(type) && val(x,'city_id')){
-    if(!cities.some(c=>String(c.id)===String(val(x,'city_id'))))
-      errors.push(line+'city_id не найден');
+  if(['streets','buildings'].includes(type) && importVal(x,'city_id')){
+    if(!cities.some(c=>String(c.id)===String(importVal(x,'city_id'))))
+      addError(x,'city_id','город не найден в базе');
   }
 
-  if(type==='streets' && val(x,'city_id') && val(x,'district_id')){
-    const c=cities.find(c=>String(c.id)===String(val(x,'city_id')));
-    if(c&&String(c.district_id||'')!==String(val(x,'district_id')))
-      errors.push(line+'город не относится к указанному району');
+  if(type==='streets' && importVal(x,'city_id') && importVal(x,'district_id')){
+    const c=cities.find(c=>String(c.id)===String(importVal(x,'city_id')));
+    if(c&&String(c.district_id||'')!==String(importVal(x,'district_id')))
+      addError(x,'district_id','указанный город относится к другому району');
   }
 
-  if(type==='buildings' && val(x,'street_id') &&
-     !streets.some(s=>String(s.id)===String(val(x,'street_id'))))
-    errors.push(line+'street_id не найден');
+  if(type==='buildings' && importVal(x,'street_id') &&
+     !streets.some(s=>String(s.id)===String(importVal(x,'street_id'))))
+    addError(x,'street_id','улица не найдена в базе');
 
-  if(type==='buildings' && val(x,'floors')!=='' &&
-     (!Number.isInteger(Number(val(x,'floors')))||Number(val(x,'floors'))<0))
-    errors.push(line+'floors должен быть целым числом >= 0');
+  if(type==='buildings' && importVal(x,'floors')!=='' &&
+     (!Number.isInteger(Number(importVal(x,'floors')))||Number(importVal(x,'floors'))<0))
+    addError(x,'floors','должно быть целое число 0 или больше');
 
-  if(['cities','districts'].includes(type) && val(x,'population')!=='' &&
-     (!Number.isInteger(Number(val(x,'population')))||Number(val(x,'population'))<0))
-    errors.push(line+'population должен быть целым числом >= 0');
+  if(['cities','districts'].includes(type) && importVal(x,'population')!=='' &&
+     (!Number.isInteger(Number(importVal(x,'population')))||Number(importVal(x,'population'))<0))
+    addError(x,'population','должно быть целое число 0 или больше');
 
-  if(type==='districts' && val(x,'area')!=='' && Number(val(x,'area'))<0)
-    errors.push(line+'area не может быть отрицательной');
+  if(type==='districts' && importVal(x,'area')!=='' && Number(importVal(x,'area'))<0)
+    addError(x,'area','не может быть отрицательным числом');
  });
  return errors;
+}
+
+function formatImportErrors(errors){
+ if(!errors.length)return 'Ошибок не найдено.';
+ return errors.map((e,i)=>(i+1)+'. '+e).join('\n');
 }
 
 function existingUniversal(row,type){
@@ -552,15 +588,15 @@ function existingUniversal(row,type){
 
  if(type==='cities')
    return cities.some(x=>(row.id&&String(x.id)===String(row.id)) ||
-     (norm(x.name)===norm(row.name)&&String(x.region_id)===String(row.region_id)));
+     (importNorm(x.name)===importNorm(row.name)&&String(x.region_id)===String(row.region_id)));
 
  if(type==='streets')
-   return streets.some(x=>norm(x.name)===norm(row.name) &&
+   return streets.some(x=>importNorm(x.name)===importNorm(row.name) &&
      String(x.city_id||'')===String(row.city_id||'') &&
      String(x.district_id||'')===String(row.district_id||''));
 
  if(type==='buildings')
-   return buildings.some(x=>norm(x.house_number)===norm(row.house_number) &&
+   return buildings.some(x=>importNorm(x.house_number)===importNorm(row.house_number) &&
      String(x.street_id||'')===String(row.street_id||'') &&
      String(x.city_id||'')===String(row.city_id||''));
 
@@ -620,7 +656,7 @@ $('checkImport').onclick=async()=>{
     result.максимум_районов=177;
   }
 
-  result.ошибки=errors.slice(0,100);
+  result.ошибки=formatImportErrors(errors.slice(0,100));
 
   $('importPreview').classList.remove('hidden');
   $('importPreview').textContent=JSON.stringify(result,null,2);
