@@ -10,7 +10,7 @@
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
 >
 
-<title>Naqsha — карта Узбекистана</title>
+<title>Naqsha — карта Узбекистана v16</title>
 
 <link
     rel="stylesheet"
@@ -1099,7 +1099,14 @@ async function loadActiveAdminLayers() {
         let loadedCount = 0;
         const errors = [];
 
-        for (const layer of layers) {
+        const layerPriority = {country:10,countries:10,страна:10,regions:20,region:20,области:20,область:20,districts:30,district:30,районы:30,города:40,cities:40,city:40,streets:50,buildings:60};
+        const orderedLayers = [...layers].sort((a,b) => {
+            const at = String(a.layer_type || a.type || "").toLowerCase();
+            const bt = String(b.layer_type || b.type || "").toLowerCase();
+            return (layerPriority[at] ?? 100) - (layerPriority[bt] ?? 100) || Number(a.id || 0) - Number(b.id || 0);
+        });
+
+        for (const layer of orderedLayers) {
             try {
                 await addAdminLayerToMap(layer);
                 loadedCount++;
@@ -1291,20 +1298,31 @@ async function addAdminLayerToMap(layer) {
 }
 
 
+function getAdminFeatureName(feature, layer) {
+    const p = feature && feature.properties ? feature.properties : {};
+    return (p.name_ru || p.name || p.name_uz || p.name_uz_cy || p.name_en || layer.name || "Объект");
+}
+
+function getAdminFeatureType(layer) {
+    const type = String(layer && layer.layer_type || "").toLowerCase();
+    if (type.includes("стра") || type.includes("country")) return "Страна";
+    if (type.includes("област") || type.includes("region")) return "Область";
+    if (type.includes("район") || type.includes("district")) return "Район";
+    if (type.includes("город") || type.includes("city")) return "Город";
+    if (type.includes("улиц") || type.includes("street")) return "Улица";
+    if (type.includes("здан") || type.includes("building")) return "Здание";
+    return "";
+}
+
 function showAdminLayerPopup(layer, feature, lngLat) {
-    // Публичный интерфейс не показывает технические свойства GeoJSON.
-    // Пользователь видит только название слоя.
-    showInfo(
-        "🧩 " + escapeHTML(layer.name || "Слой"),
-        ""
-    );
+    const name = getAdminFeatureName(feature, layer);
+    const type = getAdminFeatureType(layer);
+    const title = type ? "🧩 " + escapeHTML(type) : "🧩 " + escapeHTML(layer.name || "Слой");
+    showInfo(title, "<strong>" + escapeHTML(name) + "</strong>");
 
     if (lngLat) {
         map.flyTo({
-            center: [
-                Number(lngLat.lng),
-                Number(lngLat.lat)
-            ],
+            center: [Number(lngLat.lng), Number(lngLat.lat)],
             zoom: Math.max(map.getZoom(), 7),
             speed: 0.8
         });
@@ -1387,6 +1405,37 @@ map.on(
 
             );
 
+
+            /* =================================================
+               REGIONS CLICK AREA
+            ================================================= */
+
+            map.addLayer({
+                id: "naqsha-region-click",
+                type: "fill",
+                source: "naqsha-regions",
+                minzoom: 4,
+                paint: {
+                    "fill-color": "#ffffff",
+                    "fill-opacity": 0.001
+                }
+            });
+
+            map.on("click", "naqsha-region-click", function(event) {
+                if (!event.features || !event.features.length) return;
+                const p = event.features[0].properties || {};
+                showInfo(
+                    "🗺️ Область",
+                    "<strong>" + escapeHTML(p.name_ru || p.name || p.name_uz || p.name_en || "Область") + "</strong>"
+                );
+            });
+
+            map.on("mouseenter", "naqsha-region-click", function() {
+                map.getCanvas().style.cursor = "pointer";
+            });
+            map.on("mouseleave", "naqsha-region-click", function() {
+                map.getCanvas().style.cursor = "";
+            });
 
             /* =================================================
                REGIONS BORDER
