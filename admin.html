@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Naqsha — Admin Panel</title>
+<title>Naqsha — Admin Panel v17</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f3f5f7;color:#111;font:15px Arial,sans-serif}
 header{background:#fff;padding:18px 20px;box-shadow:0 2px 12px #0002;position:sticky;top:0;z-index:10}
@@ -379,7 +379,7 @@ function importVal(obj,key){
   return obj && obj[key] !== undefined && obj[key] !== null
     ? String(obj[key]).trim() : '';
 }
-/* UNIVERSAL MASS IMPORT v11 — SAFE REGION + DISTRICT NAME */
+/* UNIVERSAL MASS IMPORT v17 — SAFE REGION + DISTRICT NAME */
 let universalImportRows=[];
 let universalImportType='cities';
 
@@ -686,6 +686,60 @@ function districtImportSummary(rows){
  return byRegion;
 }
 
+
+/* CSV PARSER v17 — self-contained, comma/semicolon aware */
+function csvParse(text){
+  text=String(text??'').replace(/^\uFEFF/,'');
+  const firstLine=(text.match(/^[^\r\n]*/)||[''])[0];
+  const delimiter=(firstLine.split(';').length>firstLine.split(',').length)?';':',';
+
+  const rows=[];
+  let row=[], field='', quoted=false;
+
+  for(let i=0;i<text.length;i++){
+    const ch=text[i];
+
+    if(quoted){
+      if(ch==='"'){
+        if(text[i+1]==='"'){field+='"';i++;}
+        else quoted=false;
+      }else field+=ch;
+      continue;
+    }
+
+    if(ch==='"') quoted=true;
+    else if(ch===delimiter){row.push(field);field='';}
+    else if(ch==='\n'){
+      row.push(field);field='';
+      if(row.some(v=>String(v).trim()!=='')) rows.push(row);
+      row=[];
+    }else if(ch==='\r'){
+      if(text[i+1]==='\n') i++;
+      row.push(field);field='';
+      if(row.some(v=>String(v).trim()!=='')) rows.push(row);
+      row=[];
+    }else field+=ch;
+  }
+
+  if(field!==''||row.length){
+    row.push(field);
+    if(row.some(v=>String(v).trim()!=='')) rows.push(row);
+  }
+
+  if(!rows.length) return [];
+
+  const headers=rows[0].map((h,i)=>{
+    const v=String(h??'').replace(/^\uFEFF/,'').trim();
+    return v||('column_'+(i+1));
+  });
+
+  return rows.slice(1).map(values=>{
+    const out={};
+    headers.forEach((h,i)=>out[h]=values[i]??'');
+    return out;
+  });
+}
+
 async function parseUniversalFile(){
  const f=$('importFile').files[0];
  if(!f)throw Error('Выберите CSV или JSON файл.');
@@ -845,35 +899,6 @@ async function createOne(row,type){
 }
 
 
-function districtSimilarity(a,b){
-  if(!a||!b)return 0;
-  if(a===b)return 1;
-  const A=new Set(a.split(' ').filter(Boolean));
-  const B=new Set(b.split(' ').filter(Boolean));
-  const inter=[...A].filter(x=>B.has(x)).length;
-  const union=new Set([...A,...B]).size;
-  let score=union?inter/union:0;
-  if(a.includes(b)||b.includes(a))score=Math.max(score,0.82);
-  return score;
-}
-function bestDistrictMatches(row,limit=3){
-  const candidates=districts.filter(d=>districtRegionId(d)===districtRegionId(row));
-  const imported=districtNameAliases(row);
-  return candidates.map(d=>{
-    let score=0;
-    for(const a of imported)for(const b of districtNameAliases(d))
-      score=Math.max(score,districtSimilarity(a,b));
-    return {d,score};
-  }).sort((a,b)=>b.score-a.score).slice(0,limit).filter(x=>x.score>=0.45)
-    .map(x=>({id:x.d.id,region_id:x.d.region_id,name:x.d.name,name_ru:x.d.name_ru,name_uz:x.d.name_uz,name_uz_cy:x.d.name_uz_cy,score:Math.round(x.score*100)+'%'}));
-}
-function districtDiagnostics(rows){
-  return rows.filter(r=>!existingUniversal(r,'districts')).map(r=>({
-    строка:r.__line,id_в_файле:r.id,region_id:r.region_id,name:r.name,
-    name_ru:r.name_ru,name_uz:r.name_uz,name_uz_cy:r.name_uz_cy,
-    возможные_совпадения:bestDistrictMatches(r)
-  }));
-}
 $('checkImport').onclick=async()=>{
  try{
   universalImportRows=await parseUniversalFile();
