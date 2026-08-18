@@ -202,7 +202,7 @@ pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-w
       </div>
     </div>
     <div class="small" style="margin-top:8px">
-      CSV должен иметь строку заголовков. JSON — массив объектов. Сначала выполняется полная проверка, затем запись. Для районов дубль определяется по области + совпадению хотя бы одного названия из всех языков. Несопоставленные строки показываются с возможными совпадениями; похожие названия автоматически не импортируются как дубли.
+      CSV должен иметь строку заголовков. JSON — массив объектов. Сначала выполняется полная проверка, затем запись. Для районов используется область + все языки + нормализация вариантов написания. Очень близкие варианты проверяются отдельно; сомнительные записи не импортируются автоматически.
     </div>
     <div class="actions">
       <button id="checkImport" class="gray">🔎 Проверить</button>
@@ -465,32 +465,76 @@ function normalizeDistrictName(value){
 }
 
 
-/* DISTRICT MATCH v14 — region + any matching language */
+
+/* DISTRICT MATCH v16 — robust Uzbek/Russian/Latin matching */
 const DISTRICT_NAME_FIELDS=['name','name_ru','name_uz','name_uz_cy','name_en'];
 
-function normalizeDistrictName(value){
+/*
+  Canonicalization is intentionally used only for district matching.
+  It does NOT modify data stored in the database.
+*/
+const CYR_TO_LAT={
+ 'а':'a','б':'b','в':'v','г':'g','д':'d','е':'e','ё':'yo','ж':'j','з':'z',
+ 'и':'i','й':'y','к':'k','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r',
+ 'с':'s','т':'t','у':'u','ф':'f','х':'x','ц':'ts','ч':'ch','ш':'sh','щ':'sh',
+ 'ъ':'','ы':'y','ь':'','э':'e','ю':'yu','я':'ya',
+ 'қ':'q','ғ':'g','ҳ':'h','ў':'o','ң':'ng'
+};
+
+function transliterateCyrillic(s){
+ return String(s||'').split('').map(ch=>{
+   const low=ch.toLowerCase();
+   return CYR_TO_LAT[low]!==undefined ? CYR_TO_LAT[low] : ch;
+ }).join('');
+}
+
+function canonicalDistrictName(value){
  let s=String(value??'').toLowerCase().trim();
+ if(!s)return '';
+
+ // Cyrillic -> Latin first, then normalize Uzbek transliteration variants.
+ s=transliterateCyrillic(s);
  s=s.normalize('NFKD').replace(/[\u0300-\u036f]/g,'');
- s=s.replace(/[ʻʼ’`'"]/g,'').replace(/[-–—]/g,' ').replace(/\s+/g,' ');
- s=s.replace(/\b(district|район|района|tuman|tumani|область|viloyat|viloyati)\b/g,' ');
- s=s.replace(/(ский|ская|ское|ские)\b/g,'');
- s=s.replace(/kh/g,'h').replace(/q/g,'k').replace(/x/g,'h')
-      .replace(/yo/g,'e').replace(/yu/g,'u').replace(/ya/g,'a')
-      .replace(/ў/g,'u').replace(/ғ/g,'g').replace(/қ/g,'k').replace(/ҳ/g,'h')
-      .replace(/ъ/g,'').replace(/ь/g,'').replace(/ё/g,'e').replace(/й/g,'y')
-      .replace(/ц/g,'ts').replace(/ч/g,'ch').replace(/ш/g,'sh')
-      .replace(/щ/g,'sh').replace(/ы/g,'y').replace(/э/g,'e');
- s=s.replace(/[^a-z0-9\u0400-\u04ff ]/g,' ');
+
+ s=s.replace(/[ʻʼ’`'"]/g,'');
+ s=s.replace(/[-–—_/.,()]/g,' ');
+ s=s.replace(/\s+/g,' ').trim();
+
+ // Administrative words.
+ s=s.replace(/\b(district|dist|rayon|район|района|tuman|tumani|tumaniy|viloyat|viloyati|oblasti|область)\b/g,' ');
+ s=s.replace(/\s+/g,' ').trim();
+
+ // Common Uzbek Latin/Cyrillic/transliteration variants.
+ s=s.replace(/kh/g,'x')
+      .replace(/gh/g,'g')
+      .replace(/sh/g,'sh')
+      .replace(/ch/g,'ch')
+      .replace(/q/g,'k')
+      .replace(/x/g,'h')
+      .replace(/h/g,'h')
+      .replace(/yo/g,'o')
+      .replace(/yu/g,'u')
+      .replace(/ya/g,'a')
+      .replace(/ye/g,'e')
+      .replace(/w/g,'v')
+      .replace(/j/g,'j')
+      .replace(/g/g,'g')
+      .replace(/o/g,'o')
+      .replace(/u/g,'u');
+
+ // Remove repeated vowels caused by transliteration differences only in
+ // matching representation. Stored values remain untouched.
+ s=s.replace(/[^a-z0-9 ]/g,' ');
  return s.replace(/\s+/g,' ').trim();
 }
 
 function districtNameAliases(row){
  const out=[];
  DISTRICT_NAME_FIELDS.forEach(field=>{
-  const raw=String(row?.[field]??'').trim();
-  if(!raw)return;
-  const n=normalizeDistrictName(raw);
-  if(n && !out.includes(n))out.push(n);
+   const raw=String(row?.[field]??'').trim();
+   if(!raw)return;
+   const n=canonicalDistrictName(raw);
+   if(n && !out.includes(n))out.push(n);
  });
  return out;
 }
@@ -499,10 +543,50 @@ function districtRegionId(row){
  return String(row?.region_id??'').trim().toUpperCase();
 }
 
+function editDistance(a,b){
+ if(a===b)return 0;
+ if(!a)return b.length;
+ if(!b)return a.length;
+ const prev=Array.from({length:b.length+1},(_,i)=>i);
+ for(let i=1;i<=a.length;i++){
+   const cur=[i];
+   for(let j=1;j<=b.length;j++){
+     cur[j]=Math.min(
+       cur[j-1]+1,
+       prev[j]+1,
+       prev[j-1]+(a[i-1]===b[j-1]?0:1)
+     );
+   }
+   for(let j=0;j<cur.length;j++)prev[j]=cur[j];
+ }
+ return prev[b.length];
+}
+
+function nameSimilarity(a,b){
+ if(!a||!b)return 0;
+ if(a===b)return 1;
+ if(a.includes(b)||b.includes(a)){
+   const ratio=Math.min(a.length,b.length)/Math.max(a.length,b.length);
+   return Math.max(0.84,ratio);
+ }
+ const d=editDistance(a,b);
+ return 1-d/Math.max(a.length,b.length);
+}
+
 function districtsAreSame(a,b){
- if(!districtRegionId(a) || districtRegionId(a)!==districtRegionId(b)) return false;
- const aa=districtNameAliases(a), bb=districtNameAliases(b);
- return aa.some(name=>bb.includes(name));
+ if(!districtRegionId(a) || districtRegionId(a)!==districtRegionId(b))return false;
+
+ const aa=districtNameAliases(a);
+ const bb=districtNameAliases(b);
+
+ // Exact canonical alias match = safe duplicate.
+ if(aa.some(x=>bb.includes(x)))return true;
+
+ // Very close spelling variants (Peshkun/Peshku, Baysun/Boysun, etc.).
+ let best=0;
+ for(const x of aa)for(const y of bb)best=Math.max(best,nameSimilarity(x,y));
+
+ return best>=0.88;
 }
 
 function districtIdentity(row){
@@ -511,6 +595,95 @@ function districtIdentity(row){
 
 function districtExistingIdentity(d){
  return districtIdentity(d);
+}
+
+function bestDistrictMatches(row,limit=5){
+ const candidates=districts.filter(d=>districtRegionId(d)===districtRegionId(row));
+ const imported=districtNameAliases(row);
+
+ return candidates.map(d=>{
+   let score=0;
+   for(const a of imported)for(const b of districtNameAliases(d))
+     score=Math.max(score,nameSimilarity(a,b));
+   return {d,score};
+ }).sort((a,b)=>b.score-a.score)
+   .slice(0,limit)
+   .filter(x=>x.score>=0.55)
+   .map(x=>({
+     id:x.d.id,
+     region_id:x.d.region_id,
+     name:x.d.name,
+     name_ru:x.d.name_ru,
+     name_uz:x.d.name_uz,
+     name_uz_cy:x.d.name_uz_cy,
+     score:Math.round(x.score*100)+'%',
+     статус:x.score>=0.88?'можно считать совпадением':'нужно проверить'
+   }));
+}
+
+function districtMatchDetails(row){
+ const matches=districts
+   .filter(d=>districtRegionId(d)===districtRegionId(row))
+   .map(d=>{
+     let score=0, matchedFile='', matchedDb='';
+     for(const a of districtNameAliases(row)){
+       for(const b of districtNameAliases(d)){
+         const s=nameSimilarity(a,b);
+         if(s>score){score=s;matchedFile=a;matchedDb=b;}
+       }
+     }
+     return {d,score,matchedFile,matchedDb};
+   })
+   .sort((a,b)=>b.score-a.score);
+
+ const best=matches[0];
+ return {
+   match:!!best && best.score>=0.88,
+   confidence:best?Math.round(best.score*100):0,
+   matched_id:best?.d?.id||null,
+   matched_name:best?.d?.name||null,
+   matched_file_name:best?.matchedFile||null,
+   matched_db_name:best?.matchedDb||null,
+   candidates:bestDistrictMatches(row,5)
+ };
+}
+
+function districtDiagnostics(rows){
+ return rows.map(row=>{
+   const detail=districtMatchDetails(row);
+   return {
+     строка:row.__line,
+     id_в_файле:row.id,
+     region_id:row.region_id,
+     name:row.name,
+     name_ru:row.name_ru,
+     name_uz:row.name_uz,
+     name_uz_cy:row.name_uz_cy,
+     результат:detail.match?'СОВПАДЕНИЕ':'НЕ СОПОСТАВЛЕНО',
+     уверенность:detail.confidence+'%',
+     найденный_id:detail.matched_id,
+     найденное_имя:detail.matched_name,
+     совпавшие_значения:{
+       файл:detail.matched_file_name,
+       база:detail.matched_db_name
+     },
+     возможные_совпадения:detail.candidates
+   };
+ });
+}
+
+function districtImportSummary(rows){
+ const byRegion={};
+ rows.forEach(row=>{
+   const r=districtRegionId(row)||'∅';
+   if(!byRegion[r])byRegion[r]={в_файле:0,совпало:0,новых:0,сомнительных:0};
+   byRegion[r].в_файле++;
+   const d=districtMatchDetails(row);
+   if(d.match)byRegion[r].совпало++;
+   else if(d.confidence>=0.70)byRegion[r].сомнительных++;
+   else byRegion[r].новых++;
+ });
+ return byRegion;
 }
 
 async function parseUniversalFile(){
@@ -618,8 +791,8 @@ function existingUniversal(row,type){
    return regions.some(x=>String(x.id)===String(row.id));
 
  if(type==='districts'){
-   // ID не участвует. Дубль = та же область + совпадение
-   // хотя бы одного названия среди RU/UZ/CY/EN/name.
+   // ID не участвует. Сопоставляем по области и нормализованным
+   // названиям + безопасному fuzzy threshold.
    return districts.some(d=>districtsAreSame(d,row));
  }
 
@@ -724,7 +897,11 @@ $('checkImport').onclick=async()=>{
   }
 
   result.ошибки=formatImportErrors(errors.slice(0,100));
-  if(universalImportType==='districts') result.несопоставленные_районы=districtDiagnostics(universalImportRows);
+  if(universalImportType==='districts'){
+    result.сводка_по_областям=districtImportSummary(universalImportRows);
+    result.районы_для_проверки=districtDiagnostics(universalImportRows)
+      .filter(x=>x.результат==='НЕ СОПОСТАВЛЕНО' || parseInt(x.уверенность)<95);
+  }
 
   $('importPreview').classList.remove('hidden');
   $('importPreview').textContent=JSON.stringify(result,null,2);
