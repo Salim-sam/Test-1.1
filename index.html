@@ -1044,6 +1044,27 @@ async function loadNaqshaData() {
    ADMIN UPLOADED MAP LAYERS
 ===================================================== */
 
+/*
+   Все клики по административным GeoJSON проходят через
+   единый обработчик. Это важно: верхний слой страны не
+   должен блокировать области, районы и другие вложенные
+   объекты.
+*/
+const adminInteractiveLayers = [];
+
+function adminLayerPriority(layer) {
+    const type = String(layer && (layer.layer_type || layer.type || "")).toLowerCase();
+
+    if (type.includes("building") || type.includes("здан")) return 60;
+    if (type.includes("street") || type.includes("улиц")) return 50;
+    if (type.includes("city") || type.includes("город")) return 40;
+    if (type.includes("district") || type.includes("район")) return 30;
+    if (type.includes("region") || type.includes("област")) return 20;
+    if (type.includes("country") || type.includes("стра")) return 10;
+
+    return 5;
+}
+
 async function getPublicAdminLayers() {
     const rpcUrl = SUPABASE_URL + "/rest/v1/rpc/get_public_map_layers";
     const rpcResponse = await fetch(rpcUrl, {
@@ -1099,11 +1120,9 @@ async function loadActiveAdminLayers() {
         let loadedCount = 0;
         const errors = [];
 
-        const layerPriority = {country:10,countries:10,страна:10,regions:20,region:20,области:20,область:20,districts:30,district:30,районы:30,города:40,cities:40,city:40,streets:50,buildings:60};
         const orderedLayers = [...layers].sort((a,b) => {
-            const at = String(a.layer_type || a.type || "").toLowerCase();
-            const bt = String(b.layer_type || b.type || "").toLowerCase();
-            return (layerPriority[at] ?? 100) - (layerPriority[bt] ?? 100) || Number(a.id || 0) - Number(b.id || 0);
+            return adminLayerPriority(a) - adminLayerPriority(b)
+                || Number(a.id || 0) - Number(b.id || 0);
         });
 
         for (const layer of orderedLayers) {
@@ -1236,20 +1255,10 @@ async function addAdminLayerToMap(layer) {
             }
         });
 
-        map.on("click", prefix + "-fill", function(event) {
-            showAdminLayerPopup(
-                layer,
-                event.features && event.features[0],
-                event.lngLat
-            );
-        });
-
-        map.on("mouseenter", prefix + "-fill", function() {
-            map.getCanvas().style.cursor = "pointer";
-        });
-
-        map.on("mouseleave", prefix + "-fill", function() {
-            map.getCanvas().style.cursor = "";
+        adminInteractiveLayers.push({
+            id: prefix + "-fill",
+            layer: layer,
+            priority: adminLayerPriority(layer)
         });
     }
 
@@ -1279,20 +1288,10 @@ async function addAdminLayerToMap(layer) {
             }
         });
 
-        map.on("click", prefix + "-points", function(event) {
-            showAdminLayerPopup(
-                layer,
-                event.features && event.features[0],
-                event.lngLat
-            );
-        });
-
-        map.on("mouseenter", prefix + "-points", function() {
-            map.getCanvas().style.cursor = "pointer";
-        });
-
-        map.on("mouseleave", prefix + "-points", function() {
-            map.getCanvas().style.cursor = "";
+        adminInteractiveLayers.push({
+            id: prefix + "-points",
+            layer: layer,
+            priority: adminLayerPriority(layer)
         });
     }
 }
@@ -1421,20 +1420,17 @@ map.on(
                 }
             });
 
-            map.on("click", "naqsha-region-click", function(event) {
-                if (!event.features || !event.features.length) return;
-                const p = event.features[0].properties || {};
-                showInfo(
-                    "🗺️ Область",
-                    "<strong>" + escapeHTML(p.name_ru || p.name || p.name_uz || p.name_en || "Область") + "</strong>"
-                );
-            });
-
-            map.on("mouseenter", "naqsha-region-click", function() {
-                map.getCanvas().style.cursor = "pointer";
-            });
-            map.on("mouseleave", "naqsha-region-click", function() {
-                map.getCanvas().style.cursor = "";
+            // Встроенный слой областей тоже участвует в общем
+            // обработчике кликов, но имеет меньший приоритет,
+            // чем загруженный пользователем слой областей.
+            adminInteractiveLayers.push({
+                id: "naqsha-region-click",
+                layer: {
+                    name: "Области",
+                    layer_type: "regions"
+                },
+                priority: 15,
+                builtin: true
             });
 
             /* =================================================
@@ -2134,6 +2130,79 @@ map.on(
             ================================================= */
 
             await loadActiveAdminLayers();
+
+            /*
+               ЕДИНЫЙ ОБРАБОТЧИК АДМИНИСТРАТИВНЫХ КЛИКОВ.
+               queryRenderedFeatures получает ВСЕ совпадающие
+               слои под пальцем, поэтому страна больше не
+               перекрывает область.
+            */
+            map.on("click", function(event) {
+                const queryLayers = adminInteractiveLayers.map(x => x.id);
+                if (!queryLayers.length) return;
+
+                const features = map.queryRenderedFeatures(
+                    event.point,
+                    { layers: queryLayers }
+                );
+
+                if (!features.length) return;
+
+                const candidates = features.map(feature => {
+                    const entry = adminInteractiveLayers.find(
+                        x => x.id === feature.layer.id
+                    );
+                    return {
+                        feature: feature,
+                        layer: entry ? entry.layer : null,
+                        priority: entry ? entry.priority : 0,
+                        builtin: entry ? !!entry.builtin : false
+                    };
+                }).filter(x => x.layer);
+
+                if (!candidates.length) return;
+
+                // Берём наиболее конкретный объект.
+                candidates.sort((a, b) => b.priority - a.priority);
+
+                const selected = candidates[0];
+
+                if (selected.builtin) {
+                    const p = selected.feature.properties || {};
+                    const name =
+                        p.name_ru ||
+                        p.name ||
+                        p.name_uz ||
+                        p.name_uz_cy ||
+                        p.name_en ||
+                        "Область";
+
+                    showInfo(
+                        "🗺️ Область",
+                        "<strong>" + escapeHTML(name) + "</strong>"
+                    );
+                    return;
+                }
+
+                showAdminLayerPopup(
+                    selected.layer,
+                    selected.feature,
+                    event.lngLat
+                );
+            });
+
+            map.on("mousemove", function(event) {
+                const queryLayers = adminInteractiveLayers.map(x => x.id);
+                if (!queryLayers.length) return;
+
+                const features = map.queryRenderedFeatures(
+                    event.point,
+                    { layers: queryLayers }
+                );
+
+                map.getCanvas().style.cursor =
+                    features.length ? "pointer" : "";
+            });
 
 
             /* =================================================
