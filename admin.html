@@ -202,7 +202,7 @@ pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-w
       </div>
     </div>
     <div class="small" style="margin-top:8px">
-      CSV должен иметь строку заголовков. JSON — массив объектов. Сначала выполняется полная проверка, затем запись. Для районов и городов дубль определяется по области + совпадению названия на любом из языков, даже если ID в файле отличается.
+      CSV должен иметь строку заголовков. JSON — массив объектов. Сначала выполняется полная проверка, затем запись. Для районов дубль определяется по области + совпадению хотя бы одного названия из всех языков (RU/UZ/CY/EN), даже если ID в файле отличается.
     </div>
     <div class="actions">
       <button id="checkImport" class="gray">🔎 Проверить</button>
@@ -464,16 +464,53 @@ function normalizeDistrictName(value){
  return s.replace(/\s+/g,' ').trim();
 }
 
+
+/* DISTRICT MATCH v14 — region + any matching language */
+const DISTRICT_NAME_FIELDS=['name','name_ru','name_uz','name_uz_cy','name_en'];
+
+function normalizeDistrictName(value){
+ let s=String(value??'').toLowerCase().trim();
+ s=s.normalize('NFKD').replace(/[\u0300-\u036f]/g,'');
+ s=s.replace(/[ʻʼ’`'"]/g,'').replace(/[-–—]/g,' ').replace(/\s+/g,' ');
+ s=s.replace(/\b(district|район|района|tuman|tumani|область|viloyat|viloyati)\b/g,' ');
+ s=s.replace(/(ский|ская|ское|ские)\b/g,'');
+ s=s.replace(/kh/g,'h').replace(/q/g,'k').replace(/x/g,'h')
+      .replace(/yo/g,'e').replace(/yu/g,'u').replace(/ya/g,'a')
+      .replace(/ў/g,'u').replace(/ғ/g,'g').replace(/қ/g,'k').replace(/ҳ/g,'h')
+      .replace(/ъ/g,'').replace(/ь/g,'').replace(/ё/g,'e').replace(/й/g,'y')
+      .replace(/ц/g,'ts').replace(/ч/g,'ch').replace(/ш/g,'sh')
+      .replace(/щ/g,'sh').replace(/ы/g,'y').replace(/э/g,'e');
+ s=s.replace(/[^a-z0-9\u0400-\u04ff ]/g,' ');
+ return s.replace(/\s+/g,' ').trim();
+}
+
+function districtNameAliases(row){
+ const out=[];
+ DISTRICT_NAME_FIELDS.forEach(field=>{
+  const raw=String(row?.[field]??'').trim();
+  if(!raw)return;
+  const n=normalizeDistrictName(raw);
+  if(n && !out.includes(n))out.push(n);
+ });
+ return out;
+}
+
+function districtRegionId(row){
+ return String(row?.region_id??'').trim().toUpperCase();
+}
+
+function districtsAreSame(a,b){
+ if(!districtRegionId(a) || districtRegionId(a)!==districtRegionId(b)) return false;
+ const aa=districtNameAliases(a), bb=districtNameAliases(b);
+ return aa.some(name=>bb.includes(name));
+}
+
 function districtIdentity(row){
- const region=String(row.region_id||'').trim().toUpperCase();
- const name=row.name_uz||row.name||row.name_en||row.name_ru||'';
- return region+'|'+normalizeDistrictName(name);
+ return districtRegionId(row)+'|'+districtNameAliases(row).sort().join('|');
 }
 
 function districtExistingIdentity(d){
- const region=String(d.region_id||'').trim().toUpperCase();
- const name=d.name_uz||d.name||d.name_en||d.name_ru||'';
- return region+'|'+normalizeDistrictName(name);
+ return districtIdentity(d);
 }
 
 async function parseUniversalFile(){
@@ -510,7 +547,7 @@ function validateUniversal(rows,type){
 
   let key='';
   if(type==='regions')key='r:'+importVal(x,'id');
-  if(type==='districts')key='d:'+districtIdentity(x);
+  if(type==='districts')key='d:'+districtRegionId(x)+'|'+districtNameAliases(x).sort().join('|');
   if(type==='cities')key='c:'+importNorm(importVal(x,'name'))+'|'+importVal(x,'region_id');
   if(type==='streets')key='s:'+importNorm(importVal(x,'name'))+'|'+importVal(x,'city_id')+'|'+importVal(x,'district_id');
   if(type==='buildings')key='b:'+importNorm(importVal(x,'house_number'))+'|'+importVal(x,'street_id')+'|'+importVal(x,'city_id');
@@ -581,9 +618,9 @@ function existingUniversal(row,type){
    return regions.some(x=>String(x.id)===String(row.id));
 
  if(type==='districts'){
-   // ВАЖНО: ID не участвует в определении дубля.
-   // Дубль = только region_id + normalized name.
-   return districts.some(d=>districtExistingIdentity(d)===districtIdentity(row));
+   // ID не участвует. Дубль = та же область + совпадение
+   // хотя бы одного названия среди RU/UZ/CY/EN/name.
+   return districts.some(d=>districtsAreSame(d,row));
  }
 
  if(type==='cities')
