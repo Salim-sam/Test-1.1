@@ -368,36 +368,16 @@ $('saveBuilding').onclick=async()=>{
 $('deleteBuilding').onclick=async()=>{if(!selected.b||!confirm('Удалить дом?'))return;try{await rpc('admin_delete_building',{p_id:Number(selected.b.id)});await loadData();resetBuilding();notice('buildingStatus','✅ Дом удалён')}catch(e){notice('buildingStatus','❌ '+e.message,false)}};$('newBuilding').onclick=resetBuilding;$('resetBuilding').onclick=resetBuilding;$('buildingSearch').oninput=renderBuildings;$('buildingFilter').onchange=renderBuildings;
 
 
-/* UNIVERSAL MASS IMPORT */
+/* UNIVERSAL MASS IMPORT v11 — SAFE REGION + DISTRICT NAME */
 let universalImportRows=[];
 let universalImportType='cities';
 
 const importSchemas={
- regions:{
-  title:'🗺️ Импорт областей',
-  headers:['id','name','name_ru','name_uz','name_uz_cy'],
-  required:['id','name','name_ru','name_uz','name_uz_cy']
- },
- districts:{
-  title:'📍 Импорт районов',
-  headers:['id','region_id','name','name_ru','name_uz','name_uz_cy','name_en','center','population','area','description'],
-  required:['id','region_id','name','name_ru','name_uz','name_uz_cy']
- },
- cities:{
-  title:'🏙️ Импорт городов',
-  headers:['id','name','name_ru','name_uz','name_uz_cy','region_id','district_id','population','description'],
-  required:['name','name_ru','name_uz','name_uz_cy','region_id']
- },
- streets:{
-  title:'🛣️ Импорт улиц',
-  headers:['name','name_ru','name_uz','name_uz_cy','name_en','region_id','district_id','city_id','street_type','description'],
-  required:['name','name_ru','name_uz','name_uz_cy','region_id']
- },
- buildings:{
-  title:'🏠 Импорт зданий / домов',
-  headers:['name','name_ru','name_uz','name_uz_cy','name_en','house_number','address','postal_code','building_type','floors','street_id','region_id','district_id','city_id','description'],
-  required:['house_number']
- }
+ regions:{title:'🗺️ Импорт областей',headers:['id','name','name_ru','name_uz','name_uz_cy'],required:['id','name','name_ru','name_uz','name_uz_cy']},
+ districts:{title:'📍 Импорт районов',headers:['id','region_id','name','name_ru','name_uz','name_uz_cy','name_en','center','population','area','description'],required:['id','region_id','name','name_ru','name_uz','name_uz_cy']},
+ cities:{title:'🏙️ Импорт городов',headers:['id','name','name_ru','name_uz','name_uz_cy','region_id','district_id','population','description'],required:['name','name_ru','name_uz','name_uz_cy','region_id']},
+ streets:{title:'🛣️ Импорт улиц',headers:['name','name_ru','name_uz','name_uz_cy','name_en','region_id','district_id','city_id','street_type','description'],required:['name','name_ru','name_uz','name_uz_cy','region_id']},
+ buildings:{title:'🏠 Импорт зданий / домов',headers:['name','name_ru','name_uz','name_uz_cy','name_en','house_number','address','postal_code','building_type','floors','street_id','region_id','district_id','city_id','description'],required:['house_number']}
 };
 
 function setImportType(type){
@@ -413,163 +393,302 @@ function setImportType(type){
 }
 function openImport(type){setImportType(type);$('importModal').classList.remove('hidden')}
 function closeImport(){$('importModal').classList.add('hidden')}
-
 document.querySelectorAll('.importOpen').forEach(b=>b.onclick=()=>openImport(b.dataset.importType));
 $('closeImport').onclick=closeImport;
 $('importType').onchange=()=>setImportType($('importType').value);
 $('importModal').onclick=e=>{if(e.target===$('importModal'))closeImport()};
 
 function normalizeImportObject(x){
- const o={};Object.keys(x||{}).forEach(k=>o[norm(k).replace(/[\s-]+/g,'_')]=String(x[k]??'').trim());
+ const o={};
+ Object.keys(x||{}).forEach(k=>o[norm(k).replace(/[\s-]+/g,'_')]=String(x[k]??'').trim());
  return o;
 }
+
+/*
+  Район уникален только внутри области:
+  region_id + нормализованное название.
+  Одинаковые названия в разных областях НЕ являются дублями.
+*/
+function normalizeDistrictName(value){
+ let s=String(value||'').toLowerCase().trim();
+
+ // Унифицируем апострофы, дефисы и пробелы.
+ s=s.replace(/[ʻʼ’`'"]/g,'');
+ s=s.replace(/[-–—]/g,' ');
+ s=s.replace(/\s+/g,' ');
+
+ // Убираем служебные слова.
+ s=s.replace(/\b(district|район|района|tuman|tumani|область|viloyat|viloyati)\b/g,' ');
+
+ // Русские окончания прилагательных.
+ s=s.replace(/(ский|ская|ское|ские)\b/g,'');
+
+ // Частые различия транслитерации.
+ s=s.replace(/kh/g,'h')
+      .replace(/sh/g,'sh')
+      .replace(/ch/g,'ch')
+      .replace(/yo/g,'e')
+      .replace(/yu/g,'u')
+      .replace(/ya/g,'a')
+      .replace(/q/g,'k')
+      .replace(/x/g,'h')
+      .replace(/j/g,'j')
+      .replace(/ў/g,'u')
+      .replace(/ғ/g,'g')
+      .replace(/қ/g,'k')
+      .replace(/ҳ/g,'h')
+      .replace(/ъ/g,'')
+      .replace(/ь/g,'')
+      .replace(/ё/g,'e')
+      .replace(/й/g,'y')
+      .replace(/ц/g,'ts')
+      .replace(/ч/g,'ch')
+      .replace(/ш/g,'sh')
+      .replace(/щ/g,'sh')
+      .replace(/ы/g,'y')
+      .replace(/э/g,'e');
+
+ s=s.normalize('NFKD').replace(/[\u0300-\u036f]/g,'');
+ s=s.replace(/[^a-z0-9\u0400-\u04ff ]/g,' ');
+ return s.replace(/\s+/g,' ').trim();
+}
+
+function districtIdentity(row){
+ const region=String(row.region_id||'').trim().toUpperCase();
+ const name=row.name_uz||row.name||row.name_en||row.name_ru||'';
+ return region+'|'+normalizeDistrictName(name);
+}
+
+function districtExistingIdentity(d){
+ const region=String(d.region_id||'').trim().toUpperCase();
+ const name=d.name_uz||d.name||d.name_en||d.name_ru||'';
+ return region+'|'+normalizeDistrictName(name);
+}
+
 async function parseUniversalFile(){
- const f=$('importFile').files[0];if(!f)throw Error('Выберите CSV или JSON файл.');
+ const f=$('importFile').files[0];
+ if(!f)throw Error('Выберите CSV или JSON файл.');
  if(f.size>20*1048576)throw Error('Максимальный размер файла — 20 MB.');
- const text=await f.text();let rows;
+ const text=await f.text();
+ let rows;
  if(/\.json$/i.test(f.name)){
-   const d=JSON.parse(text);rows=Array.isArray(d)?d:(Array.isArray(d.cities)?d.cities:null);
+   const d=JSON.parse(text);
+   rows=Array.isArray(d)?d:(Array.isArray(d.districts)?d.districts:null);
    if(!rows)throw Error('JSON должен быть массивом объектов.');
  }else rows=csvParse(text);
  return rows.map((x,i)=>({...normalizeImportObject(x),__line:i+2}));
 }
-function val(x,k){return x[k]??''}
+
 function validateUniversal(rows,type){
  const s=importSchemas[type],errors=[],keys=new Set();
+
  rows.forEach(x=>{
   const line='Строка '+x.__line+': ';
   s.required.forEach(k=>{if(!val(x,k))errors.push(line+'нет '+k)});
+
   let key='';
   if(type==='regions')key='r:'+val(x,'id');
-  if(type==='districts')key='d:'+val(x,'id');
+  if(type==='districts')key='d:'+districtIdentity(x);
   if(type==='cities')key='c:'+norm(val(x,'name'))+'|'+val(x,'region_id');
   if(type==='streets')key='s:'+norm(val(x,'name'))+'|'+val(x,'city_id')+'|'+val(x,'district_id');
   if(type==='buildings')key='b:'+norm(val(x,'house_number'))+'|'+val(x,'street_id')+'|'+val(x,'city_id');
-  if(keys.has(key))errors.push(line+'дубликат внутри файла');keys.add(key);
-  if(type!=='regions' && val(x,'region_id') && !regions.some(r=>String(r.id)===String(val(x,'region_id'))))
+
+  if(keys.has(key))errors.push(line+'дубликат внутри файла');
+  keys.add(key);
+
+  if(type!=='regions' && val(x,'region_id') &&
+     !regions.some(r=>String(r.id).toUpperCase()===String(val(x,'region_id')).toUpperCase()))
     errors.push(line+'region_id '+val(x,'region_id')+' не найден');
-  if(['districts','cities','streets','buildings'].includes(type) && val(x,'district_id')){
-    if(!districts.some(d=>String(d.id)===String(val(x,'district_id'))&&String(d.region_id)===String(val(x,'region_id'))))
+
+  if(type==='districts'){
+    const regionExists=regions.some(r=>String(r.id).toUpperCase()===String(x.region_id).toUpperCase());
+    if(!regionExists)errors.push(line+'region_id не найден в областях');
+  }
+
+  if(['cities','streets','buildings'].includes(type) && val(x,'district_id')){
+    if(!districts.some(d=>String(d.id)===String(val(x,'district_id')) &&
+      String(d.region_id||'').toUpperCase()===String(val(x,'region_id')||'').toUpperCase()))
       errors.push(line+'district_id не найден или не относится к области');
   }
+
   if(['streets','buildings'].includes(type) && val(x,'city_id')){
     if(!cities.some(c=>String(c.id)===String(val(x,'city_id'))))
       errors.push(line+'city_id не найден');
   }
+
   if(type==='streets' && val(x,'city_id') && val(x,'district_id')){
     const c=cities.find(c=>String(c.id)===String(val(x,'city_id')));
-    if(c&&String(c.district_id||'')!==String(val(x,'district_id')))errors.push(line+'город не относится к указанному району');
+    if(c&&String(c.district_id||'')!==String(val(x,'district_id')))
+      errors.push(line+'город не относится к указанному району');
   }
-  if(type==='buildings' && val(x,'street_id') && !streets.some(s=>String(s.id)===String(val(x,'street_id'))))
+
+  if(type==='buildings' && val(x,'street_id') &&
+     !streets.some(s=>String(s.id)===String(val(x,'street_id'))))
     errors.push(line+'street_id не найден');
-  if(type==='buildings' && val(x,'floors')!=='' && (!Number.isInteger(Number(val(x,'floors')))||Number(val(x,'floors'))<0))
+
+  if(type==='buildings' && val(x,'floors')!=='' &&
+     (!Number.isInteger(Number(val(x,'floors')))||Number(val(x,'floors'))<0))
     errors.push(line+'floors должен быть целым числом >= 0');
-  if(['cities','districts'].includes(type) && val(x,'population')!=='' && (!Number.isInteger(Number(val(x,'population')))||Number(val(x,'population'))<0))
+
+  if(['cities','districts'].includes(type) && val(x,'population')!=='' &&
+     (!Number.isInteger(Number(val(x,'population')))||Number(val(x,'population'))<0))
     errors.push(line+'population должен быть целым числом >= 0');
-  if(type==='districts' && val(x,'area')!=='' && Number(val(x,'area'))<0)errors.push(line+'area не может быть отрицательной');
+
+  if(type==='districts' && val(x,'area')!=='' && Number(val(x,'area'))<0)
+    errors.push(line+'area не может быть отрицательной');
  });
  return errors;
 }
-/* IMPORT MATCHING v9 — multilingual, accent/apostrophe tolerant, and safe for legacy district IDs */
-const CYR_TO_LAT={
- 'а':'a','б':'b','в':'v','г':'g','д':'d','е':'e','ё':'yo','ж':'zh','з':'z','и':'i','й':'y','к':'k','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ф':'f','х':'kh','ц':'ts','ч':'ch','ш':'sh','щ':'shch','ъ':'','ы':'y','ь':'','э':'e','ю':'yu','я':'ya',
- 'ғ':'g','қ':'q','ҳ':'h','ў':'o','ё':'yo','Ғ':'g','Қ':'q','Ҳ':'h','Ў':'o','Ё':'yo'
-};
-function translitCyr(v){return String(v||'').split('').map(ch=>CYR_TO_LAT[ch]??CYR_TO_LAT[ch.toLowerCase()]??ch).join('')}
-function importNameKey(v){
- let s=String(v??'').toLowerCase().normalize('NFKC');
- s=s.replace(/[ʻʼ’‘`´]/g,'').replace(/\u02bb/g,'');
- s=translitCyr(s).toLowerCase();
- s=s.replace(/\b(district|rayon|район|tuman|tumani|туман|тумани)\b/g,'');
- /* Russian adjectival district forms: Андижанский → Андижан, Бухарский → Бухар… */
- s=s.replace(/(skiy|skij|ский|ская|ское|ские)$/,'');
- s=s.replace(/(ski|ский|skaya|skoye)$/,'');
- s=s.replace(/[^a-z0-9]+/g,'').trim();
- /* common Uzbek/Russian transliteration differences */
- s=s.replace(/kh/g,'h').replace(/q/g,'k').replace(/w/g,'v');
- return s;
-}
-function sameRegion(a,b){return String(a||'').trim().toLowerCase()===String(b||'').trim().toLowerCase();}
-function fieldKeys(x, fields=['name','name_ru','name_uz','name_uz_cy','name_en']){
- return [...new Set(fields.map(k=>importNameKey(x?.[k])).filter(Boolean))];
-}
-function sameDistrictByName(row,x){
- if(!sameRegion(row.region_id,x.region_id))return false;
- const incoming=fieldKeys(row), existing=fieldKeys(x);
- if(!incoming.length||!existing.length)return false;
- return incoming.some(a=>existing.some(b=>a===b || (a.length>=5&&b.length>=5&&(a.startsWith(b)||b.startsWith(a)))));
-}
-function sameEntityByName(row,x,fields=['name','name_ru','name_uz','name_uz_cy','name_en']){
- if(!sameRegion(row.region_id,x.region_id))return false;
- const a=fieldKeys(row,fields),b=fieldKeys(x,fields);
- return a.some(x=>b.some(y=>x===y || (x.length>=5&&y.length>=5&&(x.startsWith(y)||y.startsWith(x)))));
-}
+
 function existingUniversal(row,type){
- if(type==='regions')return regions.some(x=>String(x.id)===String(row.id)||sameEntityByName(row,x));
- if(type==='districts')return districts.some(x=>String(x.id)===String(row.id)||sameDistrictByName(row,x));
- if(type==='cities')return cities.some(x=>(row.id&&String(x.id)===String(row.id))||sameEntityByName(row,x));
- if(type==='streets')return streets.some(x=>sameEntityByName(row,x)&&String(x.city_id||'')===String(row.city_id||'')&&String(x.district_id||'')===String(row.district_id||''));
- if(type==='buildings')return buildings.some(x=>norm(x.house_number)===norm(row.house_number)&&String(x.street_id||'')===String(row.street_id||'')&&String(x.city_id||'')===String(row.city_id||''));
+ if(type==='regions')
+   return regions.some(x=>String(x.id)===String(row.id));
+
+ if(type==='districts'){
+   // ВАЖНО: ID не участвует в определении дубля.
+   // Дубль = только region_id + normalized name.
+   return districts.some(d=>districtExistingIdentity(d)===districtIdentity(row));
+ }
+
+ if(type==='cities')
+   return cities.some(x=>(row.id&&String(x.id)===String(row.id)) ||
+     (norm(x.name)===norm(row.name)&&String(x.region_id)===String(row.region_id)));
+
+ if(type==='streets')
+   return streets.some(x=>norm(x.name)===norm(row.name) &&
+     String(x.city_id||'')===String(row.city_id||'') &&
+     String(x.district_id||'')===String(row.district_id||''));
+
+ if(type==='buildings')
+   return buildings.some(x=>norm(x.house_number)===norm(row.house_number) &&
+     String(x.street_id||'')===String(row.street_id||'') &&
+     String(x.city_id||'')===String(row.city_id||''));
+
  return false;
 }
+
 async function createOne(row,type){
- if(type==='regions'){
-   return rpc('admin_create_region',{p_id:row.id,p_name:row.name,p_name_ru:row.name_ru,p_name_uz:row.name_uz,p_name_uz_cy:row.name_uz_cy});
- }
- if(type==='districts'){
-   return rpc('admin_create_district',{p_id:row.id,p_region_id:row.region_id,p_name:row.name,p_name_ru:row.name_ru,p_name_uz:row.name_uz,p_name_en:row.name_en||row.name,p_name_uz_cy:row.name_uz_cy,p_center:row.center||null,p_population:row.population===''?null:Number(row.population),p_area:row.area===''?null:Number(row.area),p_description:row.description||null});
- }
- if(type==='cities'){
-   return rpc('admin_create_city',{p_id:row.id===''?null:Number(row.id),p_region_id:row.region_id,p_district_id:row.district_id||null,p_name:row.name,p_name_ru:row.name_ru,p_name_uz:row.name_uz,p_name_uz_cy:row.name_uz_cy,p_population:row.population===''?null:Number(row.population),p_description:row.description||null});
- }
- if(type==='streets'){
-   return rpc('admin_create_street',{p_name:row.name,p_name_ru:row.name_ru,p_name_uz:row.name_uz,p_name_uz_cy:row.name_uz_cy,p_name_en:row.name_en||row.name,p_region_id:row.region_id,p_district_id:row.district_id||null,p_city_id:row.city_id===''?null:Number(row.city_id),p_street_type:row.street_type||null,p_description:row.description||null});
- }
- if(type==='buildings'){
-   return rpc('admin_create_building',{p_name:row.name||null,p_name_ru:row.name_ru||null,p_name_uz:row.name_uz||null,p_name_uz_cy:row.name_uz_cy||null,p_name_en:row.name_en||null,p_house_number:row.house_number,p_address:row.address||null,p_postal_code:row.postal_code||null,p_building_type:row.building_type||null,p_floors:row.floors===''?null:Number(row.floors),p_street_id:row.street_id===''?null:Number(row.street_id),p_region_id:row.region_id||null,p_district_id:row.district_id||null,p_city_id:row.city_id===''?null:Number(row.city_id),p_description:row.description||null});
- }
+ if(type==='regions')return rpc('admin_create_region',{
+   p_id:row.id,p_name:row.name,p_name_ru:row.name_ru,p_name_uz:row.name_uz,p_name_uz_cy:row.name_uz_cy
+ });
+ if(type==='districts')return rpc('admin_create_district',{
+   p_id:row.id,p_region_id:row.region_id,p_name:row.name,p_name_ru:row.name_ru,
+   p_name_uz:row.name_uz,p_name_en:row.name_en||row.name,p_name_uz_cy:row.name_uz_cy,
+   p_center:row.center||null,p_population:row.population===''?null:Number(row.population),
+   p_area:row.area===''?null:Number(row.area),p_description:row.description||null
+ });
+ if(type==='cities')return rpc('admin_create_city',{
+   p_id:row.id===''?null:Number(row.id),p_region_id:row.region_id,p_district_id:row.district_id||null,
+   p_name:row.name,p_name_ru:row.name_ru,p_name_uz:row.name_uz,p_name_uz_cy:row.name_uz_cy,
+   p_population:row.population===''?null:Number(row.population),p_description:row.description||null
+ });
+ if(type==='streets')return rpc('admin_create_street',{
+   p_name:row.name,p_name_ru:row.name_ru,p_name_uz:row.name_uz,p_name_uz_cy:row.name_uz_cy,
+   p_name_en:row.name_en||row.name,p_region_id:row.region_id,p_district_id:row.district_id||null,
+   p_city_id:row.city_id===''?null:Number(row.city_id),p_street_type:row.street_type||null,
+   p_description:row.description||null
+ });
+ if(type==='buildings')return rpc('admin_create_building',{
+   p_name:row.name||null,p_name_ru:row.name_ru||null,p_name_uz:row.name_uz||null,
+   p_name_uz_cy:row.name_uz_cy||null,p_name_en:row.name_en||null,p_house_number:row.house_number,
+   p_address:row.address||null,p_postal_code:row.postal_code||null,p_building_type:row.building_type||null,
+   p_floors:row.floors===''?null:Number(row.floors),p_street_id:row.street_id===''?null:Number(row.street_id),
+   p_region_id:row.region_id||null,p_district_id:row.district_id||null,
+   p_city_id:row.city_id===''?null:Number(row.city_id),p_description:row.description||null
+ });
 }
+
 $('checkImport').onclick=async()=>{
  try{
   universalImportRows=await parseUniversalFile();
   const errors=validateUniversal(universalImportRows,universalImportType);
   const existing=universalImportRows.filter(x=>existingUniversal(x,universalImportType));
   const fresh=universalImportRows.filter(x=>!existingUniversal(x,universalImportType));
-  $('importPreview').classList.remove('hidden');
-  $('importPreview').textContent=JSON.stringify({
+
+  const result={
     раздел:universalImportType,
-    всего:universalImportRows.length,
-    ошибок:errors.length,
+    всего_в_файле:universalImportRows.length,
     уже_существуют:existing.length,
-    новых: fresh.length,
-    готовы_к_импорту:Math.max(0,universalImportRows.length-errors.length-existing.length),
-    ошибки:errors.slice(0,100)
-  },null,2);
+    новых:fresh.length,
+    ошибок:errors.length,
+    готово_к_импорту:errors.length?0:fresh.length
+  };
+
+  if(universalImportType==='districts'){
+    result.районов_сейчас=districts.length;
+    result.районов_после_импорта=districts.length+fresh.length;
+    result.максимум_районов=177;
+  }
+
+  result.ошибки=errors.slice(0,100);
+
+  $('importPreview').classList.remove('hidden');
+  $('importPreview').textContent=JSON.stringify(result,null,2);
+
+  if(universalImportType==='districts' && errors.length===0 && districts.length+fresh.length>177){
+    $('runImport').disabled=true;
+    return notice('importStatus',
+      '❌ Импорт заблокирован: получится '+(districts.length+fresh.length)+
+      ' районов. Максимум — 177.',false);
+  }
+
   $('runImport').disabled=errors.length>0;
-  notice('importStatus',errors.length?'❌ Есть ошибки — исправьте файл.':'✅ Проверка пройдена. Можно импортировать.');
- }catch(e){$('runImport').disabled=true;notice('importStatus','❌ '+e.message,false)}
+
+  if(errors.length===0)
+    notice('importStatus','✅ Проверка: существует '+existing.length+', новых '+fresh.length+'.');
+  else
+    notice('importStatus','❌ Есть ошибки — импорт заблокирован.',false);
+
+ }catch(e){
+  $('runImport').disabled=true;
+  notice('importStatus','❌ '+e.message,false);
+ }
 };
+
 $('runImport').onclick=async()=>{
  const type=universalImportType;
- const errors=validateUniversal(universalImportRows,type);if(errors.length)return notice('importStatus','❌ Файл изменён или проверка устарела.',false);
+ const errors=validateUniversal(universalImportRows,type);
+ if(errors.length)return notice('importStatus','❌ Проверка не пройдена.',false);
+
  const fresh=universalImportRows.filter(x=>!existingUniversal(x,type));
+
+ if(type==='districts' && districts.length+fresh.length>177)
+   return notice('importStatus','❌ Импорт заблокирован: будет больше 177 районов.',false);
+
  if(!fresh.length)return notice('importStatus','ℹ️ Новых записей нет.');
- if(!confirm('Импортировать '+fresh.length+' записей в раздел '+type+'?'))return;
+
+ if(!confirm('Импортировать '+fresh.length+' новых записей?'))return;
+
  $('runImport').disabled=true;
- let inserted=0,skipped=0,failed=[];
+ let inserted=0,failed=[];
+
  for(const row of fresh){
    try{await createOne(row,type);inserted++}
    catch(e){failed.push({line:row.__line,error:e.message});}
  }
+
  try{await loadData()}catch{}
- $('importPreview').textContent=JSON.stringify({раздел:type,импортировано:inserted,ошибок:failed.length,ошибки:failed.slice(0,100)},null,2);
- notice('importStatus',failed.length?'⚠️ Импорт завершён с ошибками. Добавлено: '+inserted+', ошибок: '+failed.length:'✅ Импорт завершён. Добавлено: '+inserted);
+
+ $('importPreview').textContent=JSON.stringify({
+   раздел:type,импортировано:inserted,ошибок:failed.length,ошибки:failed.slice(0,100)
+ },null,2);
+
+ notice('importStatus',
+   failed.length
+   ? '⚠️ Добавлено: '+inserted+', ошибок: '+failed.length
+   : '✅ Импорт завершён. Добавлено: '+inserted);
+
  $('runImport').disabled=false;
 };
+
 $('downloadTemplate').onclick=()=>{
  const headers=importSchemas[universalImportType].headers;
  const blob=new Blob([headers.join(',')+'\n'],{type:'text/csv;charset=utf-8'});
- const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='naqsha-'+universalImportType+'-template.csv';a.click();URL.revokeObjectURL(a.href);
+ const a=document.createElement('a');
+ a.href=URL.createObjectURL(blob);
+ a.download='naqsha-'+universalImportType+'-template.csv';
+ a.click();
+ URL.revokeObjectURL(a.href);
 };
 /* LAYERS */
 function formatBytes(n){if(n==null)return'—';if(n<1024)return n+' B';if(n<1048576)return(n/1024).toFixed(1)+' KB';return(n/1048576).toFixed(2)+' MB'}
