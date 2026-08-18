@@ -1292,41 +1292,11 @@ async function addAdminLayerToMap(layer) {
 
 
 function showAdminLayerPopup(layer, feature, lngLat) {
-    const properties = feature && feature.properties
-        ? feature.properties
-        : {};
-
-    const keys = Object.keys(properties);
-
-    let body =
-        "<div><b>Слой:</b> " +
-        escapeHTML(layer.name) +
-        "</div>";
-
-    if (keys.length) {
-        keys.slice(0, 12).forEach(function(key) {
-            const value = properties[key];
-
-            if (
-                value === null ||
-                value === undefined ||
-                value === ""
-            ) {
-                return;
-            }
-
-            body +=
-                "<div style='margin-top:6px'><b>" +
-                escapeHTML(key) +
-                ":</b> " +
-                escapeHTML(String(value)) +
-                "</div>";
-        });
-    }
-
+    // Публичный интерфейс не показывает технические свойства GeoJSON.
+    // Пользователь видит только название слоя.
     showInfo(
-        "🧩 " + escapeHTML(layer.name),
-        body
+        "🧩 " + escapeHTML(layer.name || "Слой"),
+        ""
     );
 
     if (lngLat) {
@@ -1340,6 +1310,7 @@ function showAdminLayerPopup(layer, feature, lngLat) {
         });
     }
 }
+
 
 
 /* =====================================================
