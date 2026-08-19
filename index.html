@@ -284,34 +284,6 @@ body {
 }
 
 
-#mapSyncButton {
-    position: absolute;
-    z-index: 210;
-    top: 18px;
-    right: 18px;
-    width: 42px;
-    height: 42px;
-    border: 0;
-    border-radius: 14px;
-    background: rgba(255,255,255,.97);
-    box-shadow: 0 3px 18px rgba(0,0,0,.18);
-    font-size: 20px;
-    cursor: pointer;
-}
-#mapSyncStatus {
-    position: absolute;
-    z-index: 210;
-    top: 68px;
-    right: 18px;
-    padding: 6px 10px;
-    border-radius: 10px;
-    background: rgba(255,255,255,.92);
-    box-shadow: 0 2px 10px rgba(0,0,0,.12);
-    color: #17752e;
-    font-size: 11px;
-    display: none;
-}
-
 /* =====================================================
    MOBILE
 ===================================================== */
@@ -354,9 +326,6 @@ body {
 <div class="logo">
     🇺🇿 Naqsha
 </div>
-
-<button id="mapSyncButton" type="button" title="Обновить данные">↻</button>
-<div id="mapSyncStatus">● Синхронизировано</div>
 
 
 <div class="search-box">
@@ -445,34 +414,20 @@ const START_ZOOM = 5;
    DATA
 ===================================================== */
 
-function emptyFeatureCollection() {
-    return { type: "FeatureCollection", features: [] };
-}
+let regionsData = null;
 
-let regionsData = emptyFeatureCollection();
+let districtsData = null;
 
-let districtsData = emptyFeatureCollection();
+let citiesData = null;
 
-let citiesData = emptyFeatureCollection();
-
-let streetsData = emptyFeatureCollection();
-
-let buildingsData = emptyFeatureCollection();
+// Данные, загружаемые из активных GeoJSON-слоёв админки.
+// Важно объявлять их заранее: иначе JavaScript останавливается на streetsData/activeMapLayers.
+let streetsData = {
+    type: "FeatureCollection",
+    features: []
+};
 
 let activeMapLayers = [];
-
-let mapSyncTimer = null;
-let mapSyncBusy = false;
-let mapInitialized = false;
-
-function reportMapStatus(type, payload = {}) {
-    window.NAQSHA_RUNTIME = { type, at: new Date().toISOString(), ...payload };
-    try {
-        if (window.parent && window.parent !== window) {
-            window.parent.postMessage({ source: "naqsha-map", type, ...payload }, "*");
-        }
-    } catch (_) {}
-} 
 
 let selectedDistrict = null;
 
@@ -874,57 +829,211 @@ function getFeatureCenter(
 ===================================================== */
 
 async function loadNaqshaData() {
-    reportMapStatus("loading");
-    console.log("🇺🇿 Naqsha: синхронизация с Supabase...");
 
-    const [regions, districts, cities, streets, buildings] = await Promise.all([
-        supabaseRPC("get_regions_geojson"),
-        supabaseRPC("get_districts_geojson"),
-        supabaseRPC("get_cities_geojson"),
-        supabaseRPC("get_streets_admin"),
-        supabaseRPC("get_buildings_admin")
+    console.log(
+        "🇺🇿 Naqsha: подключение к Supabase..."
+    );
+
+
+    const [
+
+        regions,
+
+        districts,
+
+        cities
+
+    ] = await Promise.all([
+
+        supabaseRPC(
+            "get_regions_geojson"
+        ),
+
+        supabaseRPC(
+            "get_districts_geojson"
+        ),
+
+        supabaseRPC(
+            "get_cities_geojson"
+        )
+
     ]);
 
-    regionsData = regions && regions.type === "FeatureCollection"
-        ? regions : emptyFeatureCollection();
-    districtsData = districts && districts.type === "FeatureCollection"
-        ? districts : emptyFeatureCollection();
-    citiesData = cities && cities.type === "FeatureCollection"
-        ? cities : emptyFeatureCollection();
 
-    streetsData = {
-        type: "FeatureCollection",
-        features: (Array.isArray(streets) ? streets : []).map(row => ({
-            type: "Feature",
-            id: row.id,
-            geometry: row.geometry || null,
-            properties: { ...row, id: row.id }
-        }))
-    };
+    regionsData =
+        regions;
 
-    buildingsData = {
-        type: "FeatureCollection",
-        features: (Array.isArray(buildings) ? buildings : []).map(row => ({
-            type: "Feature",
-            id: row.id,
-            geometry: row.geometry || null,
-            properties: { ...row, id: row.id }
-        }))
-    };
+    districtsData =
+        districts;
 
-    const checks = [
-        ["Области", regionsData],
-        ["Районы", districtsData],
-        ["Города", citiesData],
-        ["Улицы", streetsData],
-        ["Здания", buildingsData]
-    ];
-    for (const [name, data] of checks) {
-        if (!data || data.type !== "FeatureCollection" || !Array.isArray(data.features)) {
-            throw new Error(name + ": неправильный формат данных");
-        }
-        console.log(name + ":", data.features.length);
+    citiesData =
+        cities;
+
+
+    /* =================================================
+       CHECK REGIONS
+    ================================================= */
+
+    if (
+
+        !regionsData ||
+
+        regionsData.type !==
+            "FeatureCollection"
+
+    ) {
+
+        throw new Error(
+            "get_regions_geojson вернул неправильный формат."
+        );
+
     }
+
+
+    /* =================================================
+       CHECK DISTRICTS
+    ================================================= */
+
+    if (
+
+        !districtsData ||
+
+        districtsData.type !==
+            "FeatureCollection"
+
+    ) {
+
+        throw new Error(
+            "get_districts_geojson вернул неправильный формат."
+        );
+
+    }
+
+
+    /* =================================================
+       CHECK CITIES
+    ================================================= */
+
+    if (
+
+        !citiesData ||
+
+        citiesData.type !==
+            "FeatureCollection"
+
+    ) {
+
+        throw new Error(
+            "get_cities_geojson вернул неправильный формат."
+        );
+
+    }
+
+
+    console.log(
+        "Областей:",
+        regionsData.features.length
+    );
+
+
+    console.log(
+        "Районов:",
+        districtsData.features.length
+    );
+
+
+    console.log(
+        "Городов:",
+        citiesData.features.length
+    );
+
+
+    /* =================================================
+       REMOVE BAD FEATURES
+    ================================================= */
+
+    regionsData.features =
+        regionsData.features.filter(
+
+            function(feature) {
+
+                return (
+
+                    feature &&
+
+                    feature.geometry &&
+
+                    feature.geometry.coordinates
+
+                );
+
+            }
+
+        );
+
+
+    districtsData.features =
+        districtsData.features.filter(
+
+            function(feature) {
+
+                return (
+
+                    feature &&
+
+                    feature.geometry &&
+
+                    feature.geometry.coordinates
+
+                );
+
+            }
+
+        );
+
+
+    citiesData.features =
+        citiesData.features.filter(
+
+            function(feature) {
+
+                return (
+
+                    feature &&
+
+                    feature.geometry &&
+
+                    feature.geometry.coordinates
+
+                );
+
+            }
+
+        );
+
+
+    console.log(
+        "После проверки:"
+    );
+
+
+    console.log(
+        "Regions:",
+        regionsData.features.length
+    );
+
+
+    console.log(
+        "Districts:",
+        districtsData.features.length
+    );
+
+
+    console.log(
+        "Cities:",
+        citiesData.features.length
+    );
+
 }
 
 
@@ -948,9 +1057,11 @@ async function loadActiveNaqshaLayers() {
 
         if (!response.ok) throw new Error("map_layers HTTP " + response.status);
         activeMapLayers = await response.json();
+        if (!Array.isArray(activeMapLayers)) activeMapLayers = [];
     } catch (error) {
         console.warn("⚠️ Не удалось получить активные слои:", error);
         activeMapLayers = [];
+        reportMapStatus("error", "Не удалось загрузить активные слои: " + error.message);
     }
 }
 
@@ -971,6 +1082,22 @@ async function loadLayerGeoJSON(layer) {
     return data;
 }
 
+function geoFeatureHasGeometry(feature) {
+    return !!(
+        feature &&
+        feature.geometry &&
+        feature.geometry.coordinates &&
+        Array.isArray(feature.geometry.coordinates) &&
+        feature.geometry.coordinates.length
+    );
+}
+
+function countGeoGeometry(fc) {
+    return Array.isArray(fc?.features)
+        ? fc.features.filter(geoFeatureHasGeometry).length
+        : 0;
+}
+
 function normLayerValue(v) {
     return String(v ?? "").toLowerCase().trim()
         .replace(/[ʻʼ’`']/g, "")
@@ -982,12 +1109,20 @@ function mergeFeatureWithDB(feature, dbRows, type) {
     const pid = String(p.id ?? feature.id ?? "").trim();
     let row = null;
 
-    if (pid) row = dbRows.find(x => String(x.id) === pid);
+    if (pid) row = dbRows.find(x => String(x.id) === pid || String(x.id ?? "").toUpperCase() === pid.toUpperCase());
 
     if (!row && type === "districts") {
         const rn = normLayerValue(p.name_ru || p.name || p.name_uz);
         row = dbRows.find(x =>
             String(x.region_id || "") === String(p.region_id || "") &&
+            [x.name_ru, x.name, x.name_uz, x.name_uz_cy, x.name_en]
+                .some(n => normLayerValue(n) === rn)
+        );
+    }
+
+    if (!row && type === "regions") {
+        const rn = normLayerValue(p.name_ru || p.name || p.name_uz);
+        row = dbRows.find(x =>
             [x.name_ru, x.name, x.name_uz, x.name_uz_cy, x.name_en]
                 .some(n => normLayerValue(n) === rn)
         );
@@ -1015,129 +1150,124 @@ function mergeFeatureWithDB(feature, dbRows, type) {
     };
 }
 
+function mergeLayerWithDBGeometry(layerGeo, dbFeatureCollection, type) {
+    const layerFeatures = Array.isArray(layerGeo?.features) ? layerGeo.features : [];
+    const dbFeatures = Array.isArray(dbFeatureCollection?.features) ? dbFeatureCollection.features : [];
+    const dbRows = dbFeatures.map(f => f.properties || {});
+    const out = [];
+    const matched = new Set();
+
+    for (const feature of layerFeatures) {
+        if (!geoFeatureHasGeometry(feature)) continue;
+        const merged = mergeFeatureWithDB(feature, dbRows, type);
+        out.push(merged);
+        const id = String(merged?.properties?.id ?? merged?.id ?? "");
+        if (id) matched.add(id);
+    }
+
+    // If the uploaded layer is incomplete, keep geometry already present in the DB RPC.
+    // This prevents a bad/partial layer from making valid map data disappear.
+    for (const feature of dbFeatures) {
+        if (!geoFeatureHasGeometry(feature)) continue;
+        const id = String(feature?.properties?.id ?? feature?.id ?? "");
+        if (id && matched.has(id)) continue;
+        out.push(feature);
+    }
+
+    return {type: "FeatureCollection", features: out};
+}
+
+function reportMapStatus(type, message, counts) {
+    try {
+        window.__naqshaMapStatus = {type, message, counts: counts || null, time: Date.now()};
+        window.parent?.postMessage({
+            source: "naqsha-map",
+            type,
+            message,
+            counts: counts || null
+        }, "*");
+    } catch (_) {}
+}
+
 async function buildSynchronizedMapLayers() {
+    // Always initialize these collections before any async work.
+    streetsData = {type: "FeatureCollection", features: []};
     await loadActiveNaqshaLayers();
 
-    function hasGeometry(feature) {
-        return !!(feature && feature.geometry && feature.geometry.coordinates);
-    }
-    function layerTypeIs(layer, type) {
-        const value = String(layer?.layer_type || "").toLowerCase().trim();
-        const aliases = {
-            districts: ["districts", "district", "районы", "район"],
-            streets: ["streets", "street", "улицы", "улица"],
-            regions: ["regions", "region", "области", "область"],
-            cities: ["cities", "city", "города", "город"],
-            buildings: ["buildings", "building", "здания", "здание"]
-        };
-        return (aliases[type] || [type]).includes(value);
-    }
-    function norm(v) {
-        return String(v ?? "").toLowerCase().trim().replace(/[ʻʼ’`']/g, "").replace(/\s+/g, " ");
-    }
-    function matchFeature(dbFeature, geoFeatures, type) {
-        const dbp = dbFeature?.properties || {};
-        const id = String(dbFeature?.id ?? dbp.id ?? "").trim();
-        let f = geoFeatures.find(x => String(x?.id ?? x?.properties?.id ?? "").trim() === id && id);
-        if (f) return f;
-        const dbName = norm(dbp.name_ru || dbp.name || dbp.name_uz || dbp.name_en);
-        const dbRegion = String(dbp.region_id ?? "");
-        const dbDistrict = String(dbp.district_id ?? "");
-        const dbCity = String(dbp.city_id ?? "");
-        return geoFeatures.find(x => {
-            const p = x?.properties || {};
-            return norm(p.name_ru || p.name || p.name_uz || p.name_en) === dbName &&
-                (type === "regions" || String(p.region_id ?? "") === dbRegion) &&
-                (type !== "streets" && type !== "buildings" || String(p.district_id ?? "") === dbDistrict) &&
-                (type !== "streets" && type !== "buildings" || String(p.city_id ?? "") === dbCity);
-        }) || null;
-    }
-    function mergeDBWithGeometry(dbData, geoData, type) {
-        const dbFeatures = Array.isArray(dbData?.features) ? dbData.features : [];
-        const geoFeatures = Array.isArray(geoData?.features) ? geoData.features : [];
-        return {
-            type: "FeatureCollection",
-            features: dbFeatures.map(dbFeature => {
-                const geo = matchFeature(dbFeature, geoFeatures, type);
-                return {
-                    type: "Feature",
-                    id: dbFeature.id ?? dbFeature.properties?.id ?? geo?.id,
-                    geometry: geo && hasGeometry(geo) ? geo.geometry : (dbFeature.geometry || null),
-                    properties: { ...(geo?.properties || {}), ...(dbFeature.properties || {}) }
-                };
-            })
-        };
-    }
-    async function applyLayer(type, currentData) {
-        const layer = activeMapLayers
-            .filter(x => x.is_active && layerTypeIs(x, type))
-            .sort((a,b) => Number(b.feature_count || 0) - Number(a.feature_count || 0))[0];
-        if (!layer) return currentData;
+    console.log("🧩 Naqsha: активные слои", activeMapLayers.map(x => ({
+        id:x.id, name:x.name, type:x.layer_type, active:x.is_active, file:x.file_path
+    })));
+
+    const syncErrors = [];
+
+    // Regions: active layer supplies geometry; DB remains the source of attributes.
+    const regionLayer = activeMapLayers.find(x => String(x.layer_type || "").toLowerCase() === "regions");
+    if (regionLayer) {
         try {
-            const geo = await loadLayerGeoJSON(layer);
-            const merged = mergeDBWithGeometry(currentData, geo, type);
-            console.log("🧩 Синхронизирован слой", type, "БД=", currentData.features.length, "геометрий=", geo.features.filter(hasGeometry).length, "слой=", layer.name);
-            return merged;
+            const geo = await loadLayerGeoJSON(regionLayer);
+            const geometryCount = countGeoGeometry(geo);
+            if (geometryCount === 0) throw new Error("Активный слой областей содержит 0 объектов с geometry");
+            regionsData = mergeLayerWithDBGeometry(geo, regionsData, "regions");
+            console.log("🗺️ Области: активный слой", geometryCount, "geometry →", regionsData.features.length, "итого");
+        } catch(e) {
+            syncErrors.push("Области: " + e.message);
+            console.warn("⚠️ Слой областей не применён, сохраняем данные БД:", e);
+        }
+    }
+
+    // Districts: never replace a valid DB GeoJSON with an empty/invalid layer.
+    const districtLayer = activeMapLayers.find(x => String(x.layer_type || "").toLowerCase() === "districts");
+    if (districtLayer) {
+        try {
+            const geo = await loadLayerGeoJSON(districtLayer);
+            const geometryCount = countGeoGeometry(geo);
+            if (geometryCount === 0) throw new Error("Активный слой районов содержит 0 объектов с geometry");
+            districtsData = mergeLayerWithDBGeometry(geo, districtsData, "districts");
+            console.log("📍 Районы: активный слой", geometryCount, "geometry →", districtsData.features.length, "итого");
         } catch (e) {
-            console.warn("⚠️ Слой " + type + " не загрузился:", e);
-            reportMapStatus("layer-error", { layer: type, message: e.message });
-            return currentData;
+            syncErrors.push("Районы: " + e.message);
+            console.warn("⚠️ Слой районов не применён, сохраняем данные БД:", e);
         }
     }
 
-    regionsData = await applyLayer("regions", regionsData);
-    districtsData = await applyLayer("districts", districtsData);
-    citiesData = await applyLayer("cities", citiesData);
-    streetsData = await applyLayer("streets", streetsData);
-    buildingsData = await applyLayer("buildings", buildingsData);
-}
+    // Streets: geometry from active layer, attributes from the streets table.
+    const streetLayer = activeMapLayers.find(x => String(x.layer_type || "").toLowerCase() === "streets");
+    if (streetLayer) {
+        try {
+            const streetRowsResponse = await fetch(
+                SUPABASE_URL + "/rest/v1/streets?select=*&order=id.asc",
+                {headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,"Accept":"application/json"}}
+            );
+            if (!streetRowsResponse.ok) throw new Error("streets HTTP " + streetRowsResponse.status);
+            const streetRows = await streetRowsResponse.json();
+            const geo = await loadLayerGeoJSON(streetLayer);
+            const geometryCount = countGeoGeometry(geo);
+            if (geometryCount === 0) throw new Error("Активный слой улиц содержит 0 объектов с geometry");
+            streetsData = {
+                type: "FeatureCollection",
+                features: geo.features
+                    .filter(geoFeatureHasGeometry)
+                    .map(f => mergeFeatureWithDB(f, streetRows, "streets"))
+            };
+            console.log("🛣️ Улицы: активный слой", geometryCount, "geometry");
+        } catch (e) {
+            syncErrors.push("Улицы: " + e.message);
+            console.warn("⚠️ Слой улиц не применён:", e);
+        }
+    }
 
-function updateMapSources() {
-    const sourceData = {
-        "naqsha-regions": regionsData,
-        "naqsha-districts": districtsData,
-        "naqsha-cities": citiesData,
-        "naqsha-streets": streetsData,
-        "naqsha-buildings": buildingsData
+    const counts = {
+        regions: regionsData?.features?.length || 0,
+        districts: districtsData?.features?.length || 0,
+        cities: citiesData?.features?.length || 0,
+        streets: streetsData?.features?.length || 0,
+        activeLayers: activeMapLayers.length
     };
-    Object.keys(sourceData).forEach(id => {
-        const source = map.getSource(id);
-        if (source && source.setData) source.setData(sourceData[id]);
-    });
+    window.__naqshaSyncErrors = syncErrors;
+    console.log("✅ Naqsha layers ready:", counts, syncErrors);
+    if (syncErrors.length) reportMapStatus("sync", syncErrors.join(" | "), counts);
+    else reportMapStatus("sync", "Синхронизация слоёв завершена", counts);
 }
-
-async function refreshNaqshaMap(reason = "manual") {
-    if (!mapInitialized || mapSyncBusy) return;
-    mapSyncBusy = true;
-    try {
-        await loadNaqshaData();
-        await buildSynchronizedMapLayers();
-        updateMapSources();
-        const counts = {
-            regions: regionsData.features.length,
-            districts: districtsData.features.length,
-            cities: citiesData.features.length,
-            streets: streetsData.features.length,
-            buildings: buildingsData.features.length,
-            layers: activeMapLayers.length
-        };
-        reportMapStatus("sync", { reason, counts });
-        const syncStatus = document.getElementById("mapSyncStatus");
-        if (syncStatus) {
-            syncStatus.textContent = "● Синхронизировано · " + new Date().toLocaleTimeString();
-            syncStatus.style.display = "block";
-            clearTimeout(window.__naqshaSyncHide);
-            window.__naqshaSyncHide = setTimeout(() => syncStatus.style.display = "none", 2500);
-        }
-        console.log("🔄 Naqsha синхронизирован:", counts);
-    } catch (error) {
-        reportMapStatus("error", { message: error.message || String(error), reason });
-        console.error("❌ Naqsha sync error:", error);
-    } finally {
-        mapSyncBusy = false;
-    }
-}
-
 
 /* =====================================================
    MAP INITIALIZATION
@@ -1168,10 +1298,6 @@ const map = new maplibregl.Map({
 
 });
 
-
-document.getElementById("mapSyncButton").addEventListener("click", function() {
-    refreshNaqshaMap("manual");
-});
 
 map.addControl(
 
@@ -1267,6 +1393,26 @@ map.on(
 
 
             /* =================================================
+               REGION FILL / CLICK
+            ================================================= */
+            map.addLayer({
+                id: "naqsha-region-fill",
+                type: "fill",
+                source: "naqsha-regions",
+                paint: {
+                    "fill-color": "#1677ff",
+                    "fill-opacity": 0.08
+                }
+            });
+
+            map.addLayer({
+                id: "naqsha-region-click",
+                type: "fill",
+                source: "naqsha-regions",
+                paint: {"fill-color":"#ffffff", "fill-opacity":0.001}
+            });
+
+            /* =================================================
                DISTRICTS SOURCE
             ================================================= */
 
@@ -1288,38 +1434,19 @@ map.on(
 
 
             /* =================================================
-               DISTRICT FILL — ALWAYS VISIBLE
+               DISTRICT DEFAULT FILL
             ================================================= */
-
             map.addLayer({
-
-                id:
-                    "naqsha-district-fills",
-
-                type:
-                    "fill",
-
-                source:
-                    "naqsha-districts",
-
-                minzoom:
-                    4.5,
-
-                maxzoom:
-                    16,
-
+                id: "naqsha-district-fill",
+                type: "fill",
+                source: "naqsha-districts",
+                minzoom: 5,
+                maxzoom: 14,
                 paint: {
-
-                    "fill-color":
-                        "#4f8fe8",
-
-                    "fill-opacity":
-                        0.08
-
+                    "fill-color": "#1677ff",
+                    "fill-opacity": 0.07
                 }
-
             });
-
 
             /* =================================================
                SELECTED DISTRICT
@@ -1337,10 +1464,10 @@ map.on(
                     "naqsha-districts",
 
                 minzoom:
-                    4.5,
+                    5,
 
                 maxzoom:
-                    16,
+                    14,
 
                 paint: {
 
@@ -1376,6 +1503,15 @@ map.on(
             });
 
 
+            map.on("click", "naqsha-region-click", function(event) {
+                if (!event.features || !event.features.length) return;
+                const p = event.features[0].properties || {};
+                const name = p.name_ru || p.name || p.name_uz || "Область";
+                showInfo("🗺️ " + name, "Область: " + name);
+            });
+            map.on("mouseenter", "naqsha-region-click", function(){ map.getCanvas().style.cursor="pointer"; });
+            map.on("mouseleave", "naqsha-region-click", function(){ map.getCanvas().style.cursor=""; });
+
             /* =================================================
                DISTRICT CLICK
             ================================================= */
@@ -1392,10 +1528,10 @@ map.on(
                     "naqsha-districts",
 
                 minzoom:
-                    4.5,
+                    5,
 
                 maxzoom:
-                    16,
+                    14,
 
                 paint: {
 
@@ -1426,7 +1562,7 @@ map.on(
                     "naqsha-districts",
 
                 minzoom:
-                    4.5,
+                    6,
 
                 paint: {
 
@@ -1453,42 +1589,12 @@ map.on(
                     ],
 
                     "line-opacity":
-                        0.9
+                        0.8
 
                 }
 
             });
 
-
-            /* =================================================
-               BUILDINGS SOURCE — ADMIN DATA + ACTIVE LAYER
-            ================================================= */
-
-            map.addSource("naqsha-buildings", { type: "geojson", data: buildingsData });
-            map.addLayer({
-                id: "naqsha-building-fills",
-                type: "fill",
-                source: "naqsha-buildings",
-                minzoom: 15,
-                paint: { "fill-color": "#8b6f47", "fill-opacity": 0.18 }
-            });
-            map.addLayer({
-                id: "naqsha-building-borders",
-                type: "line",
-                source: "naqsha-buildings",
-                minzoom: 15,
-                paint: { "line-color": "#6d573b", "line-width": 0.7, "line-opacity": 0.55 }
-            });
-            map.on("click", "naqsha-building-fills", function(event) {
-                if (!event.features?.length) return;
-                const p = event.features[0].properties || {};
-                let body = "Узбекистан";
-                if (p.city_name) body += "<br>Город: " + escapeHTML(p.city_name);
-                if (p.district_name) body += "<br>Район: " + escapeHTML(p.district_name);
-                if (p.street_name) body += "<br>Улица: " + escapeHTML(p.street_name);
-                if (p.house_number) body += "<br>Дом: " + escapeHTML(p.house_number);
-                showInfo("🏠 " + escapeHTML(p.name_ru || p.name || (p.house_number ? "Дом № " + p.house_number : "Здание")), body);
-            });
 
             /* =================================================
                STREETS SOURCE — ACTIVE ADMIN LAYER
@@ -1943,6 +2049,15 @@ map.on(
             );
 
 
+            map.on("click", "naqsha-region-click", function(event) {
+                if (!event.features || !event.features.length) return;
+                const p = event.features[0].properties || {};
+                const name = p.name_ru || p.name || p.name_uz || "Область";
+                showInfo("🗺️ " + name, "Область: " + name);
+            });
+            map.on("mouseenter", "naqsha-region-click", function(){ map.getCanvas().style.cursor="pointer"; });
+            map.on("mouseleave", "naqsha-region-click", function(){ map.getCanvas().style.cursor=""; });
+
             /* =================================================
                DISTRICT CLICK
             ================================================= */
@@ -2037,22 +2152,6 @@ map.on(
                 "none";
 
 
-            mapInitialized = true;
-            reportMapStatus("ready", {
-                counts: {
-                    regions: regionsData.features.length,
-                    districts: districtsData.features.length,
-                    cities: citiesData.features.length,
-                    streets: streetsData.features.length,
-                    buildings: buildingsData.features.length,
-                    layers: activeMapLayers.length
-                }
-            });
-            if (mapSyncTimer) clearInterval(mapSyncTimer);
-            mapSyncTimer = setInterval(function() {
-                if (document.visibilityState !== "hidden") refreshNaqshaMap("interval");
-            }, 30000);
-
             console.log(
                 "=============================="
             );
@@ -2080,15 +2179,24 @@ map.on(
                 "=============================="
             );
 
+            reportMapStatus("ready", "runtime ready", {
+                regions: regionsData?.features?.length || 0,
+                districts: districtsData?.features?.length || 0,
+                cities: citiesData?.features?.length || 0,
+                streets: streetsData?.features?.length || 0,
+                buildings: 0,
+                layers: activeMapLayers?.length || 0
+            });
+
         }
 
         catch(error) {
 
-            reportMapStatus("error", { message: error?.message || String(error) });
             console.error(
                 "❌ NAQSHA ERROR:",
                 error
             );
+            reportMapStatus("error", error?.message || String(error));
 
 
             document
@@ -2113,6 +2221,18 @@ map.on(
 
 );
 
+
+window.addEventListener("error", function(event) {
+    const message = event?.error?.message || event?.message || "Неизвестная ошибка JavaScript";
+    console.error("❌ Naqsha runtime error:", message);
+    reportMapStatus("error", message);
+});
+
+window.addEventListener("unhandledrejection", function(event) {
+    const reason = event?.reason?.message || String(event?.reason || "Необработанное Promise-исключение");
+    console.error("❌ Naqsha unhandled rejection:", reason);
+    reportMapStatus("error", reason);
+});
 
 /* =====================================================
    SELECT CITY
