@@ -420,6 +420,15 @@ let districtsData = null;
 
 let citiesData = null;
 
+// Данные, загружаемые из активных GeoJSON-слоёв админки.
+// Важно объявлять их заранее: иначе JavaScript останавливается на streetsData/activeMapLayers.
+let streetsData = {
+    type: "FeatureCollection",
+    features: []
+};
+
+let activeMapLayers = [];
+
 let selectedDistrict = null;
 
 let selectedCity = null;
@@ -1116,6 +1125,9 @@ function mergeFeatureWithDB(feature, dbRows, type) {
 }
 
 async function buildSynchronizedMapLayers() {
+    // Всегда начинаем с валидного FeatureCollection.
+    // Если слой улиц/районов не загружен, карта всё равно должна запускаться.
+    streetsData = {type: "FeatureCollection", features: []};
     await loadActiveNaqshaLayers();
 
     // Districts: geometry comes from the active GeoJSON layer, attributes from DB.
