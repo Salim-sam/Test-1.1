@@ -420,15 +420,6 @@ let districtsData = null;
 
 let citiesData = null;
 
-// Данные, загружаемые из активных GeoJSON-слоёв админки.
-// Важно объявлять их заранее: иначе JavaScript останавливается на streetsData/activeMapLayers.
-let streetsData = {
-    type: "FeatureCollection",
-    features: []
-};
-
-let activeMapLayers = [];
-
 let selectedDistrict = null;
 
 let selectedCity = null;
@@ -1069,58 +1060,6 @@ function publicLayerUrl(filePath) {
         encodeURIComponent(String(filePath || "")).replace(/%2F/g, "/");
 }
 
-// Some older uploads were saved with layer_type=other.  Do not make the
-// public map depend on the exact admin dropdown value: identify a layer by
-// its type first, then by its name/file name, and finally by GeoJSON hints.
-function layerText(layer) {
-    return normLayerValue([layer?.layer_type, layer?.name, layer?.file_path].join(" "));
-}
-
-function layerTypeAliases(type) {
-    if (type === "regions") return ["regions", "region", "области", "область", "oblast", "viloyat", "adm1"];
-    if (type === "districts") return ["districts", "district", "районы", "район", "rayon", "tuman", "tumani", "adm2"];
-    if (type === "streets") return ["streets", "street", "улицы", "улица", "kocha", "kochalar"];
-    return [type];
-}
-
-function layerLooksLike(layer, type) {
-    const rawType = normLayerValue(layer?.layer_type);
-    const aliases = layerTypeAliases(type);
-    if (aliases.includes(rawType)) return true;
-    const text = layerText(layer);
-    return aliases.some(a => text.includes(a));
-}
-
-async function findActiveLayer(type) {
-    // 1. Prefer an explicitly typed layer.
-    const exact = activeMapLayers.find(x =>
-        layerTypeAliases(type).includes(normLayerValue(x?.layer_type))
-    );
-    if (exact) return exact;
-
-    // 2. Then use name/file-name hints.
-    const hinted = activeMapLayers.find(x => layerLooksLike(x, type));
-    if (hinted) return hinted;
-
-    // 3. Finally inspect small GeoJSON samples. This handles legacy layers
-    // uploaded as "other" when their file name is not descriptive.
-    for (const layer of activeMapLayers) {
-        try {
-            const geo = await loadLayerGeoJSON(layer);
-            const f = geo?.features?.[0];
-            const p = f?.properties || {};
-            const keys = Object.keys(p).map(k => normLayerValue(k));
-            const admin = String(p.admin_level ?? p.adminLevel ?? "").trim();
-            if (type === "regions" && (admin === "1" || keys.includes("region_id") || keys.includes("region_name"))) return layer;
-            if (type === "districts" && (admin === "2" || keys.includes("district_id") || keys.includes("district_name") || keys.includes("district"))) return layer;
-            if (type === "streets" && (keys.includes("street_id") || keys.includes("street_type") || keys.includes("city_id"))) return layer;
-        } catch (e) {
-            console.warn("⚠️ Не удалось проверить слой", layer?.name, e);
-        }
-    }
-    return null;
-}
-
 async function loadLayerGeoJSON(layer) {
     const url = publicLayerUrl(layer.file_path);
     const response = await fetch(url, {cache: "no-store"});
@@ -1143,7 +1082,7 @@ function mergeFeatureWithDB(feature, dbRows, type) {
     const pid = String(p.id ?? feature.id ?? "").trim();
     let row = null;
 
-    if (pid) row = dbRows.find(x => String(x.id) === pid || String(x.id ?? "").toUpperCase() === pid.toUpperCase());
+    if (pid) row = dbRows.find(x => String(x.id) === pid);
 
     if (!row && type === "districts") {
         const rn = normLayerValue(p.name_ru || p.name || p.name_uz);
@@ -1177,86 +1116,251 @@ function mergeFeatureWithDB(feature, dbRows, type) {
 }
 
 async function buildSynchronizedMapLayers() {
-    streetsData = {type: "FeatureCollection", features: []};
     await loadActiveNaqshaLayers();
 
-    console.log("🧩 Naqsha: активные слои", activeMapLayers.map(x => ({
-        id:x.id, name:x.name, type:x.layer_type, active:x.is_active, file:x.file_path
-    })));
+    /*
+      IMPORTANT:
+      Некоторые загруженные в админке GeoJSON являются только
+      DATA-LAYER: у них есть 177 объектов и свойства, но geometry=null.
+      Такой слой нельзя напрямую использовать как источник карты.
 
-    // Regions: if an active GeoJSON regions layer exists, use its geometry
-    // and keep attributes synchronized with the regions table.
-    const regionLayer = await findActiveLayer("regions");
-    if (regionLayer) {
-        try {
-            const geo = await loadLayerGeoJSON(regionLayer);
-            const dbRows = Array.isArray(regionsData?.features) ? regionsData.features.map(f => f.properties || {}) : [];
-            regionsData = {
-                type: "FeatureCollection",
-                features: geo.features.map(f => mergeFeatureWithDB(f, dbRows, "regions"))
-                    .filter(f => f.geometry && f.geometry.coordinates)
-            };
-            console.log("🗺️ Области: активный слой загружен", regionsData.features.length);
-        } catch(e) {
-            console.warn("⚠️ Слой областей не загрузился, используем БД:", e);
-        }
+      Поэтому:
+      1) БД остаётся базовым набором объектов.
+      2) Если у активного GeoJSON есть geometry — используем её.
+      3) Если geometry отсутствует — сохраняем geometry из БД.
+      4) Если GeoJSON содержит только часть геометрий — объединяем
+         GeoJSON + БД, чтобы районы не исчезали.
+    */
+
+    function hasGeometry(feature) {
+        return !!(
+            feature &&
+            feature.geometry &&
+            feature.geometry.coordinates &&
+            Array.isArray(feature.geometry.coordinates) &&
+            feature.geometry.coordinates.length
+        );
     }
 
-    // Districts: geometry from active GeoJSON, attributes from DB.
-    const districtLayer = await findActiveLayer("districts");
+    function layerTypeIs(layer, type) {
+        const value = String(layer?.layer_type || "").toLowerCase().trim();
+        const aliases = {
+            districts: ["districts", "district", "районы", "район"],
+            streets: ["streets", "street", "улицы", "улица"],
+            regions: ["regions", "region", "области", "область"],
+            cities: ["cities", "city", "города", "город"],
+            buildings: ["buildings", "building", "здания", "здание"]
+        };
+        return (aliases[type] || [type]).includes(value);
+    }
+
+    function featureMatchKey(feature) {
+        const p = feature?.properties || {};
+        return {
+            id: String(p.id ?? feature?.id ?? "").trim(),
+            region: String(p.region_id ?? "").trim(),
+            city: String(p.city_id ?? "").trim(),
+            district: String(p.district_id ?? "").trim(),
+            name: normLayerValue(p.name_ru || p.name || p.name_uz || p.name_en)
+        };
+    }
+
+    function findGeoForDBRow(dbRow, geoFeatures) {
+        const dbId = String(dbRow?.id ?? "").trim();
+        const dbRegion = String(dbRow?.region_id ?? "").trim();
+        const dbName = normLayerValue(
+            dbRow?.name_ru || dbRow?.name || dbRow?.name_uz || dbRow?.name_en
+        );
+
+        let match = geoFeatures.find(f => {
+            const k = featureMatchKey(f);
+            return k.id && dbId && k.id === dbId;
+        });
+
+        if (match) return match;
+
+        match = geoFeatures.find(f => {
+            const k = featureMatchKey(f);
+            return (
+                k.region === dbRegion &&
+                k.name &&
+                dbName &&
+                k.name === dbName
+            );
+        });
+
+        return match || null;
+    }
+
+    function mergeDBWithGeometry(dbData, geoData, type) {
+        const dbFeatures = Array.isArray(dbData?.features)
+            ? dbData.features
+            : [];
+
+        const geoFeatures = Array.isArray(geoData?.features)
+            ? geoData.features
+            : [];
+
+        const result = [];
+        const usedGeo = new Set();
+
+        /*
+          Берём ВСЕ записи из БД.
+          Для каждой записи пытаемся найти соответствующую геометрию
+          в загруженном слое. Если её нет — оставляем геометрию БД.
+        */
+        for (const dbFeature of dbFeatures) {
+            const dbProps = dbFeature?.properties || {};
+            const geo = findGeoForDBRow(dbFeature, geoFeatures);
+
+            if (geo) {
+                const geoIndex = geoFeatures.indexOf(geo);
+                usedGeo.add(geoIndex);
+            }
+
+            const geometry =
+                geo && hasGeometry(geo)
+                    ? geo.geometry
+                    : dbFeature?.geometry;
+
+            if (!geometry || !geometry.coordinates) {
+                /*
+                  Запись без геометрии не может быть нарисована,
+                  но не должна ломать весь FeatureCollection.
+                */
+                continue;
+            }
+
+            const geoProps = geo?.properties || {};
+
+            result.push({
+                type: "Feature",
+                id: dbFeature.id ?? geo?.id,
+                geometry,
+                properties: {
+                    ...geoProps,
+                    ...dbProps,
+                    id: dbFeature.id ?? geo?.id
+                }
+            });
+        }
+
+        /*
+          Если активный GeoJSON содержит дополнительные объекты,
+          которых пока нет в БД, не показываем их как полноценные
+          административные объекты. Карта должна быть синхронизирована
+          именно с текущей БД.
+        */
+
+        return {
+            type: "FeatureCollection",
+            features: result
+        };
+    }
+
+    /* =================================================
+       DISTRICTS
+    ================================================= */
+
+    const districtLayers = activeMapLayers.filter(x =>
+        layerTypeIs(x, "districts")
+    );
+
+    const districtLayer = districtLayers
+        .sort((a, b) => Number(b.feature_count || 0) - Number(a.feature_count || 0))[0];
+
     if (districtLayer) {
         try {
             const geo = await loadLayerGeoJSON(districtLayer);
-            const dbRows = Array.isArray(districtsData?.features) ? districtsData.features.map(f => f.properties || {}) : [];
-            districtsData = {
-                type: "FeatureCollection",
-                features: geo.features.map(f => mergeFeatureWithDB(f, dbRows, "districts"))
-                    .filter(f => f.geometry && f.geometry.coordinates)
-            };
-            console.log("📍 Районы: активный слой загружен", {
-                layer: districtLayer.name,
-                file: districtLayer.file_path,
-                type: districtLayer.layer_type,
-                features: districtsData.features.length,
-                dbRows: dbRows.length
-            });
+
+            const validGeometryCount = geo.features.filter(hasGeometry).length;
+
+            districtsData = mergeDBWithGeometry(
+                districtsData,
+                geo,
+                "districts"
+            );
+
+            console.log(
+                "🗺️ Районы синхронизированы:",
+                "БД =", districtsData.features.length,
+                "GeoJSON geometry =", validGeometryCount,
+                "слой =", districtLayer.name
+            );
         } catch (e) {
-            console.error("❌ Слой районов не загрузился:", districtLayer, e);
-            console.warn("⚠️ Используем геометрию районов из БД, если она доступна.");
+            console.warn(
+                "⚠️ Слой районов не загрузился. Используем геометрию БД:",
+                e
+            );
         }
+    } else {
+        console.log(
+            "ℹ️ Активный слой районов не найден. Используется GeoJSON из БД."
+        );
     }
 
-    // Streets: geometry from active GeoJSON, attributes from streets table.
-    const streetLayer = await findActiveLayer("streets");
+    /* =================================================
+       STREETS
+    ================================================= */
+
+    const streetLayer = activeMapLayers
+        .filter(x => layerTypeIs(x, "streets"))
+        .sort((a, b) => Number(b.feature_count || 0) - Number(a.feature_count || 0))[0];
+
     if (streetLayer) {
         try {
             const streetRowsResponse = await fetch(
                 SUPABASE_URL + "/rest/v1/streets?select=*&order=id.asc",
-                {headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,"Accept":"application/json"}}
+                {
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": "Bearer " + SUPABASE_KEY,
+                        "Accept": "application/json"
+                    }
+                }
             );
-            if (!streetRowsResponse.ok) throw new Error("streets HTTP " + streetRowsResponse.status);
-            const streetRows = await streetRowsResponse.json();
+
+            const streetRows =
+                streetRowsResponse.ok
+                    ? await streetRowsResponse.json()
+                    : [];
+
+            const dbStreetData = {
+                type: "FeatureCollection",
+                features: streetRows.map(row => ({
+                    type: "Feature",
+                    id: row.id,
+                    geometry: null,
+                    properties: row
+                }))
+            };
+
             const geo = await loadLayerGeoJSON(streetLayer);
+
+            streetsData = mergeDBWithGeometry(
+                dbStreetData,
+                geo,
+                "streets"
+            );
+
+            console.log(
+                "🛣️ Улицы синхронизированы:",
+                streetsData.features.length
+            );
+        } catch (e) {
+            console.warn(
+                "⚠️ Слой улиц не загрузился:",
+                e
+            );
+            /*
+              Не превращаем ошибку слоя в пустую карту.
+              Если активный слой неисправен, улицы просто не рисуем.
+            */
             streetsData = {
                 type: "FeatureCollection",
-                features: geo.features.map(f => mergeFeatureWithDB(f, streetRows, "streets"))
-                    .filter(f => f.geometry && f.geometry.coordinates)
+                features: []
             };
-            console.log("🛣️ Улицы: активный слой загружен", streetsData.features.length);
-        } catch (e) {
-            console.warn("⚠️ Слой улиц не загрузился:", e);
         }
-    }
-
-    console.log("✅ Naqsha layers ready:", {
-        regions: regionsData?.features?.length || 0,
-        districts: districtsData?.features?.length || 0,
-        streets: streetsData?.features?.length || 0,
-        activeLayers: activeMapLayers.length
-    });
-
-    if (!districtLayer) {
-        console.warn("⚠️ Naqsha: активный слой районов не найден. Проверьте layer_type или имя файла в админке.");
     }
 }
 
@@ -1384,26 +1488,6 @@ map.on(
 
 
             /* =================================================
-               REGION FILL / CLICK
-            ================================================= */
-            map.addLayer({
-                id: "naqsha-region-fill",
-                type: "fill",
-                source: "naqsha-regions",
-                paint: {
-                    "fill-color": "#1677ff",
-                    "fill-opacity": 0.08
-                }
-            });
-
-            map.addLayer({
-                id: "naqsha-region-click",
-                type: "fill",
-                source: "naqsha-regions",
-                paint: {"fill-color":"#ffffff", "fill-opacity":0.001}
-            });
-
-            /* =================================================
                DISTRICTS SOURCE
             ================================================= */
 
@@ -1425,19 +1509,38 @@ map.on(
 
 
             /* =================================================
-               DISTRICT DEFAULT FILL
+               DISTRICT FILL — ALWAYS VISIBLE
             ================================================= */
+
             map.addLayer({
-                id: "naqsha-district-fill",
-                type: "fill",
-                source: "naqsha-districts",
-                minzoom: 5,
-                maxzoom: 14,
+
+                id:
+                    "naqsha-district-fills",
+
+                type:
+                    "fill",
+
+                source:
+                    "naqsha-districts",
+
+                minzoom:
+                    4.5,
+
+                maxzoom:
+                    16,
+
                 paint: {
-                    "fill-color": "#1677ff",
-                    "fill-opacity": 0.07
+
+                    "fill-color":
+                        "#4f8fe8",
+
+                    "fill-opacity":
+                        0.08
+
                 }
+
             });
+
 
             /* =================================================
                SELECTED DISTRICT
@@ -1455,10 +1558,10 @@ map.on(
                     "naqsha-districts",
 
                 minzoom:
-                    5,
+                    4.5,
 
                 maxzoom:
-                    14,
+                    16,
 
                 paint: {
 
@@ -1494,15 +1597,6 @@ map.on(
             });
 
 
-            map.on("click", "naqsha-region-click", function(event) {
-                if (!event.features || !event.features.length) return;
-                const p = event.features[0].properties || {};
-                const name = p.name_ru || p.name || p.name_uz || "Область";
-                showInfo("🗺️ " + name, "Область: " + name);
-            });
-            map.on("mouseenter", "naqsha-region-click", function(){ map.getCanvas().style.cursor="pointer"; });
-            map.on("mouseleave", "naqsha-region-click", function(){ map.getCanvas().style.cursor=""; });
-
             /* =================================================
                DISTRICT CLICK
             ================================================= */
@@ -1519,10 +1613,10 @@ map.on(
                     "naqsha-districts",
 
                 minzoom:
-                    5,
+                    4.5,
 
                 maxzoom:
-                    14,
+                    16,
 
                 paint: {
 
@@ -1553,7 +1647,7 @@ map.on(
                     "naqsha-districts",
 
                 minzoom:
-                    6,
+                    4.5,
 
                 paint: {
 
@@ -1580,7 +1674,7 @@ map.on(
                     ],
 
                     "line-opacity":
-                        0.8
+                        0.9
 
                 }
 
@@ -2039,15 +2133,6 @@ map.on(
 
             );
 
-
-            map.on("click", "naqsha-region-click", function(event) {
-                if (!event.features || !event.features.length) return;
-                const p = event.features[0].properties || {};
-                const name = p.name_ru || p.name || p.name_uz || "Область";
-                showInfo("🗺️ " + name, "Область: " + name);
-            });
-            map.on("mouseenter", "naqsha-region-click", function(){ map.getCanvas().style.cursor="pointer"; });
-            map.on("mouseleave", "naqsha-region-click", function(){ map.getCanvas().style.cursor=""; });
 
             /* =================================================
                DISTRICT CLICK
