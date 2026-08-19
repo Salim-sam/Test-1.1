@@ -38,7 +38,7 @@ pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-w
 .importBox{background:#fff;border-radius:18px;width:min(850px,100%);max-height:92vh;overflow:auto;padding:20px;box-shadow:0 10px 40px #0005}
 .importCols{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media(max-width:700px){.importCols{grid-template-columns:1fr}.sectionHead{align-items:flex-start}}
-.diagList{display:grid;gap:8px;margin-top:12px}.diagItem{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 12px;border:1px solid #e8ebef;border-radius:10px;background:#fafbfc}.diagItem b{font-size:14px}.diagOk{border-color:#cfe9d6;background:#f3fbf5}.diagWarn{border-color:#f0dfbd;background:#fffaf0}.diagErr{border-color:#f0caca;background:#fff6f6}.diagMeta{color:#777;font-size:12px;text-align:right}@media(max-width:500px){.diagItem{align-items:flex-start;flex-direction:column}.diagMeta{text-align:left}}
+.diagList{display:grid;gap:8px;margin-top:12px}.diagItem{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 12px;border:1px solid #e8ebef;border-radius:10px;background:#fafbfc}.diagItem b{font-size:14px}.diagOk{border-color:#cfe9d6;background:#f3fbf5}.diagWarn{border-color:#f0dfbd;background:#fffaf0}.diagInfo{border-color:#d7e3f3;background:#f5f9ff}.diagErr{border-color:#f0caca;background:#fff6f6}.diagMeta{color:#777;font-size:12px;text-align:right}@media(max-width:500px){.diagItem{align-items:flex-start;flex-direction:column}.diagMeta{text-align:left}}
 </style>
 </head>
 <body>
@@ -67,9 +67,8 @@ pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-w
 <div id="globalStatus" class="notice"></div>
 </section>
 
-<section class="card" id="bulkDeleteCard">
-  <div class="sectionHead"><h2>🗑️ Массовое удаление</h2><span class="badge">Осторожно</span></div>
-  <p class="small">Удаление выполняется из базы через существующие административные RPC. Для родительского объекта сначала удаляются зависимые записи.</p>
+<section id="bulkDeleteTab" class="card hidden">
+  <div class="sectionHead"><div><h2>🗑️ Массовое удаление</h2><div class="small">Удаление выполняется из базы через существующие административные RPC. Для родительского объекта сначала удаляются зависимые записи.</div></div><span class="badge">Осторожно</span></div>
   <div class="grid3">
     <div><label>Что удалить</label><select id="bulkDeleteType">
       <option value="regions">🗺️ Области</option>
@@ -94,6 +93,7 @@ pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-w
 <button class="tab" data-tab="buildings">🏠 Здания / дома</button>
 <button class="tab" data-tab="layers">🧩 Слои</button>
 <button class="tab" data-tab="diagnostics">🧪 Диагностика</button>
+<button class="tab" data-tab="bulkDelete">🗑️ Массовое удаление</button>
 </div>
 
 <!-- DIAGNOSTICS -->
@@ -934,18 +934,32 @@ $('bulkDeleteRegion').onchange=bulkOptions;
 $('previewBulkDelete').onclick=()=>{try{const t=bulkTargets(),sum=bulkSummary(t);$('bulkDeletePreview').classList.remove('hidden');$('bulkDeletePreview').textContent=JSON.stringify(sum,null,2);$('runBulkDelete').disabled=sum.всего===0;notice('bulkDeleteStatus',sum.всего?'⚠️ Будет удалено: '+sum.всего+' записей.':'ℹ️ Нечего удалять.',sum.всего>0)}catch(e){$('runBulkDelete').disabled=true;notice('bulkDeleteStatus','❌ '+e.message,false)}};
 $('runBulkDelete').onclick=async()=>{const t=bulkTargets(),sum=bulkSummary(t);if(!sum.всего)return;if(!confirm('ВНИМАНИЕ! Будет удалено '+sum.всего+' записей, включая зависимые объекты. Продолжить?'))return;$('runBulkDelete').disabled=true;try{const r=await bulkDeleteRun(t);await loadData();bulkOptions();$('bulkDeletePreview').textContent=JSON.stringify({...sum,удалено:r.done,ошибок:r.failed.length,детали_ошибок:r.failed.slice(0,100)},null,2);notice('bulkDeleteStatus',r.failed.length?'⚠️ Удалено: '+r.done+', ошибок: '+r.failed.length:'✅ Массовое удаление завершено. Удалено: '+r.done,r.failed.length===0)}catch(e){notice('bulkDeleteStatus','❌ '+e.message,false)}finally{$('runBulkDelete').disabled=false}};
 
-/* DIAGNOSTICS */
+/* DIAGNOSTICS v22.1 — accurate, authenticated, no false 401 */
 function diagRow(title,status,meta='',cls='diagOk'){
   const e=document.createElement('div');e.className='diagItem '+cls;
   e.innerHTML='<b>'+esc(title)+'</b><span class="diagMeta">'+esc(status)+(meta?' · '+esc(meta):'')+'</span>';
   $('diagnosticsResults').appendChild(e);
 }
+function diagInfo(title,meta=''){
+  diagRow(title,'ИНФОРМАЦИЯ',meta,'diagInfo');
+}
 async function runDiagnostics(){
   const btn=$('runDiagnostics');btn.disabled=true;$('diagnosticsResults').innerHTML='';$('diagnosticsLog').classList.add('hidden');
-  const log=[];let errors=0,warns=0;
-  const test=async(title,fn)=>{try{const r=await fn();diagRow(title,'OK',r||'','diagOk');log.push('OK  '+title+(r?' — '+r:''));return true}catch(e){errors++;diagRow(title,'ОШИБКА',e.message||String(e),'diagErr');log.push('ERR '+title+' — '+(e.message||String(e)));return false}};
+  const log=[];let errors=0,warns=0,infos=0;
+  const test=async(title,fn)=>{
+    try{const r=await fn();diagRow(title,'OK',r||'','diagOk');log.push('OK  '+title+(r?' — '+r:''));return true}
+    catch(e){errors++;diagRow(title,'ОШИБКА',e.message||String(e),'diagErr');log.push('ERR '+title+' — '+(e.message||String(e)));return false}
+  };
   try{
-    await test('Подключение к Supabase',async()=>{const r=await fetch(SUPABASE_URL+'/rest/v1/',{headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+session.access_token}});if(!r.ok)throw Error('HTTP '+r.status);return 'API отвечает'});
+    /* Не проверяем /rest/v1/ напрямую: у Supabase этот endpoint может вернуть 401,
+       даже когда авторизованный RPC/API работает нормально. Проверяем реального
+       авторизованного пользователя через api(), который умеет обновлять сессию. */
+    await test('Подключение к Supabase',async()=>{
+      const user=await api('/auth/v1/user');
+      if(!user?.id)throw Error('Авторизованный пользователь не определён');
+      return 'API отвечает · '+(user.email||'сессия активна');
+    });
+
     const checks=[
       ['Области','get_regions_geojson',x=>(x.features||[]).length],
       ['Районы','get_districts_geojson',x=>(x.features||[]).length],
@@ -953,27 +967,71 @@ async function runDiagnostics(){
       ['Улицы','get_streets_admin',x=>Array.isArray(x)?x.length:0],
       ['Здания','get_buildings_admin',x=>Array.isArray(x)?x.length:0]
     ];
-    for(const [label,fn,countFn] of checks) await test(label,async()=>{const x=await rpc(fn,{});return countFn(x)+' объектов'});
+    const counts={};
+    for(const [label,fn,countFn] of checks){
+      await test(label,async()=>{const x=await rpc(fn,{});const n=countFn(x);counts[label]=n;return n+' объектов'});
+    }
+
     await test('Слои карты',async()=>{await loadLayers();return layers.length+' слоёв'});
+
+    /* Проверяем каждый загруженный слой: доступность файла, GeoJSON и количество. */
     for(const layer of layers){
       await test('Слой: '+(layer.name||layer.id),async()=>{
         if(!layer.file_path)throw Error('Нет file_path');
         const url=SUPABASE_URL+'/storage/v1/object/public/map-layers/'+encodeURIComponent(layer.file_path).replace(/%2F/g,'/');
-        const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw Error('GeoJSON недоступен, HTTP '+r.status);
-        const geo=await r.json();if(geo.type!=='FeatureCollection'||!Array.isArray(geo.features))throw Error('Неверный GeoJSON');
-        if(Number(layer.feature_count)!==geo.features.length)throw Error('Ожидалось '+layer.feature_count+', найдено '+geo.features.length);
+        const r=await fetch(url,{cache:'no-store'});
+        if(!r.ok)throw Error('GeoJSON недоступен, HTTP '+r.status);
+        const geo=await r.json();
+        if(geo.type!=='FeatureCollection'||!Array.isArray(geo.features))throw Error('Неверный GeoJSON');
+        if(Number(layer.feature_count)!==geo.features.length)
+          throw Error('Ожидалось '+layer.feature_count+', найдено '+geo.features.length);
         return geo.features.length+' объектов · '+(layer.is_active?'активен':'выключен');
       });
     }
-    const pairs=[['Области','regions',regions.length],['Районы','districts',districts.length],['Города','cities',cities.length],['Улицы','streets',streets.length],['Здания','buildings',buildings.length]];
+
+    /* Синхронизация: отсутствие слоя ещё не является ошибкой — слой может быть
+       следующим этапом загрузки. Ошибкой/предупреждением считается только реально
+       существующий активный слой с неверным количеством объектов. */
+    const pairs=[
+      ['Области','regions',counts['Области']??regions.length],
+      ['Районы','districts',counts['Районы']??districts.length],
+      ['Города','cities',counts['Города']??cities.length],
+      ['Улицы','streets',counts['Улицы']??streets.length],
+      ['Здания','buildings',counts['Здания']??buildings.length]
+    ];
+
     for(const [label,key,count] of pairs){
       const active=layers.filter(x=>x.is_active&&x.layer_type===key);
-      if(active.length===0){warns++;diagRow('Синхронизация: '+label,'ПРЕДУПРЕЖДЕНИЕ','активный слой не найден','diagWarn');log.push('WARN '+label+' — активный слой не найден');}
-      else diagRow('Синхронизация: '+label,'OK',count+' записей в админке','diagOk');
+      if(active.length===0){
+        infos++;
+        diagInfo('Синхронизация: '+label,'активный слой пока не загружен');
+        log.push('INFO '+label+' — активный слой пока не загружен');
+        continue;
+      }
+      if(active.length>1){
+        warns++;
+        diagRow('Синхронизация: '+label,'ПРЕДУПРЕЖДЕНИЕ','активных слоёв: '+active.length,'diagWarn');
+        log.push('WARN '+label+' — активных слоёв: '+active.length);
+      }
+      const layer=active[0];
+      const layerCount=Number(layer.feature_count)||0;
+      if(layerCount!==Number(count)){
+        warns++;
+        diagRow('Синхронизация: '+label,'ПРЕДУПРЕЖДЕНИЕ','БД: '+count+' · слой: '+layerCount,'diagWarn');
+        log.push('WARN '+label+' — БД '+count+' · слой '+layerCount);
+      }else{
+        diagRow('Синхронизация: '+label,'OK',count+' записей · слой '+layerCount,'diagOk');
+        log.push('OK  Синхронизация: '+label+' — '+count);
+      }
     }
-    const summary='Тест завершён: '+errors+' ошибок, '+warns+' предупреждений';
+
+    const summary='Тест завершён: '+errors+' ошибок, '+warns+' предупреждений'+(infos?' · '+infos+' информационных':'');
     notice('diagnosticsStatus',errors?('❌ '+summary):warns?('⚠️ '+summary):('✅ '+summary),errors===0&&warns===0);
-  }catch(e){errors++;notice('diagnosticsStatus','❌ Тестер остановлен: '+e.message,false);log.push('ERR '+(e.message||String(e)));}
+  }catch(e){
+    errors++;
+    notice('diagnosticsStatus','❌ Тестер остановлен: '+e.message,false);
+    log.push('ERR '+(e.message||String(e)));
+  }
   $('diagnosticsLog').textContent=log.join('\n');$('diagnosticsLog').classList.remove('hidden');btn.disabled=false;
 }
 $('runDiagnostics').onclick=runDiagnostics;
