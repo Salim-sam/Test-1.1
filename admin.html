@@ -32,6 +32,7 @@ button:disabled{opacity:.55;cursor:not-allowed}.primary{background:#1677ff;color
 pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-wrap;overflow:auto;font-size:12px}
 @media(max-width:950px){.layout,.grid,.grid3,.searchrow{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:500px){.stats{grid-template-columns:1fr 1fr}.wrap{padding:10px}.card{padding:15px}}
+.bulkBox{border:1px solid #e4e8ec;border-radius:14px;padding:16px;background:#fafbfc}.bulkDanger{background:#fff5f5;border:1px solid #ffd6d6;border-radius:12px;padding:12px;margin-top:12px}.checklist{max-height:420px;overflow:auto;border:1px solid #e5e7eb;border-radius:12px;background:#fff;margin-top:10px}.checkrow{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid #eee}.checkrow:last-child{border-bottom:0}.checkrow input{width:auto}.bulkSummary{font-size:14px;line-height:1.55;margin-top:10px}
 
 .sectionHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
 .importModal{position:fixed;inset:0;background:#0008;z-index:100;display:flex;align-items:center;justify-content:center;padding:15px}
@@ -72,7 +73,7 @@ pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-w
 <button class="tab" data-tab="cities">🏙️ Города</button>
 <button class="tab" data-tab="streets">🛣️ Улицы</button>
 <button class="tab" data-tab="buildings">🏠 Здания / дома</button>
-<button class="tab" data-tab="layers">🧩 Слои</button>
+<button class="tab" data-tab="layers">🧩 Слои</button><button class="tab" data-tab="bulkDelete">🗑️ Массовое удаление</button>
 </div>
 
 <!-- REGIONS -->
@@ -172,6 +173,27 @@ pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-w
 <label>Описание</label><input id="layerDescription"><label>GeoJSON *</label><div class="filebox"><input id="layerFile" type="file" accept=".geojson,.json,application/geo+json,application/json"><div id="fileInfo" class="small">Выбери файл GeoJSON (до 20 MB)</div></div>
 <div class="actions"><button id="uploadLayer" class="success">⬆️ Загрузить слой</button><button id="refreshLayers" class="gray">🔄 Обновить список</button></div>
 <div id="layerStatus" class="notice"></div><h3 style="margin-top:22px">Загруженные слои</h3><div class="list" id="layerList"></div>
+</section>
+
+<section id="bulkDeleteTab" class="card hidden">
+ <div class="sectionHead"><div><h2>🗑️ Массовое удаление</h2><div class="small">Удаление выполняется через существующие административные RPC. При удалении родительского объекта сначала удаляются зависимые записи.</div></div></div>
+ <div class="bulkBox">
+  <div class="grid3">
+   <div><label>Что удалить</label><select id="bulkType"><option value="regions">🗺️ Область</option><option value="districts">📍 Районы</option><option value="cities">🏙️ Города</option><option value="streets">🛣️ Улицы</option><option value="buildings">🏠 Здания / дома</option><option value="layers">🧩 Слои</option></select></div>
+   <div id="bulkRegionWrap"><label>Область</label><select id="bulkRegion"><option value="">Все области</option></select></div>
+   <div id="bulkDistrictWrap"><label>Район</label><select id="bulkDistrict"><option value="">Все районы</option></select></div>
+  </div>
+  <div class="grid" id="bulkCityStreetWrap">
+   <div id="bulkCityWrap"><label>Город</label><select id="bulkCity"><option value="">Все города</option></select></div>
+   <div id="bulkStreetWrap"><label>Улица</label><select id="bulkStreet"><option value="">Все улицы</option></select></div>
+  </div>
+  <div class="actions"><button id="bulkPreviewBtn" class="gray">🔎 Показать, что будет удалено</button><button id="bulkSelectAll" class="gray">☑️ Выбрать всё</button><button id="bulkClear" class="gray">Снять выбор</button></div>
+  <div id="bulkSummary" class="bulkSummary"></div>
+  <div id="bulkChecklist" class="checklist"></div>
+  <div class="bulkDanger"><b>⚠️ Внимание:</b> удаление необратимо. Для области, района или города сначала будут удалены зависимые здания и улицы, затем города/районы и только после этого родительский объект.</div>
+  <div class="actions"><button id="bulkDeleteBtn" class="danger" disabled>🗑️ Удалить выбранное</button></div>
+  <div id="bulkStatus" class="notice"></div>
+ </div>
 </section>
 
 <section class="card"><h2>🧪 Состояние</h2><pre id="preview">{}</pre></section>
@@ -844,14 +866,127 @@ $('layerFile').onchange=()=>{const f=$('layerFile').files[0];$('fileInfo').textC
 $('uploadLayer').onclick=async()=>{const f=$('layerFile').files[0],name=$('layerName').value.trim();if(!f||!name)return notice('layerStatus','❌ Укажи название и выбери файл.',false);if(f.size>20*1048576)return notice('layerStatus','❌ Максимальный размер — 20 MB.',false);try{const geo=JSON.parse(await f.text());if(geo.type!=='FeatureCollection'||!Array.isArray(geo.features))throw Error('Нужен GeoJSON FeatureCollection');const safe=f.name.replace(/[^a-zA-Z0-9._-]/g,'_'),path=Date.now()+'_'+safe;await api('/storage/v1/object/map-layers/'+encodeURIComponent(path),{method:'POST',headers:{'Content-Type':'application/geo+json','x-upsert':'false'},body:f});await rpc('admin_create_map_layer',{p_name:name,p_layer_type:$('layerType').value,p_file_path:path,p_description:$('layerDescription').value.trim(),p_feature_count:geo.features.length,p_file_size:f.size});$('layerName').value='';$('layerDescription').value='';$('layerFile').value='';await loadLayers();notice('layerStatus','✅ Слой загружен: '+geo.features.length+' объектов')}catch(e){notice('layerStatus','❌ '+e.message,false)}};
 $('refreshLayers').onclick=async()=>{try{await loadLayers();notice('layerStatus','✅ Список обновлён')}catch(e){notice('layerStatus','❌ '+e.message,false)}};
 
+/* BULK DELETE */
+let bulkItems=[];
+function bulkEntityName(type,x){
+ if(type==='regions')return x.name_ru||x.name||x.name_en||x.id;
+ if(type==='districts')return (x.name_ru||x.name||x.id)+(x.region_name?' · '+x.region_name:'');
+ if(type==='cities')return (x.name_ru||x.name||x.id)+(x.region_name?' · '+x.region_name:'');
+ if(type==='streets')return (x.name_ru||x.name||x.id)+(x.city_name?' · '+x.city_name:'');
+ if(type==='buildings')return '№ '+(x.house_number||'—')+(x.address?' · '+x.address:'');
+ if(type==='layers')return x.name||('Слой '+x.id);
+ return x.id;
+}
+function bulkSource(type){return type==='regions'?regions:type==='districts'?districts:type==='cities'?cities:type==='streets'?streets:type==='buildings'?buildings:layers}
+function fillBulkFilters(){
+ setOptions('bulkRegion',regions,'Все области');
+ setOptions('bulkDistrict',districts,'Все районы');
+ setOptions('bulkCity',cities,'Все города');
+ setOptions('bulkStreet',streets,'Все улицы');
+}
+function bulkRefreshDistricts(){
+ const rid=$('bulkRegion').value;setOptions('bulkDistrict',rid?districts.filter(x=>String(x.region_id)===String(rid)):districts,'Все районы');
+}
+function bulkRefreshCities(){
+ const rid=$('bulkRegion').value, did=$('bulkDistrict').value;
+ let a=cities.filter(x=>(!rid||String(x.region_id)===String(rid))&&(!did||String(x.district_id||'')===String(did)));
+ setOptions('bulkCity',a,'Все города');
+}
+function bulkRefreshStreets(){
+ const rid=$('bulkRegion').value,did=$('bulkDistrict').value,cid=$('bulkCity').value;
+ let a=streets.filter(x=>(!rid||String(x.region_id)===String(rid))&&(!did||String(x.district_id||'')===String(did))&&(!cid||String(x.city_id||'')===String(cid)));
+ setOptions('bulkStreet',a,'Все улицы');
+}
+function updateBulkUI(){
+ const t=$('bulkType').value;
+ $('bulkRegionWrap').classList.toggle('hidden',t==='layers');
+ $('bulkDistrictWrap').classList.toggle('hidden',['regions','layers','districts'].includes(t));
+ $('bulkCityWrap').classList.toggle('hidden',!['cities','streets','buildings'].includes(t));
+ $('bulkStreetWrap').classList.toggle('hidden',!['streets','buildings'].includes(t));
+ if(t==='layers'){$('bulkCityStreetWrap').classList.add('hidden')}else{$('bulkCityStreetWrap').classList.remove('hidden')}
+ $('bulkSummary').textContent='';$('bulkChecklist').innerHTML='';$('bulkDeleteBtn').disabled=true;bulkItems=[];
+}
+function getBulkItems(){
+ const t=$('bulkType').value,src=bulkSource(t),rid=$('bulkRegion').value,did=$('bulkDistrict').value,cid=$('bulkCity').value,sid=$('bulkStreet').value;
+ return src.filter(x=>{
+  if(t==='layers')return true;
+  if(rid&&String(x.region_id)!==String(rid))return false;
+  if((t==='districts'||t==='cities'||t==='streets'||t==='buildings')&&did&&String(x.district_id||'')!==String(did))return false;
+  if((t==='cities'||t==='streets'||t==='buildings')&&cid&&String(x.city_id||'')!==String(cid))return false;
+  if((t==='streets'||t==='buildings')&&sid&&String(x.street_id||'')!==String(sid))return false;
+  return true;
+ });
+}
+function renderBulk(){
+ bulkItems=getBulkItems();const box=$('bulkChecklist');box.innerHTML='';
+ if(!bulkItems.length){$('bulkSummary').textContent='Ничего не найдено.';$('bulkDeleteBtn').disabled=true;return}
+ bulkItems.forEach((x,i)=>{const row=document.createElement('label');row.className='checkrow';row.innerHTML='<input type="checkbox" class="bulkCheck" data-i="'+i+'" checked><span><b>'+esc(bulkEntityName($('bulkType').value,x))+'</b><br><small>ID: '+esc(x.id??'—')+'</small></span>';box.appendChild(row)});
+ $('bulkSummary').textContent='Найдено: '+bulkItems.length+'. Отмечено к удалению: '+bulkItems.length+'.';$('bulkDeleteBtn').disabled=false;
+ box.querySelectorAll('.bulkCheck').forEach(c=>c.onchange=updateBulkCheckedCount);
+}
+function updateBulkCheckedCount(){const n=[...document.querySelectorAll('.bulkCheck')].filter(x=>x.checked).length;$('bulkSummary').textContent='Найдено: '+bulkItems.length+'. Отмечено к удалению: '+n+'.';$('bulkDeleteBtn').disabled=n===0}
+async function deleteBulkOne(type,x){
+ if(type==='regions'){
+  const rid=String(x.id);
+  for(const b of buildings.filter(v=>String(v.region_id)===rid))await rpc('admin_delete_building',{p_id:Number(b.id)});
+  for(const s of streets.filter(v=>String(v.region_id)===rid))await rpc('admin_delete_street',{p_id:Number(s.id)});
+  for(const c of cities.filter(v=>String(v.region_id)===rid))await rpc('admin_delete_city',{p_id:Number(c.id)});
+  for(const d of districts.filter(v=>String(v.region_id)===rid))await rpc('admin_delete_district',{p_id:d.id});
+  return rpc('admin_delete_region',{p_id:x.id});
+ }
+ if(type==='districts'){
+  const did=String(x.id);
+  for(const b of buildings.filter(v=>String(v.district_id||'')===did))await rpc('admin_delete_building',{p_id:Number(b.id)});
+  for(const s of streets.filter(v=>String(v.district_id||'')===did))await rpc('admin_delete_street',{p_id:Number(s.id)});
+  for(const c of cities.filter(v=>String(v.district_id||'')===did))await rpc('admin_delete_city',{p_id:Number(c.id)});
+  return rpc('admin_delete_district',{p_id:x.id});
+ }
+ if(type==='cities'){
+  const cid=String(x.id);
+  for(const b of buildings.filter(v=>String(v.city_id||'')===cid))await rpc('admin_delete_building',{p_id:Number(b.id)});
+  for(const s of streets.filter(v=>String(v.city_id||'')===cid))await rpc('admin_delete_street',{p_id:Number(s.id)});
+  return rpc('admin_delete_city',{p_id:Number(x.id)});
+ }
+ if(type==='streets'){
+  for(const b of buildings.filter(v=>String(v.street_id||'')===String(x.id)))await rpc('admin_delete_building',{p_id:Number(b.id)});
+  return rpc('admin_delete_street',{p_id:Number(x.id)});
+ }
+ if(type==='buildings')return rpc('admin_delete_building',{p_id:Number(x.id)});
+ if(type==='layers'){
+  const r=await rpc('admin_delete_map_layer',{p_id:x.id});
+  if(r?.file_path)try{await api('/storage/v1/object/map-layers/'+encodeURIComponent(r.file_path),{method:'DELETE'})}catch(e){}
+ }
+}
+$('bulkType').onchange=()=>{updateBulkUI();if($('bulkType').value!=='layers')fillBulkFilters()};
+$('bulkRegion').onchange=()=>{bulkRefreshDistricts();bulkRefreshCities();bulkRefreshStreets();renderBulk()};
+$('bulkDistrict').onchange=()=>{bulkRefreshCities();bulkRefreshStreets();renderBulk()};
+$('bulkCity').onchange=()=>{bulkRefreshStreets();renderBulk()};
+$('bulkStreet').onchange=renderBulk;
+$('bulkPreviewBtn').onclick=renderBulk;
+$('bulkSelectAll').onclick=()=>{document.querySelectorAll('.bulkCheck').forEach(x=>x.checked=true);updateBulkCheckedCount()};
+$('bulkClear').onclick=()=>{document.querySelectorAll('.bulkCheck').forEach(x=>x.checked=false);updateBulkCheckedCount()};
+$('bulkDeleteBtn').onclick=async()=>{
+ const t=$('bulkType').value,chosen=[...document.querySelectorAll('.bulkCheck')].filter(x=>x.checked).map(x=>bulkItems[Number(x.dataset.i)]);
+ if(!chosen.length)return;
+ const label=t==='layers'?'слоёв':t==='regions'?'областей':t==='districts'?'районов':t==='cities'?'городов':t==='streets'?'улиц':'зданий';
+ if(!confirm('Удалить '+chosen.length+' '+label+'? Это действие необратимо.'))return;
+ if(!confirm('ПОДТВЕРДИТЕ ЕЩЁ РАЗ: удалить выбранные данные и связанные записи?'))return;
+ $('bulkDeleteBtn').disabled=true;let ok=0,failed=[];
+ for(const x of chosen){try{await deleteBulkOne(t,x);ok++}catch(e){failed.push({id:x.id,error:e.message})}}
+ try{await loadData()}catch(e){failed.push({error:'Обновление данных: '+e.message})}
+ fillBulkFilters();renderBulk();
+ notice('bulkStatus',failed.length?'⚠️ Удалено: '+ok+'. Ошибок: '+failed.length+'.':'✅ Удалено: '+ok+'.',!failed.length);
+ if(failed.length){$('bulkSummary').textContent='Ошибки: '+JSON.stringify(failed.slice(0,10))}
+};
+
 /* TABS */
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('main>section.card').forEach(x=>x.classList.add('hidden'));b.classList.add('active');$(b.dataset.tab+'Tab').classList.remove('hidden')});
-$('refresh').onclick=async()=>{const b=$('refresh');b.disabled=true;try{await loadData();notice('globalStatus','✅ Данные обновлены')}catch(e){notice('globalStatus','❌ '+e.message,false)}finally{b.disabled=false}};
+$('refresh').onclick=async()=>{const b=$('refresh');b.disabled=true;try{await loadData();fillBulkFilters();updateBulkUI();notice('globalStatus','✅ Данные обновлены')}catch(e){notice('globalStatus','❌ '+e.message,false)}finally{b.disabled=false}};
 $('logout').onclick=()=>{localStorage.removeItem('naqsha_admin_session');location.reload()};$('login').onclick=login;$('password').onkeydown=e=>{if(e.key==='Enter')login()};
 
 async function openAdmin(){
  $('loginCard').classList.add('hidden');$('app').classList.remove('hidden');$('userEmail').textContent=session?.user?.email||'admin';
- try{await loadData()}catch(e){notice('globalStatus','❌ '+e.message,false)}
+ try{await loadData();fillBulkFilters();updateBulkUI()}catch(e){notice('globalStatus','❌ '+e.message,false)}
 }
 (async()=>{try{session=JSON.parse(localStorage.getItem('naqsha_admin_session')||'null')}catch{session=null}if(session?.access_token)await openAdmin()})();
 </script>
