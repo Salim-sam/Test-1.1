@@ -14,7 +14,7 @@ h1,h2,h3{margin:0 0 12px}h1{font-size:23px}h2{font-size:20px}h3{font-size:16px}
 label{display:block;font-weight:700;font-size:13px;margin:12px 0 6px}
 input,textarea,select{width:100%;padding:11px 12px;border:1px solid #d5d9de;border-radius:10px;font-size:15px;background:#fff;outline:none}
 input:focus,textarea:focus,select:focus{border-color:#1677ff}input[readonly]{background:#f7f8fa}
-textarea{min-height:100px;resize:vertical}button{border:0;border-radius:10px;padding:11px 15px;font-weight:700;cursor:pointer}
+textarea{min-height:100px;resize:vertical}button{border:0;border-radius:10px;height:42px;min-height:42px;padding:0 14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;flex:0 0 auto}.actions button,.buttons button,.sectionHead button,.searchrow button{width:auto}.actions{align-items:center}#previewBulkDelete,#runBulkDelete{width:auto;min-width:150px;flex:0 0 auto}
 button:disabled{opacity:.55;cursor:not-allowed}.primary{background:#1677ff;color:#fff}.success{background:#18a84a;color:#fff}
 .danger{background:#e53935;color:#fff}.gray{background:#e9edf1}
 .buttons,.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}
@@ -38,6 +38,7 @@ pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-w
 .importBox{background:#fff;border-radius:18px;width:min(850px,100%);max-height:92vh;overflow:auto;padding:20px;box-shadow:0 10px 40px #0005}
 .importCols{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media(max-width:700px){.importCols{grid-template-columns:1fr}.sectionHead{align-items:flex-start}}
+.diagList{display:grid;gap:8px;margin-top:12px}.diagItem{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 12px;border:1px solid #e8ebef;border-radius:10px;background:#fafbfc}.diagItem b{font-size:14px}.diagOk{border-color:#cfe9d6;background:#f3fbf5}.diagWarn{border-color:#f0dfbd;background:#fffaf0}.diagErr{border-color:#f0caca;background:#fff6f6}.diagMeta{color:#777;font-size:12px;text-align:right}@media(max-width:500px){.diagItem{align-items:flex-start;flex-direction:column}.diagMeta{text-align:left}}
 </style>
 </head>
 <body>
@@ -92,7 +93,16 @@ pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-w
 <button class="tab" data-tab="streets">🛣️ Улицы</button>
 <button class="tab" data-tab="buildings">🏠 Здания / дома</button>
 <button class="tab" data-tab="layers">🧩 Слои</button>
+<button class="tab" data-tab="diagnostics">🧪 Диагностика</button>
 </div>
+
+<!-- DIAGNOSTICS -->
+<section id="diagnosticsTab" class="card hidden">
+<div class="sectionHead"><div><h2>🧪 Диагностика Naqsha</h2><div class="small">Безопасная проверка подключения, данных, слоёв и синхронизации. Ничего не изменяет в базе.</div></div><button id="runDiagnostics" class="primary">▶️ Запустить тест</button></div>
+<div id="diagnosticsStatus" class="notice"></div>
+<div id="diagnosticsResults" class="diagList"></div>
+<pre id="diagnosticsLog" class="hidden"></pre>
+</section>
 
 <!-- REGIONS -->
 <section id="regionsTab" class="card">
@@ -923,6 +933,50 @@ $('bulkDeleteType').onchange=bulkOptions;
 $('bulkDeleteRegion').onchange=bulkOptions;
 $('previewBulkDelete').onclick=()=>{try{const t=bulkTargets(),sum=bulkSummary(t);$('bulkDeletePreview').classList.remove('hidden');$('bulkDeletePreview').textContent=JSON.stringify(sum,null,2);$('runBulkDelete').disabled=sum.всего===0;notice('bulkDeleteStatus',sum.всего?'⚠️ Будет удалено: '+sum.всего+' записей.':'ℹ️ Нечего удалять.',sum.всего>0)}catch(e){$('runBulkDelete').disabled=true;notice('bulkDeleteStatus','❌ '+e.message,false)}};
 $('runBulkDelete').onclick=async()=>{const t=bulkTargets(),sum=bulkSummary(t);if(!sum.всего)return;if(!confirm('ВНИМАНИЕ! Будет удалено '+sum.всего+' записей, включая зависимые объекты. Продолжить?'))return;$('runBulkDelete').disabled=true;try{const r=await bulkDeleteRun(t);await loadData();bulkOptions();$('bulkDeletePreview').textContent=JSON.stringify({...sum,удалено:r.done,ошибок:r.failed.length,детали_ошибок:r.failed.slice(0,100)},null,2);notice('bulkDeleteStatus',r.failed.length?'⚠️ Удалено: '+r.done+', ошибок: '+r.failed.length:'✅ Массовое удаление завершено. Удалено: '+r.done,r.failed.length===0)}catch(e){notice('bulkDeleteStatus','❌ '+e.message,false)}finally{$('runBulkDelete').disabled=false}};
+
+/* DIAGNOSTICS */
+function diagRow(title,status,meta='',cls='diagOk'){
+  const e=document.createElement('div');e.className='diagItem '+cls;
+  e.innerHTML='<b>'+esc(title)+'</b><span class="diagMeta">'+esc(status)+(meta?' · '+esc(meta):'')+'</span>';
+  $('diagnosticsResults').appendChild(e);
+}
+async function runDiagnostics(){
+  const btn=$('runDiagnostics');btn.disabled=true;$('diagnosticsResults').innerHTML='';$('diagnosticsLog').classList.add('hidden');
+  const log=[];let errors=0,warns=0;
+  const test=async(title,fn)=>{try{const r=await fn();diagRow(title,'OK',r||'','diagOk');log.push('OK  '+title+(r?' — '+r:''));return true}catch(e){errors++;diagRow(title,'ОШИБКА',e.message||String(e),'diagErr');log.push('ERR '+title+' — '+(e.message||String(e)));return false}};
+  try{
+    await test('Подключение к Supabase',async()=>{const r=await fetch(SUPABASE_URL+'/rest/v1/',{headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+session.access_token}});if(!r.ok)throw Error('HTTP '+r.status);return 'API отвечает'});
+    const checks=[
+      ['Области','get_regions_geojson',x=>(x.features||[]).length],
+      ['Районы','get_districts_geojson',x=>(x.features||[]).length],
+      ['Города','get_cities_geojson',x=>(x.features||[]).length],
+      ['Улицы','get_streets_admin',x=>Array.isArray(x)?x.length:0],
+      ['Здания','get_buildings_admin',x=>Array.isArray(x)?x.length:0]
+    ];
+    for(const [label,fn,countFn] of checks) await test(label,async()=>{const x=await rpc(fn,{});return countFn(x)+' объектов'});
+    await test('Слои карты',async()=>{await loadLayers();return layers.length+' слоёв'});
+    for(const layer of layers){
+      await test('Слой: '+(layer.name||layer.id),async()=>{
+        if(!layer.file_path)throw Error('Нет file_path');
+        const url=SUPABASE_URL+'/storage/v1/object/public/map-layers/'+encodeURIComponent(layer.file_path).replace(/%2F/g,'/');
+        const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw Error('GeoJSON недоступен, HTTP '+r.status);
+        const geo=await r.json();if(geo.type!=='FeatureCollection'||!Array.isArray(geo.features))throw Error('Неверный GeoJSON');
+        if(Number(layer.feature_count)!==geo.features.length)throw Error('Ожидалось '+layer.feature_count+', найдено '+geo.features.length);
+        return geo.features.length+' объектов · '+(layer.is_active?'активен':'выключен');
+      });
+    }
+    const pairs=[['Области','regions',regions.length],['Районы','districts',districts.length],['Города','cities',cities.length],['Улицы','streets',streets.length],['Здания','buildings',buildings.length]];
+    for(const [label,key,count] of pairs){
+      const active=layers.filter(x=>x.is_active&&x.layer_type===key);
+      if(active.length===0){warns++;diagRow('Синхронизация: '+label,'ПРЕДУПРЕЖДЕНИЕ','активный слой не найден','diagWarn');log.push('WARN '+label+' — активный слой не найден');}
+      else diagRow('Синхронизация: '+label,'OK',count+' записей в админке','diagOk');
+    }
+    const summary='Тест завершён: '+errors+' ошибок, '+warns+' предупреждений';
+    notice('diagnosticsStatus',errors?('❌ '+summary):warns?('⚠️ '+summary):('✅ '+summary),errors===0&&warns===0);
+  }catch(e){errors++;notice('diagnosticsStatus','❌ Тестер остановлен: '+e.message,false);log.push('ERR '+(e.message||String(e)));}
+  $('diagnosticsLog').textContent=log.join('\n');$('diagnosticsLog').classList.remove('hidden');btn.disabled=false;
+}
+$('runDiagnostics').onclick=runDiagnostics;
 
 /* TABS */
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('main>section.card').forEach(x=>x.classList.add('hidden'));b.classList.add('active');$(b.dataset.tab+'Tab').classList.remove('hidden')});
