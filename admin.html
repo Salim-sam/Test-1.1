@@ -14,7 +14,7 @@ h1,h2,h3{margin:0 0 12px}h1{font-size:23px}h2{font-size:20px}h3{font-size:16px}
 label{display:block;font-weight:700;font-size:13px;margin:12px 0 6px}
 input,textarea,select{width:100%;padding:11px 12px;border:1px solid #d5d9de;border-radius:10px;font-size:15px;background:#fff;outline:none}
 input:focus,textarea:focus,select:focus{border-color:#1677ff}input[readonly]{background:#f7f8fa}
-textarea{min-height:100px;resize:vertical}button{border:0;border-radius:10px;height:42px;min-height:42px;padding:0 14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;flex:0 0 auto}.actions button,.buttons button,.sectionHead button,.searchrow button{width:auto}.actions{align-items:center}#previewBulkDelete,#runBulkDelete{width:auto;min-width:150px;flex:0 0 auto}
+textarea{min-height:100px;resize:vertical}button{border:0;border-radius:10px;padding:11px 15px;font-weight:700;cursor:pointer}
 button:disabled{opacity:.55;cursor:not-allowed}.primary{background:#1677ff;color:#fff}.success{background:#18a84a;color:#fff}
 .danger{background:#e53935;color:#fff}.gray{background:#e9edf1}
 .buttons,.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}
@@ -38,7 +38,6 @@ pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-w
 .importBox{background:#fff;border-radius:18px;width:min(850px,100%);max-height:92vh;overflow:auto;padding:20px;box-shadow:0 10px 40px #0005}
 .importCols{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media(max-width:700px){.importCols{grid-template-columns:1fr}.sectionHead{align-items:flex-start}}
-.diagList{display:grid;gap:8px;margin-top:12px}.diagItem{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 12px;border:1px solid #e8ebef;border-radius:10px;background:#fafbfc}.diagItem b{font-size:14px}.diagOk{border-color:#cfe9d6;background:#f3fbf5}.diagWarn{border-color:#f0dfbd;background:#fffaf0}.diagInfo{border-color:#d7e3f3;background:#f5f9ff}.diagErr{border-color:#f0caca;background:#fff6f6}.diagMeta{color:#777;font-size:12px;text-align:right}@media(max-width:500px){.diagItem{align-items:flex-start;flex-direction:column}.diagMeta{text-align:left}}
 </style>
 </head>
 <body>
@@ -63,26 +62,8 @@ pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-w
 <div class="stat"><b id="buildingCount">—</b><span>Зданий</span></div>
 <div class="stat"><b id="layerCount">—</b><span>Слоёв</span></div>
 </div>
-<div class="buttons"><span class="small" id="userEmail" style="padding:11px 0"></span><button id="refresh" class="gray">🔄 Обновить</button><button id="logout" class="gray">Выйти</button></div>
+<div class="buttons"><span class="small" id="userEmail" style="padding:11px 0"></span><button id="refresh" class="gray">🔄 Обновить</button><button id="downloadAll" class="primary">⬇️ Скачать всё</button><button id="logout" class="gray">Выйти</button></div>
 <div id="globalStatus" class="notice"></div>
-</section>
-
-<section id="bulkDeleteTab" class="card hidden">
-  <div class="sectionHead"><div><h2>🗑️ Массовое удаление</h2><div class="small">Удаление выполняется из базы через существующие административные RPC. Для родительского объекта сначала удаляются зависимые записи.</div></div><span class="badge">Осторожно</span></div>
-  <div class="grid3">
-    <div><label>Что удалить</label><select id="bulkDeleteType">
-      <option value="regions">🗺️ Области</option>
-      <option value="districts">📍 Районы</option>
-      <option value="cities">🏙️ Города</option>
-      <option value="streets">🛣️ Улицы</option>
-      <option value="buildings">🏠 Здания / дома</option>
-    </select></div>
-    <div><label>Область</label><select id="bulkDeleteRegion"><option value="">Все области</option></select></div>
-    <div><label>Район / город</label><select id="bulkDeleteScope"><option value="">Все</option></select></div>
-  </div>
-  <div class="actions"><button id="previewBulkDelete" class="gray">🔎 Проверить</button><button id="runBulkDelete" class="danger" disabled>🗑️ Удалить выбранное</button></div>
-  <div id="bulkDeleteStatus" class="notice"></div>
-  <pre id="bulkDeletePreview" class="hidden"></pre>
 </section>
 
 <div class="tabs">
@@ -92,17 +73,7 @@ pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-w
 <button class="tab" data-tab="streets">🛣️ Улицы</button>
 <button class="tab" data-tab="buildings">🏠 Здания / дома</button>
 <button class="tab" data-tab="layers">🧩 Слои</button>
-<button class="tab" data-tab="diagnostics">🧪 Диагностика</button>
-<button class="tab" data-tab="bulkDelete">🗑️ Массовое удаление</button>
 </div>
-
-<!-- DIAGNOSTICS -->
-<section id="diagnosticsTab" class="card hidden">
-<div class="sectionHead"><div><h2>🧪 Диагностика Naqsha</h2><div class="small">Проверяет Supabase, записи, GeoJSON, синхронизацию и саму опубликованную основную карту. Ничего не изменяет в базе.</div></div><button id="runDiagnostics" class="primary">▶️ Полная проверка</button></div>
-<div id="diagnosticsStatus" class="notice"></div>
-<div id="diagnosticsResults" class="diagList"></div>
-<pre id="diagnosticsLog" class="hidden"></pre>
-</section>
 
 <!-- REGIONS -->
 <section id="regionsTab" class="card">
@@ -143,7 +114,7 @@ pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-w
     области, обязательные языки и покажет результат.
   </div>
   <label>Файл городов</label>
-  <input id="cityImportFile" type="file" accept=".csv,.json,.geojson,text/csv,application/json,application/geo+json">
+  <input id="cityImportFile" type="file" accept=".csv,.json,text/csv,application/json">
   <div id="cityImportInfo" class="small" style="margin-top:7px">Формат CSV: id,name,name_ru,name_uz,name_uz_cy,region_id,district_id,population,description (name = EN)</div>
   <div class="actions">
     <button id="previewCityImport" class="gray">🔎 Проверить файл</button>
@@ -227,11 +198,11 @@ pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-w
       </div>
       <div>
         <label>Файл</label>
-        <input id="importFile" type="file" accept=".csv,.json,.geojson,text/csv,application/json,application/geo+json">
+        <input id="importFile" type="file" accept=".csv,.json,text/csv,application/json">
       </div>
     </div>
     <div class="small" style="margin-top:8px">
-      CSV должен иметь строку заголовков. JSON/GeoJSON — массив объектов или GeoJSON FeatureCollection. Для GeoJSON берутся properties, а id при необходимости берётся из Feature.id. Сначала выполняется полная проверка, затем запись. Для районов используется область + все языки + нормализация вариантов написания. Очень близкие варианты проверяются отдельно; сомнительные записи не импортируются автоматически.
+      CSV должен иметь строку заголовков. JSON — массив объектов. Сначала выполняется полная проверка, затем запись. Для районов используется область + все языки + нормализация вариантов написания. Очень близкие варианты проверяются отдельно; сомнительные записи не импортируются автоматически.
     </div>
     <div class="actions">
       <button id="checkImport" class="gray">🔎 Проверить</button>
@@ -304,7 +275,7 @@ async function loadData(){
  regions=(r.features||[]).map(parseFeature);districts=(d.features||[]).map(parseFeature);cities=(c.features||[]).map(parseFeature);
  streets=(Array.isArray(s)?s:[]).map(x=>parseFeature({properties:x}));buildings=(Array.isArray(b)?b:[]).map(x=>parseFeature({properties:x}));
  $('regionCount').textContent=regions.length;$('districtCount').textContent=districts.length;$('cityCount').textContent=cities.length;$('streetCount').textContent=streets.length;$('buildingCount').textContent=buildings.length;
- fillAllSelects();renderAll();bulkOptions();await loadLayers();$('preview').textContent=JSON.stringify({regions:regions.length,districts:districts.length,cities:cities.length,streets:streets.length,buildings:buildings.length,layers:layers.length},null,2);
+ fillAllSelects();renderAll();await loadLayers();$('preview').textContent=JSON.stringify({regions:regions.length,districts:districts.length,cities:cities.length,streets:streets.length,buildings:buildings.length,layers:layers.length},null,2);
 }
 
 function setOptions(id,items,placeholder,selected=''){
@@ -408,7 +379,7 @@ function importVal(obj,key){
   return obj && obj[key] !== undefined && obj[key] !== null
     ? String(obj[key]).trim() : '';
 }
-/* UNIVERSAL MASS IMPORT v20 — CSV + JSON + GEOJSON + BULK DELETE */
+/* UNIVERSAL MASS IMPORT v11 — SAFE REGION + DISTRICT NAME */
 let universalImportRows=[];
 let universalImportType='cities';
 
@@ -436,7 +407,6 @@ function closeImport(){$('importModal').classList.add('hidden')}
 document.querySelectorAll('.importOpen').forEach(b=>b.onclick=()=>openImport(b.dataset.importType));
 $('closeImport').onclick=closeImport;
 $('importType').onchange=()=>setImportType($('importType').value);
-$('importFile').onchange=()=>{const f=$('importFile').files[0];if(f){$('importStatus').style.display='block';$('importStatus').style.background='#eef5ff';$('importStatus').style.color='#175ea8';$('importStatus').textContent='📄 '+f.name+' · '+formatBytes(f.size)+' · формат будет определён автоматически.';}};
 $('importModal').onclick=e=>{if(e.target===$('importModal'))closeImport()};
 
 function normalizeImportObject(x){
@@ -716,219 +686,297 @@ function districtImportSummary(rows){
  return byRegion;
 }
 
-function parseCSV(text){
- const src=String(text||'').replace(/^\uFEFF/,'').replace(/\r\n?/g,'\n');
- const sample=src.split('\n').slice(0,8).join('\n');
- let delimiter=',';
- const counts={',':(sample.match(/,/g)||[]).length,';':(sample.match(/;/g)||[]).length,'\t':(sample.match(/\t/g)||[]).length};
- if(counts[';']>counts[',']&&counts[';']>=counts['\t'])delimiter=';';
- else if(counts['\t']>counts[',']&&counts['\t']>counts[';'])delimiter='\t';
-
- const rows=[];let row=[],cell='',quoted=false;
- for(let i=0;i<src.length;i++){
-  const ch=src[i];
-  if(quoted){
-   if(ch==='"'){
-    if(src[i+1]==='"'){cell+='"';i++}else quoted=false;
-   }else cell+=ch;
-  }else if(ch==='"'&&cell===''){quoted=true}
-  else if(ch===delimiter){row.push(cell);cell=''}
-  else if(ch==='\n'){row.push(cell);cell='';if(row.some(v=>String(v).trim()!==''))rows.push(row);row=[]}
-  else cell+=ch;
- }
- if(cell!==''||row.length){row.push(cell);if(row.some(v=>String(v).trim()!==''))rows.push(row)}
- if(!rows.length)return [];
- const headers=rows.shift().map((h,i)=>String(h??'').replace(/^\uFEFF/,'').trim());
- if(!headers.length||headers.every(h=>!h))throw Error('CSV не содержит заголовков.');
- return rows.map(values=>{const o={};headers.forEach((h,i)=>{o[h]=String(values[i]??'').trim()});return o});
-}
-
 async function parseUniversalFile(){
  const f=$('importFile').files[0];
- if(!f)throw Error('Выберите CSV, JSON или GeoJSON файл.');
+ if(!f)throw Error('Выберите CSV или JSON файл.');
  if(f.size>20*1048576)throw Error('Максимальный размер файла — 20 MB.');
  const text=await f.text();
- const isGeo=/\.geojson$/i.test(f.name)||/geo\+json/i.test(f.type);
- const isJson=isGeo||/\.json$/i.test(f.name)||/json/i.test(f.type);
  let rows;
- if(isJson){
-   let d;
-   try{d=JSON.parse(text.replace(/^\uFEFF/,''));}catch(e){throw Error('Некорректный JSON/GeoJSON: '+e.message)}
-   if(d&&d.type==='FeatureCollection'&&Array.isArray(d.features)){
-     rows=d.features.map((feature,i)=>{
-       const props=(feature&&feature.properties&&typeof feature.properties==='object')?feature.properties:{};
-       const merged={...props};
-       if((merged.id===undefined||merged.id===null||String(merged.id).trim()==='')&&feature.id!==undefined&&feature.id!==null)merged.id=feature.id;
-       return merged;
-     });
-   }else if(d&&d.type==='Feature'){
-     const props=(d.properties&&typeof d.properties==='object')?d.properties:{};
-     const merged={...props};
-     if((merged.id===undefined||merged.id===null||String(merged.id).trim()==='')&&d.id!==undefined&&d.id!==null)merged.id=d.id;
-     rows=[merged];
-   }else if(Array.isArray(d)){
-     rows=d;
-   }else if(d&&Array.isArray(d.districts)){
-     rows=d.districts;
-   }else{
-     throw Error('JSON должен быть массивом объектов или GeoJSON FeatureCollection.');
-   }
- }else{
-   rows=parseCSV(text);
- }
- if(!Array.isArray(rows)||!rows.length)throw Error('Файл не содержит записей.');
+ if(/\.json$/i.test(f.name)){
+   const d=JSON.parse(text);
+   rows=Array.isArray(d)?d:(Array.isArray(d.districts)?d.districts:null);
+   if(!rows)throw Error('JSON должен быть массивом объектов.');
+ }else rows=csvParse(text);
  return rows.map((x,i)=>({...normalizeImportObject(x),__line:i+2}));
 }
 
 function validateUniversal(rows,type){
  const s=importSchemas[type],errors=[],keys=new Map();
+
  function addError(x,field,message){
-   const value=field?importVal(x,field):'';
-   errors.push('Строка '+x.__line+' | Поле: '+(field||'—')+' | Значение: '+(value||'∅')+' | '+message);
+   const value=field ? importVal(x,field) : '';
+   errors.push(
+     'Строка '+x.__line+
+     ' | Поле: '+(field||'—')+
+     ' | Значение: '+(value||'∅')+
+     ' | '+message
+   );
  }
+
  rows.forEach(x=>{
-  s.required.forEach(k=>{if(!importVal(x,k))addError(x,k,'обязательное поле не заполнено')});
+  s.required.forEach(k=>{
+    if(!importVal(x,k)) addError(x,k,'обязательное поле не заполнено');
+  });
+
   let key='';
   if(type==='regions')key='r:'+importVal(x,'id');
   if(type==='districts')key='d:'+districtRegionId(x)+'|'+districtNameAliases(x).sort().join('|');
   if(type==='cities')key='c:'+importNorm(importVal(x,'name'))+'|'+importVal(x,'region_id');
   if(type==='streets')key='s:'+importNorm(importVal(x,'name'))+'|'+importVal(x,'city_id')+'|'+importVal(x,'district_id');
   if(type==='buildings')key='b:'+importNorm(importVal(x,'house_number'))+'|'+importVal(x,'street_id')+'|'+importVal(x,'city_id');
-  if(keys.has(key))addError(x,type==='districts'?'name':'id','дубликат внутри файла; первая такая запись находится в строке '+keys.get(key));
-  else keys.set(key,x.__line);
 
-  if(type!=='regions'&&importVal(x,'region_id')&&!regions.some(r=>String(r.id).toUpperCase()===String(importVal(x,'region_id')).toUpperCase()))
+  if(keys.has(key)){
+    addError(x, type==='districts'?'name':'id',
+      'дубликат внутри файла; первая такая запись находится в строке '+keys.get(key));
+  }else{
+    keys.set(key,x.__line);
+  }
+
+  if(type!=='regions' && importVal(x,'region_id') &&
+     !regions.some(r=>String(r.id).toUpperCase()===String(importVal(x,'region_id')).toUpperCase())){
     addError(x,'region_id','область с таким ID не найдена в базе');
-  if(type==='districts'&&!regions.some(r=>String(r.id).toUpperCase()===String(importVal(x,'region_id')).toUpperCase()))
-    addError(x,'region_id','область не найдена');
-  if(['cities','streets','buildings'].includes(type)&&importVal(x,'district_id')){
-    const d=districts.find(d=>String(d.id)===String(importVal(x,'district_id'))&&String(d.region_id||'').toUpperCase()===String(importVal(x,'region_id')||'').toUpperCase());
-    if(!d)addError(x,'district_id','район не найден или не относится к указанной области');
   }
-  if(['streets','buildings'].includes(type)&&importVal(x,'city_id')&&!cities.some(c=>String(c.id)===String(importVal(x,'city_id'))))
-    addError(x,'city_id','город не найден в базе');
-  if(type==='streets'&&importVal(x,'city_id')&&importVal(x,'district_id')){
+
+  if(type==='districts'){
+    const regionExists=regions.some(r=>
+      String(r.id).toUpperCase()===String(importVal(x,'region_id')).toUpperCase()
+    );
+    if(!regionExists) addError(x,'region_id','область не найдена');
+  }
+
+  if(['cities','streets','buildings'].includes(type) && importVal(x,'district_id')){
+    const d=districts.find(d=>
+      String(d.id)===String(importVal(x,'district_id')) &&
+      String(d.region_id||'').toUpperCase()===String(importVal(x,'region_id')||'').toUpperCase()
+    );
+    if(!d) addError(x,'district_id','район не найден или не относится к указанной области');
+  }
+
+  if(['streets','buildings'].includes(type) && importVal(x,'city_id')){
+    if(!cities.some(c=>String(c.id)===String(importVal(x,'city_id'))))
+      addError(x,'city_id','город не найден в базе');
+  }
+
+  if(type==='streets' && importVal(x,'city_id') && importVal(x,'district_id')){
     const c=cities.find(c=>String(c.id)===String(importVal(x,'city_id')));
-    if(c&&String(c.district_id||'')!==String(importVal(x,'district_id')))addError(x,'district_id','указанный город относится к другому району');
+    if(c&&String(c.district_id||'')!==String(importVal(x,'district_id')))
+      addError(x,'district_id','указанный город относится к другому району');
   }
-  if(type==='buildings'&&importVal(x,'street_id')&&!streets.some(s=>String(s.id)===String(importVal(x,'street_id'))))addError(x,'street_id','улица не найдена в базе');
-  if(type==='buildings'&&importVal(x,'floors')!==''&&(!Number.isInteger(Number(importVal(x,'floors')))||Number(importVal(x,'floors'))<0))addError(x,'floors','должно быть целое число 0 или больше');
-  if(['cities','districts'].includes(type)&&importVal(x,'population')!==''&&(!Number.isInteger(Number(importVal(x,'population')))||Number(importVal(x,'population'))<0))addError(x,'population','должно быть целое число 0 или больше');
-  if(type==='districts'&&importVal(x,'area')!==''&&(!Number.isFinite(Number(importVal(x,'area')))||Number(importVal(x,'area'))<0))addError(x,'area','должно быть неотрицательным числом');
+
+  if(type==='buildings' && importVal(x,'street_id') &&
+     !streets.some(s=>String(s.id)===String(importVal(x,'street_id'))))
+    addError(x,'street_id','улица не найдена в базе');
+
+  if(type==='buildings' && importVal(x,'floors')!=='' &&
+     (!Number.isInteger(Number(importVal(x,'floors')))||Number(importVal(x,'floors'))<0))
+    addError(x,'floors','должно быть целое число 0 или больше');
+
+  if(['cities','districts'].includes(type) && importVal(x,'population')!=='' &&
+     (!Number.isInteger(Number(importVal(x,'population')))||Number(importVal(x,'population'))<0))
+    addError(x,'population','должно быть целое число 0 или больше');
+
+  if(type==='districts' && importVal(x,'area')!=='' && Number(importVal(x,'area'))<0)
+    addError(x,'area','не может быть отрицательным числом');
  });
  return errors;
 }
 
-function formatImportErrors(errors){return errors.length?errors.map((e,i)=>(i+1)+'. '+e).join('\n'):'Ошибок не найдено.'}
+function formatImportErrors(errors){
+ if(!errors.length)return 'Ошибок не найдено.';
+ return errors.map((e,i)=>(i+1)+'. '+e).join('\n');
+}
 
 function existingUniversal(row,type){
- if(type==='regions')return regions.some(x=>String(x.id)===String(row.id));
- if(type==='districts')return districts.some(d=>districtsAreSame(d,row));
- if(type==='cities')return cities.some(x=>(row.id&&String(x.id)===String(row.id))||(importNorm(x.name)===importNorm(row.name)&&String(x.region_id)===String(row.region_id)));
- if(type==='streets')return streets.some(x=>importNorm(x.name)===importNorm(row.name)&&String(x.city_id||'')===String(row.city_id||'')&&String(x.district_id||'')===String(row.district_id||''));
- if(type==='buildings')return buildings.some(x=>importNorm(x.house_number)===importNorm(row.house_number)&&String(x.street_id||'')===String(row.street_id||'')&&String(x.city_id||'')===String(row.city_id||''));
+ if(type==='regions')
+   return regions.some(x=>String(x.id)===String(row.id));
+
+ if(type==='districts'){
+   // ID не участвует. Сопоставляем по области и нормализованным
+   // названиям + безопасному fuzzy threshold.
+   return districts.some(d=>districtsAreSame(d,row));
+ }
+
+ if(type==='cities')
+   return cities.some(x=>(row.id&&String(x.id)===String(row.id)) ||
+     (importNorm(x.name)===importNorm(row.name)&&String(x.region_id)===String(row.region_id)));
+
+ if(type==='streets')
+   return streets.some(x=>importNorm(x.name)===importNorm(row.name) &&
+     String(x.city_id||'')===String(row.city_id||'') &&
+     String(x.district_id||'')===String(row.district_id||''));
+
+ if(type==='buildings')
+   return buildings.some(x=>importNorm(x.house_number)===importNorm(row.house_number) &&
+     String(x.street_id||'')===String(row.street_id||'') &&
+     String(x.city_id||'')===String(row.city_id||''));
+
  return false;
 }
 
 async function createOne(row,type){
- if(type==='regions')return rpc('admin_create_region',{p_id:row.id,p_name:row.name,p_name_ru:row.name_ru,p_name_uz:row.name_uz,p_name_uz_cy:row.name_uz_cy});
- if(type==='districts')return rpc('admin_create_district',{p_id:row.id,p_region_id:row.region_id,p_name:row.name,p_name_ru:row.name_ru,p_name_uz:row.name_uz,p_name_en:row.name_en||row.name,p_name_uz_cy:row.name_uz_cy,p_center:row.center||null,p_population:row.population===''?null:Number(row.population),p_area:row.area===''?null:Number(row.area),p_description:row.description||null});
- if(type==='cities')return rpc('admin_create_city',{p_id:row.id===''?null:Number(row.id),p_region_id:row.region_id,p_district_id:row.district_id||null,p_name:row.name,p_name_ru:row.name_ru,p_name_uz:row.name_uz,p_name_uz_cy:row.name_uz_cy,p_population:row.population===''?null:Number(row.population),p_description:row.description||null});
- if(type==='streets')return rpc('admin_create_street',{p_name:row.name,p_name_ru:row.name_ru,p_name_uz:row.name_uz,p_name_uz_cy:row.name_uz_cy,p_name_en:row.name_en||row.name,p_region_id:row.region_id,p_district_id:row.district_id||null,p_city_id:row.city_id===''?null:Number(row.city_id),p_street_type:row.street_type||null,p_description:row.description||null});
- if(type==='buildings')return rpc('admin_create_building',{p_name:row.name||null,p_name_ru:row.name_ru||null,p_name_uz:row.name_uz||null,p_name_uz_cy:row.name_uz_cy||null,p_name_en:row.name_en||null,p_house_number:row.house_number,p_address:row.address||null,p_postal_code:row.postal_code||null,p_building_type:row.building_type||null,p_floors:row.floors===''?null:Number(row.floors),p_street_id:row.street_id===''?null:Number(row.street_id),p_region_id:row.region_id||null,p_district_id:row.district_id||null,p_city_id:row.city_id===''?null:Number(row.city_id),p_description:row.description||null});
+ if(type==='regions')return rpc('admin_create_region',{
+   p_id:row.id,p_name:row.name,p_name_ru:row.name_ru,p_name_uz:row.name_uz,p_name_uz_cy:row.name_uz_cy
+ });
+ if(type==='districts')return rpc('admin_create_district',{
+   p_id:row.id,p_region_id:row.region_id,p_name:row.name,p_name_ru:row.name_ru,
+   p_name_uz:row.name_uz,p_name_en:row.name_en||row.name,p_name_uz_cy:row.name_uz_cy,
+   p_center:row.center||null,p_population:row.population===''?null:Number(row.population),
+   p_area:row.area===''?null:Number(row.area),p_description:row.description||null
+ });
+ if(type==='cities')return rpc('admin_create_city',{
+   p_id:row.id===''?null:Number(row.id),p_region_id:row.region_id,p_district_id:row.district_id||null,
+   p_name:row.name,p_name_ru:row.name_ru,p_name_uz:row.name_uz,p_name_uz_cy:row.name_uz_cy,
+   p_population:row.population===''?null:Number(row.population),p_description:row.description||null
+ });
+ if(type==='streets')return rpc('admin_create_street',{
+   p_name:row.name,p_name_ru:row.name_ru,p_name_uz:row.name_uz,p_name_uz_cy:row.name_uz_cy,
+   p_name_en:row.name_en||row.name,p_region_id:row.region_id,p_district_id:row.district_id||null,
+   p_city_id:row.city_id===''?null:Number(row.city_id),p_street_type:row.street_type||null,
+   p_description:row.description||null
+ });
+ if(type==='buildings')return rpc('admin_create_building',{
+   p_name:row.name||null,p_name_ru:row.name_ru||null,p_name_uz:row.name_uz||null,
+   p_name_uz_cy:row.name_uz_cy||null,p_name_en:row.name_en||null,p_house_number:row.house_number,
+   p_address:row.address||null,p_postal_code:row.postal_code||null,p_building_type:row.building_type||null,
+   p_floors:row.floors===''?null:Number(row.floors),p_street_id:row.street_id===''?null:Number(row.street_id),
+   p_region_id:row.region_id||null,p_district_id:row.district_id||null,
+   p_city_id:row.city_id===''?null:Number(row.city_id),p_description:row.description||null
+ });
 }
 
+
+function districtSimilarity(a,b){
+  if(!a||!b)return 0;
+  if(a===b)return 1;
+  const A=new Set(a.split(' ').filter(Boolean));
+  const B=new Set(b.split(' ').filter(Boolean));
+  const inter=[...A].filter(x=>B.has(x)).length;
+  const union=new Set([...A,...B]).size;
+  let score=union?inter/union:0;
+  if(a.includes(b)||b.includes(a))score=Math.max(score,0.82);
+  return score;
+}
+function bestDistrictMatches(row,limit=3){
+  const candidates=districts.filter(d=>districtRegionId(d)===districtRegionId(row));
+  const imported=districtNameAliases(row);
+  return candidates.map(d=>{
+    let score=0;
+    for(const a of imported)for(const b of districtNameAliases(d))
+      score=Math.max(score,districtSimilarity(a,b));
+    return {d,score};
+  }).sort((a,b)=>b.score-a.score).slice(0,limit).filter(x=>x.score>=0.45)
+    .map(x=>({id:x.d.id,region_id:x.d.region_id,name:x.d.name,name_ru:x.d.name_ru,name_uz:x.d.name_uz,name_uz_cy:x.d.name_uz_cy,score:Math.round(x.score*100)+'%'}));
+}
+function districtDiagnostics(rows){
+  return rows.filter(r=>!existingUniversal(r,'districts')).map(r=>({
+    строка:r.__line,id_в_файле:r.id,region_id:r.region_id,name:r.name,
+    name_ru:r.name_ru,name_uz:r.name_uz,name_uz_cy:r.name_uz_cy,
+    возможные_совпадения:bestDistrictMatches(r)
+  }));
+}
 $('checkImport').onclick=async()=>{
  try{
   universalImportRows=await parseUniversalFile();
   const errors=validateUniversal(universalImportRows,universalImportType);
   const existing=universalImportRows.filter(x=>existingUniversal(x,universalImportType));
   const fresh=universalImportRows.filter(x=>!existingUniversal(x,universalImportType));
-  const result={раздел:universalImportType,всего_в_файле:universalImportRows.length,уже_существуют:existing.length,новых:fresh.length,ошибок:errors.length,готово_к_импорту:errors.length?0:fresh.length};
+
+  const result={
+    раздел:universalImportType,
+    всего_в_файле:universalImportRows.length,
+    уже_существуют:existing.length,
+    новых:fresh.length,
+    ошибок:errors.length,
+    готово_к_импорту:errors.length?0:fresh.length
+  };
+
   if(universalImportType==='districts'){
-   result.районов_сейчас=districts.length;
-   result.районов_после_импорта=districts.length+fresh.length;
-   result.максимум_районов=177;
-   result.сводка_по_областям=districtImportSummary(universalImportRows);
+    result.районов_сейчас=districts.length;
+    result.районов_после_импорта=districts.length+fresh.length;
+    result.максимум_районов=177;
   }
+
   result.ошибки=formatImportErrors(errors.slice(0,100));
-  $('importPreview').classList.remove('hidden');$('importPreview').textContent=JSON.stringify(result,null,2);
-  if(universalImportType==='districts'&&errors.length===0&&districts.length+fresh.length>177){$('runImport').disabled=true;return notice('importStatus','❌ Импорт заблокирован: получится '+(districts.length+fresh.length)+' районов. Максимум — 177.',false)}
+  if(universalImportType==='districts'){
+    result.сводка_по_областям=districtImportSummary(universalImportRows);
+    result.районы_для_проверки=districtDiagnostics(universalImportRows)
+      .filter(x=>x.результат==='НЕ СОПОСТАВЛЕНО' || parseInt(x.уверенность)<95);
+  }
+
+  $('importPreview').classList.remove('hidden');
+  $('importPreview').textContent=JSON.stringify(result,null,2);
+
+  if(universalImportType==='districts' && errors.length===0 && districts.length+fresh.length>177){
+    $('runImport').disabled=true;
+    return notice('importStatus',
+      '❌ Импорт заблокирован: получится '+(districts.length+fresh.length)+
+      ' районов. Максимум — 177.',false);
+  }
+
   $('runImport').disabled=errors.length>0;
-  notice('importStatus',errors.length?'❌ Есть ошибки — импорт заблокирован.':'✅ Проверка: существует '+existing.length+', новых '+fresh.length+'.',!errors.length);
- }catch(e){$('runImport').disabled=true;notice('importStatus','❌ '+e.message,false)}
+
+  if(errors.length===0)
+    notice('importStatus','✅ Проверка: существует '+existing.length+', новых '+fresh.length+'.');
+  else
+    notice('importStatus','❌ Есть ошибки — импорт заблокирован.',false);
+
+ }catch(e){
+  $('runImport').disabled=true;
+  notice('importStatus','❌ '+e.message,false);
+ }
 };
 
 $('runImport').onclick=async()=>{
- const type=universalImportType,errors=validateUniversal(universalImportRows,type);
+ const type=universalImportType;
+ const errors=validateUniversal(universalImportRows,type);
  if(errors.length)return notice('importStatus','❌ Проверка не пройдена.',false);
+
  const fresh=universalImportRows.filter(x=>!existingUniversal(x,type));
- if(type==='districts'&&districts.length+fresh.length>177)return notice('importStatus','❌ Импорт заблокирован: будет больше 177 районов.',false);
+
+ if(type==='districts' && districts.length+fresh.length>177)
+   return notice('importStatus','❌ Импорт заблокирован: будет больше 177 районов.',false);
+
  if(!fresh.length)return notice('importStatus','ℹ️ Новых записей нет.');
+
  if(!confirm('Импортировать '+fresh.length+' новых записей?'))return;
- $('runImport').disabled=true;let inserted=0,failed=[];
- for(const row of fresh){try{await createOne(row,type);inserted++}catch(e){failed.push({line:row.__line,error:e.message})}}
+
+ $('runImport').disabled=true;
+ let inserted=0,failed=[];
+
+ for(const row of fresh){
+   try{await createOne(row,type);inserted++}
+   catch(e){failed.push({line:row.__line,error:e.message});}
+ }
+
  try{await loadData()}catch{}
- $('importPreview').textContent=JSON.stringify({раздел:type,импортировано:inserted,ошибок:failed.length,ошибки:failed.slice(0,100)},null,2);
- notice('importStatus',failed.length?'⚠️ Добавлено: '+inserted+', ошибок: '+failed.length:'✅ Импорт завершён. Добавлено: '+inserted);
+
+ $('importPreview').textContent=JSON.stringify({
+   раздел:type,импортировано:inserted,ошибок:failed.length,ошибки:failed.slice(0,100)
+ },null,2);
+
+ notice('importStatus',
+   failed.length
+   ? '⚠️ Добавлено: '+inserted+', ошибок: '+failed.length
+   : '✅ Импорт завершён. Добавлено: '+inserted);
+
  $('runImport').disabled=false;
 };
 
 $('downloadTemplate').onclick=()=>{
  const headers=importSchemas[universalImportType].headers;
- const blob=new Blob(['\uFEFF'+headers.join(',')+'\n'],{type:'text/csv;charset=utf-8'});
- const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='naqsha-'+universalImportType+'-template.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+ const blob=new Blob([headers.join(',')+'\n'],{type:'text/csv;charset=utf-8'});
+ const a=document.createElement('a');
+ a.href=URL.createObjectURL(blob);
+ a.download='naqsha-'+universalImportType+'-template.csv';
+ a.click();
+ URL.revokeObjectURL(a.href);
 };
-
-/* LAYERS v24.1 — canonical geometry sync */
+/* LAYERS */
 function formatBytes(n){if(n==null)return'—';if(n<1024)return n+' B';if(n<1048576)return(n/1024).toFixed(1)+' KB';return(n/1048576).toFixed(2)+' MB'}
 async function loadLayers(){
  try{
-  layers=await api('/rest/v1/map_layers?select=*&order=id.asc');layers=Array.isArray(layers)?layers:[];
-  await normalizeCanonicalLayers();
-  $('layerCount').textContent=layers.length;renderLayers();
+  layers=await api('/rest/v1/map_layers?select=*&order=id.asc');layers=Array.isArray(layers)?layers:[];$('layerCount').textContent=layers.length;renderLayers();
  }catch(e){layers=[];$('layerCount').textContent='—';throw e}
-}
-
-async function readLayerGeo(layer){
-  if(!layer?.file_path) return null;
-  const url=SUPABASE_URL+'/storage/v1/object/public/map-layers/'+encodeURIComponent(layer.file_path).replace(/%2F/g,'/');
-  const r=await fetch(url,{cache:'no-store'});
-  if(!r.ok) return null;
-  const geo=await r.json();
-  if(geo?.type!=='FeatureCollection'||!Array.isArray(geo.features)) return null;
-  const geometryCount=geo.features.filter(f=>f&&f.geometry&&Array.isArray(f.geometry.coordinates)&&f.geometry.coordinates.length).length;
-  return {geo,geometryCount};
-}
-
-/* One canonical active layer per map type. If duplicates exist, keep the
-   richest valid layer (geometry first, then feature count) and deactivate
-   the rest. This fixes the old empty active districts layer. */
-async function normalizeCanonicalLayers(){
-  const types=['regions','districts','cities','streets','buildings'];
-  for(const type of types){
-    const same=layers.filter(x=>String(x.layer_type)===type);
-    if(!same.length) continue;
-    const scored=[];
-    for(const layer of same){
-      const info=await readLayerGeo(layer);
-      scored.push({layer,geometryCount:info?.geometryCount||0,featureCount:info?.geo?.features?.length||Number(layer.feature_count)||0});
-    }
-    const best=scored.slice().sort((a,b)=>b.geometryCount-a.geometryCount||b.featureCount-a.featureCount||Number(b.layer.id)-Number(a.layer.id))[0];
-    if(!best) continue;
-    const active=same.filter(x=>x.is_active);
-    const needsCanonical=active.length!==1 || active[0].id!==best.layer.id;
-    if(needsCanonical){
-      for(const x of same){
-        const should=Number(x.id)===Number(best.layer.id);
-        if(Boolean(x.is_active)!==should){
-          await rpc('admin_update_map_layer',{p_id:x.id,p_name:x.name,p_layer_type:x.layer_type,p_description:x.description||'',p_feature_count:x.feature_count,p_file_size:x.file_size,p_is_active:should});
-        }
-      }
-      layers=await api('/rest/v1/map_layers?select=*&order=id.asc');
-      layers=Array.isArray(layers)?layers:[];
-    }
-  }
 }
 function renderLayers(){
  const l=$('layerList');l.innerHTML='';if(!layers.length){l.innerHTML='<div class="item"><small>Слоёв пока нет — это нормально.</small></div>';return}
@@ -937,222 +985,8 @@ function renderLayers(){
  const d=document.createElement('button');d.className='danger';d.textContent='🗑️ Удалить';d.onclick=async()=>{if(!confirm('Удалить слой?'))return;try{const r=await rpc('admin_delete_map_layer',{p_id:x.id});if(r?.file_path){await api('/storage/v1/object/map-layers/'+encodeURIComponent(r.file_path),{method:'DELETE'})}await loadLayers();notice('layerStatus','✅ Слой удалён')}catch(e){notice('layerStatus','❌ '+e.message,false)}};a.append(t,d);e.appendChild(a);l.appendChild(e)})
 }
 $('layerFile').onchange=()=>{const f=$('layerFile').files[0];$('fileInfo').textContent=f?f.name+' · '+formatBytes(f.size):'Выбери файл GeoJSON (до 20 MB)'};
-$('uploadLayer').onclick=async()=>{const f=$('layerFile').files[0],name=$('layerName').value.trim();if(!f||!name)return notice('layerStatus','❌ Укажи название и выбери файл.',false);if(f.size>20*1048576)return notice('layerStatus','❌ Максимальный размер — 20 MB.',false);try{const geo=JSON.parse(await f.text());if(geo.type!=='FeatureCollection'||!Array.isArray(geo.features))throw Error('Нужен GeoJSON FeatureCollection');const geometryCount=geo.features.filter(x=>x&&x.geometry&&Array.isArray(x.geometry.coordinates)&&x.geometry.coordinates.length).length;const layerType=$('layerType').value;if(['regions','districts','cities','streets','buildings'].includes(layerType)&&geometryCount===0)throw Error('Файл содержит 0 объектов с geometry. Такой слой нельзя загружать как активный картографический слой.');const safe=f.name.replace(/[^a-zA-Z0-9._-]/g,'_'),path=Date.now()+'_'+safe;await api('/storage/v1/object/map-layers/'+encodeURIComponent(path),{method:'POST',headers:{'Content-Type':'application/geo+json','x-upsert':'false'},body:f});await rpc('admin_create_map_layer',{p_name:name,p_layer_type:$('layerType').value,p_file_path:path,p_description:$('layerDescription').value.trim(),p_feature_count:geo.features.length,p_file_size:f.size});$('layerName').value='';$('layerDescription').value='';$('layerFile').value='';await loadLayers();notice('layerStatus','✅ Слой загружен: '+geo.features.length+' объектов · geometry '+geometryCount)}catch(e){notice('layerStatus','❌ '+e.message,false)}};
+$('uploadLayer').onclick=async()=>{const f=$('layerFile').files[0],name=$('layerName').value.trim();if(!f||!name)return notice('layerStatus','❌ Укажи название и выбери файл.',false);if(f.size>20*1048576)return notice('layerStatus','❌ Максимальный размер — 20 MB.',false);try{const geo=JSON.parse(await f.text());if(geo.type!=='FeatureCollection'||!Array.isArray(geo.features))throw Error('Нужен GeoJSON FeatureCollection');const safe=f.name.replace(/[^a-zA-Z0-9._-]/g,'_'),path=Date.now()+'_'+safe;await api('/storage/v1/object/map-layers/'+encodeURIComponent(path),{method:'POST',headers:{'Content-Type':'application/geo+json','x-upsert':'false'},body:f});await rpc('admin_create_map_layer',{p_name:name,p_layer_type:$('layerType').value,p_file_path:path,p_description:$('layerDescription').value.trim(),p_feature_count:geo.features.length,p_file_size:f.size});$('layerName').value='';$('layerDescription').value='';$('layerFile').value='';await loadLayers();notice('layerStatus','✅ Слой загружен: '+geo.features.length+' объектов')}catch(e){notice('layerStatus','❌ '+e.message,false)}};
 $('refreshLayers').onclick=async()=>{try{await loadLayers();notice('layerStatus','✅ Список обновлён')}catch(e){notice('layerStatus','❌ '+e.message,false)}};
-
-/* BULK DELETE */
-function bulkOptions(){
-  const type=$('bulkDeleteType').value, r=$('bulkDeleteRegion'), sc=$('bulkDeleteScope');
-  r.innerHTML='<option value="">Все области</option>';
-  regions.forEach(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=x.name_ru||x.name||x.id;r.appendChild(o)});
-  sc.innerHTML='<option value="">Все</option>';
-  const rid=r.value;
-  if(type==='districts') districts.filter(x=>!rid||String(x.region_id)===String(rid)).forEach(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=x.name_ru||x.name||x.id;sc.appendChild(o)});
-  if(type==='cities') cities.filter(x=>!rid||String(x.region_id)===String(rid)).forEach(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=x.name_ru||x.name||x.id;sc.appendChild(o)});
-  if(type==='streets') streets.filter(x=>!rid||String(x.region_id)===String(rid)).forEach(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=(x.name_ru||x.name||x.id)+' · '+(x.city_name||'');sc.appendChild(o)});
-  if(type==='buildings') buildings.filter(x=>!rid||String(x.region_id)===String(rid)).forEach(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=(x.house_number||x.name||x.id)+' · '+(x.address||x.city_name||'');sc.appendChild(o)});
-}
-function bulkTargets(){
-  const type=$('bulkDeleteType').value,rid=$('bulkDeleteRegion').value,scope=$('bulkDeleteScope').value;
-  if(type==='regions') return {type,regions:regions.filter(x=>!rid||String(x.id)===String(rid)),districts:districts.filter(x=>!rid||String(x.region_id)===String(rid)),cities:cities.filter(x=>!rid||String(x.region_id)===String(rid)),streets:streets.filter(x=>!rid||String(x.region_id)===String(rid)),buildings:buildings.filter(x=>!rid||String(x.region_id)===String(rid))};
-  if(type==='districts') {const ds=districts.filter(x=>(!rid||String(x.region_id)===String(rid))&&(!scope||String(x.id)===String(scope))); const ids=new Set(ds.map(x=>String(x.id))); return {type,districts:ds,cities:cities.filter(x=>ids.has(String(x.district_id))),streets:streets.filter(x=>ids.has(String(x.district_id))),buildings:buildings.filter(x=>ids.has(String(x.district_id)))};}
-  if(type==='cities') {const cs=cities.filter(x=>(!rid||String(x.region_id)===String(rid))&&(!scope||String(x.id)===String(scope))); const ids=new Set(cs.map(x=>String(x.id))); return {type,cities:cs,streets:streets.filter(x=>ids.has(String(x.city_id))),buildings:buildings.filter(x=>ids.has(String(x.city_id)))};}
-  if(type==='streets') {const ss=streets.filter(x=>(!rid||String(x.region_id)===String(rid))&&(!scope||String(x.id)===String(scope))); const ids=new Set(ss.map(x=>String(x.id))); return {type,streets:ss,buildings:buildings.filter(x=>ids.has(String(x.street_id)))};}
-  return {type,buildings:buildings.filter(x=>(!rid||String(x.region_id)===String(rid))&&(!scope||String(x.id)===String(scope)))};
-}
-function bulkCount(t){return ['regions','districts','cities','streets','buildings'].reduce((n,k)=>n+(t[k]?.length||0),0)}
-function bulkSummary(t){return {области:t.regions?.length||0,районы:t.districts?.length||0,города:t.cities?.length||0,улицы:t.streets?.length||0,здания:t.buildings?.length||0,всего:bulkCount(t)}}
-async function bulkDeleteRun(t){
-  let done=0,failed=[];
-  const run=async(arr,fn)=>{for(const x of (arr||[])){try{await rpc(fn,{p_id:Number(x.id)});done++}catch(e){failed.push({тип:fn,id:x.id,имя:x.name_ru||x.name||x.house_number||'',ошибка:e.message})}}};
-  await run(t.buildings,'admin_delete_building');
-  await run(t.streets,'admin_delete_street');
-  await run(t.cities,'admin_delete_city');
-  await run(t.districts,'admin_delete_district');
-  await run(t.regions,'admin_delete_region');
-  return {done,failed};
-}
-$('bulkDeleteType').onchange=bulkOptions;
-$('bulkDeleteRegion').onchange=bulkOptions;
-$('previewBulkDelete').onclick=()=>{try{const t=bulkTargets(),sum=bulkSummary(t);$('bulkDeletePreview').classList.remove('hidden');$('bulkDeletePreview').textContent=JSON.stringify(sum,null,2);$('runBulkDelete').disabled=sum.всего===0;notice('bulkDeleteStatus',sum.всего?'⚠️ Будет удалено: '+sum.всего+' записей.':'ℹ️ Нечего удалять.',sum.всего>0)}catch(e){$('runBulkDelete').disabled=true;notice('bulkDeleteStatus','❌ '+e.message,false)}};
-$('runBulkDelete').onclick=async()=>{const t=bulkTargets(),sum=bulkSummary(t);if(!sum.всего)return;if(!confirm('ВНИМАНИЕ! Будет удалено '+sum.всего+' записей, включая зависимые объекты. Продолжить?'))return;$('runBulkDelete').disabled=true;try{const r=await bulkDeleteRun(t);await loadData();bulkOptions();$('bulkDeletePreview').textContent=JSON.stringify({...sum,удалено:r.done,ошибок:r.failed.length,детали_ошибок:r.failed.slice(0,100)},null,2);notice('bulkDeleteStatus',r.failed.length?'⚠️ Удалено: '+r.done+', ошибок: '+r.failed.length:'✅ Массовое удаление завершено. Удалено: '+r.done,r.failed.length===0)}catch(e){notice('bulkDeleteStatus','❌ '+e.message,false)}finally{$('runBulkDelete').disabled=false}};
-
-/* DIAGNOSTICS v24.1 — DATABASE + GEOMETRY + LAYERS + MAIN MAP */
-function diagRow(title,status,meta='',cls='diagOk'){
-  const e=document.createElement('div');e.className='diagItem '+cls;
-  e.innerHTML='<b>'+esc(title)+'</b><span class="diagMeta">'+esc(status)+(meta?' · '+esc(meta):'')+'</span>';
-  $('diagnosticsResults').appendChild(e);
-}
-function diagInfo(title,meta=''){diagRow(title,'ИНФОРМАЦИЯ',meta,'diagInfo')}
-function diagWarn(title,meta=''){diagRow(title,'ПРЕДУПРЕЖДЕНИЕ',meta,'diagWarn')}
-
-async function checkMainMapSource(){
-  const url=new URL('index.html',location.href).href;
-  const r=await fetch(url,{cache:'no-store'});
-  if(!r.ok)throw Error('index.html HTTP '+r.status);
-  const html=await r.text();
-  const required=[
-    ['streetsData','объявление streetsData'],
-    ['buildingsData','объявление buildingsData'],
-    ['refreshNaqshaMap','автоматическая синхронизация'],
-    ['reportMapStatus','канал ошибок карты'],
-    ['get_streets_admin','загрузка улиц из Supabase'],
-    ['get_buildings_admin','загрузка зданий из Supabase']
-  ];
-  const missing=required.filter(([needle])=>!html.includes(needle));
-  if(missing.length)throw Error('В index.html отсутствует: '+missing.map(x=>x[1]).join(', '));
-  return url;
-}
-
-async function checkMainMapRuntime(){
-  const url=new URL('index.html',location.href).href;
-  return await new Promise((resolve,reject)=>{
-    let done=false;
-    const frame=document.createElement('iframe');
-    frame.style.cssText='position:fixed;width:1px;height:1px;left:-10px;top:-10px;opacity:0;pointer-events:none;border:0;';
-    const cleanup=()=>{window.removeEventListener('message',onMessage);frame.remove();clearTimeout(timer)};
-    const finish=(fn,v)=>{if(done)return;done=true;cleanup();fn(v)};
-    const onMessage=e=>{
-      if(e.source!==frame.contentWindow)return;
-      const d=e.data||{};
-      if(d.source!=='naqsha-map')return;
-      if(d.type==='ready'||d.type==='sync')finish(resolve,'runtime '+d.type+(d.counts?' · '+JSON.stringify(d.counts):''));
-      if(d.type==='error')finish(reject,Error(d.message||'Основная карта сообщила ошибку'));
-    };
-    window.addEventListener('message',onMessage);
-    const timer=setTimeout(()=>finish(reject,Error('Основная карта не ответила за 15 секунд. Проверь опубликованный index.html и консоль браузера.')),15000);
-    frame.src=url+'?diag='+Date.now();
-    document.body.appendChild(frame);
-  });
-}
-
-async function runDiagnostics(){
-  const btn=$('runDiagnostics');btn.disabled=true;$('diagnosticsResults').innerHTML='';$('diagnosticsLog').classList.add('hidden');
-  const log=[];let errors=0,warns=0,infos=0;
-  const test=async(title,fn)=>{
-    try{const r=await fn();diagRow(title,'OK',r||'','diagOk');log.push('OK  '+title+(r?' — '+r:''));return true}
-    catch(e){errors++;diagRow(title,'ОШИБКА',e.message||String(e),'diagErr');log.push('ERR '+title+' — '+(e.message||String(e)));return false}
-  };
-  try{
-    await test('Подключение к Supabase',async()=>{
-      const user=await api('/auth/v1/user');
-      if(!user?.id)throw Error('Авторизованный пользователь не определён');
-      return 'API отвечает · '+(user.email||'сессия активна');
-    });
-
-    const checks=[
-      ['Области','get_regions_geojson',x=>(x.features||[])],
-      ['Районы','get_districts_geojson',x=>(x.features||[])],
-      ['Города','get_cities_geojson',x=>(x.features||[])],
-      ['Улицы','get_streets_admin',x=>Array.isArray(x)?x:[]],
-      ['Здания','get_buildings_admin',x=>Array.isArray(x)?x:[]]
-    ];
-    const counts={};
-    const rawData={};
-    for(const [label,fn,toFeatures] of checks){
-      await test(label,async()=>{
-        const x=await rpc(fn,{});const features=toFeatures(x);rawData[label]=features;
-        const n=features.length;counts[label]=n;return n+' объектов';
-      });
-    }
-
-    await test('Слои карты',async()=>{await loadLayers();return layers.length+' слоёв'});
-
-    for(const layer of layers){
-      await test('Слой: '+(layer.name||layer.id),async()=>{
-        if(!layer.file_path)throw Error('Нет file_path');
-        const url=SUPABASE_URL+'/storage/v1/object/public/map-layers/'+encodeURIComponent(layer.file_path).replace(/%2F/g,'/');
-        const r=await fetch(url,{cache:'no-store'});
-        if(!r.ok)throw Error('GeoJSON недоступен, HTTP '+r.status);
-        const geo=await r.json();
-        if(geo.type!=='FeatureCollection'||!Array.isArray(geo.features))throw Error('Неверный GeoJSON');
-        if(Number(layer.feature_count)!==geo.features.length)throw Error('Метаданные: '+layer.feature_count+', файл: '+geo.features.length);
-        const geometryCount=geo.features.filter(f=>f&&f.geometry&&Array.isArray(f.geometry.coordinates)&&f.geometry.coordinates.length).length;
-        const mapTypes=['regions','districts','cities','streets','buildings'];
-        if(layer.is_active && mapTypes.includes(String(layer.layer_type)) && geometryCount===0)
-          throw Error('Активный слой содержит 0 объектов с geometry');
-        return geo.features.length+' объектов · geometry '+geometryCount+' · '+(layer.is_active?'активен':'выключен');
-      });
-    }
-
-    const pairs=[
-      ['Области','regions',counts['Области']??regions.length],
-      ['Районы','districts',counts['Районы']??districts.length],
-      ['Города','cities',counts['Города']??cities.length],
-      ['Улицы','streets',counts['Улицы']??streets.length],
-      ['Здания','buildings',counts['Здания']??buildings.length]
-    ];
-    for(const [label,key,count] of pairs){
-      const active=layers.filter(x=>x.is_active&&x.layer_type===key);
-      if(active.length===0){infos++;diagInfo('Синхронизация: '+label,'активный слой пока не загружен; записи БД остаются источником данных');log.push('INFO '+label+' — активный слой отсутствует');continue;}
-      if(active.length>1){warns++;diagWarn('Синхронизация: '+label,'активных слоёв: '+active.length);log.push('WARN '+label+' — активных слоёв: '+active.length);}
-      const layer=active[0];const layerCount=Number(layer.feature_count)||0;
-      if(layerCount!==Number(count)){warns++;diagWarn('Синхронизация: '+label,'БД: '+count+' · слой: '+layerCount);log.push('WARN '+label+' — БД '+count+' · слой '+layerCount);}
-      else{diagRow('Синхронизация: '+label,'OK',count+' записей · слой '+layerCount,'diagOk');log.push('OK  Синхронизация: '+label+' — '+count);}
-    }
-
-    // Geometry-level synchronization: counts alone are not enough.
-    const geometryChecks={
-      'Области':rawData['Области'],
-      'Районы':rawData['Районы'],
-      'Города':rawData['Города']
-    };
-    for(const [label,dbFeatures] of Object.entries(geometryChecks)){
-      const key=label==='Области'?'regions':label==='Районы'?'districts':'cities';
-      const active=layers.find(x=>x.is_active&&x.layer_type===key);
-      if(!active) continue;
-      try{
-        const url=SUPABASE_URL+'/storage/v1/object/public/map-layers/'+encodeURIComponent(active.file_path).replace(/%2F/g,'/');
-        const r=await fetch(url,{cache:'no-store'}); if(!r.ok) throw Error('HTTP '+r.status);
-        const geo=await r.json();
-        const layerGeometry=geo.features.filter(f=>f&&f.geometry&&Array.isArray(f.geometry.coordinates)&&f.geometry.coordinates.length).length;
-        const dbGeometry=(dbFeatures||[]).filter(f=>f&&f.geometry&&Array.isArray(f.geometry.coordinates)&&f.geometry.coordinates.length).length;
-        if(layerGeometry===0) { errors++; diagRow('Геометрия: '+label,'ОШИБКА','активный слой не содержит geometry','diagErr'); log.push('ERR Геометрия '+label+' — активный слой 0 geometry'); }
-        else if(layerGeometry!==geo.features.length) { warns++; diagWarn('Геометрия: '+label,'слой '+layerGeometry+' из '+geo.features.length+' · без geometry '+(geo.features.length-layerGeometry)); log.push('WARN Геометрия '+label+' — '+layerGeometry+'/'+geo.features.length); }
-        else diagRow('Геометрия: '+label,'OK','слой '+layerGeometry+' объектов','diagOk');
-
-        if(label==='Районы') {
-          const dbCount=(dbFeatures||[]).length;
-          const layerCount=geo.features.length;
-          if(dbCount!==layerCount) {
-            const missing=Math.max(0,dbCount-layerCount);
-            warns++;
-            diagWarn('Покрытие районов','БД '+dbCount+' · геометрический слой '+layerCount+' · потенциально отсутствует '+missing+' геометрий');
-            log.push('WARN Покрытие районов — БД '+dbCount+' · слой '+layerCount+' · потенциально отсутствует '+missing);
-          }
-        }
-      }catch(e){ errors++; diagRow('Геометрия: '+label,'ОШИБКА',e.message,'diagErr'); log.push('ERR Геометрия '+label+' — '+e.message); }
-    }
-
-    await test('Основная карта: исходный код',checkMainMapSource);
-    await test('Основная карта: runtime и синхронизация',requestMainMapRefresh);
-
-    const summary='Полная проверка: '+errors+' ошибок, '+warns+' предупреждений'+(infos?' · '+infos+' информационных':'');
-    notice('diagnosticsStatus',errors?('❌ '+summary):warns?('⚠️ '+summary):('✅ '+summary),errors===0&&warns===0);
-  }catch(e){
-    errors++;notice('diagnosticsStatus','❌ Тестер остановлен: '+e.message,false);log.push('ERR '+(e.message||String(e)));
-  }
-  $('diagnosticsLog').textContent=log.join('\n');$('diagnosticsLog').classList.remove('hidden');btn.disabled=false;
-}
-$('runDiagnostics').onclick=runDiagnostics;
-
-/* MAIN MAP SYNC FROM ADMIN */
-async function requestMainMapRefresh(){
-  const url=new URL('index.html',location.href).href;
-  return await new Promise((resolve,reject)=>{
-    let done=false;
-    const frame=document.createElement('iframe');
-    frame.style.cssText='position:fixed;width:1px;height:1px;left:-20px;top:-20px;opacity:0;pointer-events:none;border:0;';
-    const cleanup=()=>{window.removeEventListener('message',onMessage);frame.remove();clearTimeout(timer)};
-    const finish=(fn,v)=>{if(done)return;done=true;cleanup();fn(v)};
-    const onMessage=e=>{if(e.source!==frame.contentWindow)return;const d=e.data||{};if(d.source!=='naqsha-map')return;if(d.type==='ready'||d.type==='sync')finish(resolve,d.counts||{});if(d.type==='error')finish(reject,Error(d.message||'Основная карта сообщила ошибку'))};
-    window.addEventListener('message',onMessage);
-    const timer=setTimeout(()=>finish(reject,Error('Основная карта не ответила за 15 секунд')),15000);
-    frame.src=url+'?diag='+Date.now();
-    document.body.appendChild(frame);
-    setTimeout(()=>{try{frame.contentWindow.postMessage({source:'naqsha-admin',type:'refresh'},'*')}catch(e){}},800);
-  });
-}
 
 /* TABS */
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('main>section.card').forEach(x=>x.classList.add('hidden'));b.classList.add('active');$(b.dataset.tab+'Tab').classList.remove('hidden')});
@@ -1164,6 +998,9 @@ async function openAdmin(){
  try{await loadData()}catch(e){notice('globalStatus','❌ '+e.message,false)}
 }
 (async()=>{try{session=JSON.parse(localStorage.getItem('naqsha_admin_session')||'null')}catch{session=null}if(session?.access_token)await openAdmin()})();
+</script>
+<script>
+async function naqshaExportAll(){try{const payload={exported_at:new Date().toISOString(),source:"Naqsha Admin Panel",regions:typeof regions!=="undefined"?regions:[],districts:typeof districts!=="undefined"?districts:[],cities:typeof cities!=="undefined"?cities:[],streets:typeof streets!=="undefined"?streets:[],buildings:typeof buildings!=="undefined"?buildings:[],layers:typeof layers!=="undefined"?layers:[]};const dl=(n,x)=>{const u=URL.createObjectURL(new Blob([JSON.stringify(x,null,2)],{type:"application/json;charset=utf-8"}));const a=document.createElement("a");a.href=u;a.download=n;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000)};dl("naqsha-export-all.json",payload);for(const [n,x] of Object.entries({regions:payload.regions,districts:payload.districts,cities:payload.cities,streets:payload.streets,buildings:payload.buildings,layers:payload.layers})){await new Promise(r=>setTimeout(r,200));dl("naqsha-"+n+".json",x)}if(typeof notice==="function")notice("globalStatus","✅ Экспорт завершён: скачаны все разделы Naqsha.",true)}catch(e){if(typeof notice==="function")notice("globalStatus","❌ Ошибка экспорта: "+e.message,false);else alert("Ошибка экспорта: "+e.message)}}document.addEventListener("DOMContentLoaded",()=>{const b=document.getElementById("downloadAll");if(b)b.onclick=naqshaExportAll});
 </script>
 </body>
 </html>
