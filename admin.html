@@ -62,8 +62,13 @@ pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-w
 <div class="stat"><b id="buildingCount">—</b><span>Зданий</span></div>
 <div class="stat"><b id="layerCount">—</b><span>Слоёв</span></div>
 </div>
-<div class="buttons"><span class="small" id="userEmail" style="padding:11px 0"></span><button id="refresh" class="gray">🔄 Обновить</button><button id="downloadAll" class="primary">⬇️ Скачать всё</button><button id="logout" class="gray">Выйти</button></div>
+<div class="buttons"><span class="small" id="userEmail" style="padding:11px 0"></span><button id="refresh" class="gray">🔄 Обновить</button><button id="downloadMenuOpen" class="primary">⬇️ Скачать</button><button id="logout" class="gray">Выйти</button></div>
 <div id="globalStatus" class="notice"></div>
+<div class="buttons" id="adminToolsRow" style="margin-top:8px">
+  <button id="diagnosticsOpen" class="gray">🔍 Диагностика</button>
+  <button id="bulkDeleteOpen" class="danger">🗑️ Массовое удаление</button>
+</div>
+
 </section>
 
 <div class="tabs">
@@ -213,6 +218,71 @@ pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-w
     <pre id="importPreview" class="hidden"></pre>
   </div>
 </div>
+
+<!-- V26 TOOLS -->
+<div id="downloadModal" class="importModal hidden">
+  <div class="importBox">
+    <div class="sectionHead">
+      <div><h2>⬇️ Скачать данные</h2><div class="small">Выберите, что выгрузить из текущих данных админки.</div></div>
+      <button class="gray" data-close-modal="downloadModal">✕</button>
+    </div>
+    <div class="buttons">
+      <button class="gray exportOne" data-export="regions">🗺️ Области</button>
+      <button class="gray exportOne" data-export="districts">📍 Районы</button>
+      <button class="gray exportOne" data-export="cities">🏙️ Города</button>
+      <button class="gray exportOne" data-export="streets">🛣️ Улицы</button>
+      <button class="gray exportOne" data-export="buildings">🏠 Здания</button>
+      <button class="gray exportOne" data-export="layers">🧩 Слои</button>
+      <button class="primary" id="exportEverything">📦 Скачать всё</button>
+    </div>
+    <div id="downloadStatus" class="notice"></div>
+  </div>
+</div>
+
+<div id="diagnosticsModal" class="importModal hidden">
+  <div class="importBox">
+    <div class="sectionHead">
+      <div><h2>🔍 Диагностика Naqsha</h2><div class="small">Проверка БД, слоёв и синхронизации.</div></div>
+      <button class="gray" data-close-modal="diagnosticsModal">✕</button>
+    </div>
+    <div class="buttons">
+      <button class="primary" id="runDiagnosticsV26">🔎 Полная проверка</button>
+    </div>
+    <pre id="diagnosticsV26Output">{}</pre>
+  </div>
+</div>
+
+<div id="bulkDeleteModal" class="importModal hidden">
+  <div class="importBox">
+    <div class="sectionHead">
+      <div><h2>🗑️ Массовое удаление</h2><div class="small">Удаляйте только выбранный тип данных. Сначала выполняется предварительная проверка.</div></div>
+      <button class="gray" data-close-modal="bulkDeleteModal">✕</button>
+    </div>
+    <div class="grid">
+      <div>
+        <label>Что удалить</label>
+        <select id="bulkDeleteType">
+          <option value="regions">Области</option>
+          <option value="districts">Районы</option>
+          <option value="cities">Города</option>
+          <option value="streets">Улицы</option>
+          <option value="buildings">Здания</option>
+        </select>
+      </div>
+      <div>
+        <label>Область</label>
+        <select id="bulkDeleteRegion"><option value="">Все области</option></select>
+      </div>
+    </div>
+    <div class="buttons">
+      <button class="gray" id="bulkDeletePreview">🔎 Проверить</button>
+      <button class="danger" id="bulkDeleteRun" disabled>🗑️ Удалить выбранные</button>
+    </div>
+    <div id="bulkDeleteStatus" class="notice"></div>
+    <pre id="bulkDeletePreviewOut">{}</pre>
+  </div>
+</div>
+
 </main></div>
 
 <script>
@@ -1002,5 +1072,177 @@ async function openAdmin(){
 <script>
 async function naqshaExportAll(){try{const payload={exported_at:new Date().toISOString(),source:"Naqsha Admin Panel",regions:typeof regions!=="undefined"?regions:[],districts:typeof districts!=="undefined"?districts:[],cities:typeof cities!=="undefined"?cities:[],streets:typeof streets!=="undefined"?streets:[],buildings:typeof buildings!=="undefined"?buildings:[],layers:typeof layers!=="undefined"?layers:[]};const dl=(n,x)=>{const u=URL.createObjectURL(new Blob([JSON.stringify(x,null,2)],{type:"application/json;charset=utf-8"}));const a=document.createElement("a");a.href=u;a.download=n;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000)};dl("naqsha-export-all.json",payload);for(const [n,x] of Object.entries({regions:payload.regions,districts:payload.districts,cities:payload.cities,streets:payload.streets,buildings:payload.buildings,layers:payload.layers})){await new Promise(r=>setTimeout(r,200));dl("naqsha-"+n+".json",x)}if(typeof notice==="function")notice("globalStatus","✅ Экспорт завершён: скачаны все разделы Naqsha.",true)}catch(e){if(typeof notice==="function")notice("globalStatus","❌ Ошибка экспорта: "+e.message,false);else alert("Ошибка экспорта: "+e.message)}}document.addEventListener("DOMContentLoaded",()=>{const b=document.getElementById("downloadAll");if(b)b.onclick=naqshaExportAll});
 </script>
+
+<script>
+/* NAQSHA V26 — restore Diagnostics + Bulk Delete + selectable Export */
+(function(){
+  const byId = id => document.getElementById(id);
+  const show = id => byId(id)?.classList.remove('hidden');
+  const hide = id => byId(id)?.classList.add('hidden');
+
+  function downloadJson(name, data){
+    const blob = new Blob([JSON.stringify(data ?? [], null, 2)], {type:'application/json;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 1000);
+  }
+
+  function currentExportData(type){
+    const map = {
+      regions: window.regions,
+      districts: window.districts,
+      cities: window.cities,
+      streets: window.streets,
+      buildings: window.buildings,
+      layers: window.layers
+    };
+    return map[type] ?? [];
+  }
+
+  function openModal(id){ show(id); }
+  function closeModal(id){ hide(id); }
+
+  document.addEventListener('click', e=>{
+    const close = e.target.closest('[data-close-modal]');
+    if(close) closeModal(close.dataset.closeModal);
+  });
+
+  byId('downloadMenuOpen')?.addEventListener('click', ()=>openModal('downloadModal'));
+  byId('diagnosticsOpen')?.addEventListener('click', ()=>openModal('diagnosticsModal'));
+  byId('bulkDeleteOpen')?.addEventListener('click', ()=>{
+    const sel=byId('bulkDeleteRegion');
+    if(sel && typeof regions!=='undefined'){
+      sel.innerHTML='<option value="">Все области</option>';
+      regions.forEach(r=>{
+        const o=document.createElement('option');
+        o.value=r.id; o.textContent=r.name_ru||r.name||r.id; sel.appendChild(o);
+      });
+    }
+    openModal('bulkDeleteModal');
+  });
+
+  document.querySelectorAll('.exportOne').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const type=btn.dataset.export;
+      downloadJson('naqsha-'+type+'.json', currentExportData(type));
+      if(typeof notice==='function') notice('downloadStatus','✅ Скачано: '+type+'.json');
+    });
+  });
+
+  byId('exportEverything')?.addEventListener('click', ()=>{
+    const all={
+      exported_at:new Date().toISOString(),
+      regions:currentExportData('regions'),
+      districts:currentExportData('districts'),
+      cities:currentExportData('cities'),
+      streets:currentExportData('streets'),
+      buildings:currentExportData('buildings'),
+      layers:currentExportData('layers')
+    };
+    downloadJson('naqsha-export-all.json', all);
+    if(typeof notice==='function') notice('downloadStatus','✅ Скачан полный экспорт Naqsha.');
+  });
+
+  async function diagnostics(){
+    const out=byId('diagnosticsV26Output');
+    const result={
+      timestamp:new Date().toISOString(),
+      database:{
+        regions:typeof regions!=='undefined'?regions.length:null,
+        districts:typeof districts!=='undefined'?districts.length:null,
+        cities:typeof cities!=='undefined'?cities.length:null,
+        streets:typeof streets!=='undefined'?streets.length:null,
+        buildings:typeof buildings!=='undefined'?buildings.length:null,
+        layers:typeof layers!=='undefined'?layers.length:null
+      },
+      layers:[],
+      warnings:[]
+    };
+
+    if(typeof layers!=='undefined'){
+      result.layers=layers.map(x=>({
+        id:x.id,name:x.name,type:x.layer_type,
+        active:!!x.is_active,objects:x.feature_count??null,file_size:x.file_size??null
+      }));
+      const districtLayers=layers.filter(x=>String(x.layer_type).toLowerCase()==='districts');
+      const activeDistrict=districtLayers.find(x=>x.is_active);
+      if(districtLayers.length>1) result.warnings.push('Найдено несколько слоёв районов.');
+      if(activeDistrict && Number(activeDistrict.feature_count||0)===0)
+        result.warnings.push('Активный слой районов содержит 0 объектов.');
+    }
+
+    // Check presence of main-map synchronization hooks if the page exposes them.
+    result.main_map_hooks={
+      refreshNaqshaMap:typeof window.refreshNaqshaMap==='function',
+      reportMapStatus:typeof window.reportMapStatus==='function',
+      streetsData:Array.isArray(window.streetsData),
+      buildingsData:Array.isArray(window.buildingsData)
+    };
+
+    out.textContent=JSON.stringify(result,null,2);
+  }
+  byId('runDiagnosticsV26')?.addEventListener('click', diagnostics);
+
+  let bulkPreviewRows=[];
+  function getBulkRows(){
+    const type=byId('bulkDeleteType').value;
+    const rid=byId('bulkDeleteRegion').value;
+    const map={regions, districts, cities, streets, buildings};
+    const arr=map[type]||[];
+    return rid ? arr.filter(x=>String(x.region_id||'')===String(rid)) : arr.slice();
+  }
+
+  byId('bulkDeletePreview')?.addEventListener('click', ()=>{
+    bulkPreviewRows=getBulkRows();
+    const type=byId('bulkDeleteType').value;
+    byId('bulkDeletePreviewOut').textContent=JSON.stringify({
+      type,region_id:byId('bulkDeleteRegion').value||'ALL',
+      count:bulkPreviewRows.length,
+      sample:bulkPreviewRows.slice(0,10)
+    },null,2);
+    byId('bulkDeleteRun').disabled=bulkPreviewRows.length===0;
+    if(typeof notice==='function') notice('bulkDeleteStatus',
+      bulkPreviewRows.length ? '⚠️ Будет удалено: '+bulkPreviewRows.length : 'ℹ️ Нечего удалять.',
+      bulkPreviewRows.length>0);
+  });
+
+  byId('bulkDeleteRun')?.addEventListener('click', async()=>{
+    const type=byId('bulkDeleteType').value;
+    if(!bulkPreviewRows.length) return;
+    if(!confirm('Удалить '+bulkPreviewRows.length+' записей? Это действие нельзя отменить.')) return;
+    byId('bulkDeleteRun').disabled=true;
+    const rpcNames={
+      regions:'admin_delete_region',
+      districts:'admin_delete_district',
+      cities:'admin_delete_city',
+      streets:'admin_delete_street',
+      buildings:'admin_delete_building'
+    };
+    let ok=0,fail=[];
+    for(const x of bulkPreviewRows){
+      try{
+        const id=(type==='cities'||type==='streets'||type==='buildings')?Number(x.id):x.id;
+        await rpc(rpcNames[type],{p_id:id});
+        ok++;
+      }catch(err){ fail.push({id:x.id,error:err.message}); }
+    }
+    if(typeof loadData==='function'){
+      try{await loadData()}catch{}
+    }
+    byId('bulkDeletePreviewOut').textContent=JSON.stringify({type,deleted:ok,errors:fail},null,2);
+    if(typeof notice==='function') notice('bulkDeleteStatus',
+      fail.length ? '⚠️ Удалено '+ok+', ошибок '+fail.length : '✅ Удалено '+ok,
+      !fail.length);
+    bulkPreviewRows=[];
+  });
+
+  [byId('downloadModal'),byId('diagnosticsModal'),byId('bulkDeleteModal')].forEach(m=>{
+    m?.addEventListener('click',e=>{ if(e.target===m) hide(m.id); });
+  });
+})();
+</script>
+
 </body>
 </html>
