@@ -92,7 +92,6 @@ pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-w
 <button class="tab" data-tab="streets">🛣️ Улицы</button>
 <button class="tab" data-tab="buildings">🏠 Здания / дома</button>
 <button class="tab" data-tab="layers">🧩 Слои</button>
-<button class="tab" data-tab="export">⬇️ Скачать</button>
 <button class="tab" data-tab="diagnostics">🧪 Диагностика</button>
 <button class="tab" data-tab="bulkDelete">🗑️ Массовое удаление</button>
 </div>
@@ -103,21 +102,6 @@ pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-w
 <div id="diagnosticsStatus" class="notice"></div>
 <div id="diagnosticsResults" class="diagList"></div>
 <pre id="diagnosticsLog" class="hidden"></pre>
-</section>
-
-<!-- EXPORT -->
-<section id="exportTab" class="card hidden">
-<div class="sectionHead"><div><h2>⬇️ Скачать данные</h2><div class="small">Здесь можно скачать именно те данные, которые сейчас находятся в базе Naqsha, а также оригинальные GeoJSON-файлы загруженных слоёв. Это удобно для проверки и передачи файла обратно в разработку.</div></div><button id="refreshExport" class="gray">🔄 Обновить</button></div>
-<div class="grid3" id="exportDataButtons"></div>
-<div class="card" style="margin:15px 0 0;background:#f8fafc">
-<h3>📦 Полный пакет данных</h3>
-<div class="small" style="margin-bottom:10px">JSON с текущими записями областей, районов, городов, улиц и зданий плюс список загруженных слоёв. GeoJSON-файлы слоёв скачиваются отдельно ниже без изменения содержимого.</div>
-<div class="actions"><button id="downloadAllJson" class="primary">⬇️ Скачать всё JSON</button></div>
-</div>
-<h3 style="margin-top:20px">🧩 Загруженные GeoJSON-слои</h3>
-<div class="small" style="margin-bottom:10px">Скачивание идёт непосредственно из Storage. Файл не преобразуется и не пересохраняется — можно получить именно тот GeoJSON, который был загружен в админку.</div>
-<div id="exportLayerList" class="list"></div>
-<div id="exportStatus" class="notice"></div>
 </section>
 
 <!-- REGIONS -->
@@ -320,7 +304,7 @@ async function loadData(){
  regions=(r.features||[]).map(parseFeature);districts=(d.features||[]).map(parseFeature);cities=(c.features||[]).map(parseFeature);
  streets=(Array.isArray(s)?s:[]).map(x=>parseFeature({properties:x}));buildings=(Array.isArray(b)?b:[]).map(x=>parseFeature({properties:x}));
  $('regionCount').textContent=regions.length;$('districtCount').textContent=districts.length;$('cityCount').textContent=cities.length;$('streetCount').textContent=streets.length;$('buildingCount').textContent=buildings.length;
- fillAllSelects();renderAll();bulkOptions();await loadLayers();renderExport();$('preview').textContent=JSON.stringify({regions:regions.length,districts:districts.length,cities:cities.length,streets:streets.length,buildings:buildings.length,layers:layers.length},null,2);
+ fillAllSelects();renderAll();bulkOptions();await loadLayers();$('preview').textContent=JSON.stringify({regions:regions.length,districts:districts.length,cities:cities.length,streets:streets.length,buildings:buildings.length,layers:layers.length},null,2);
 }
 
 function setOptions(id,items,placeholder,selected=''){
@@ -896,49 +880,55 @@ $('downloadTemplate').onclick=()=>{
  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='naqsha-'+universalImportType+'-template.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 };
 
-/* EXPORT v25 — download current DB data and original layer files */
-function downloadBlob(name,blob){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500)}
-function downloadText(name,text,type='application/json;charset=utf-8'){downloadBlob(name,new Blob([text],{type}))}
-function csvCell(v){const s=String(v??'');return '"'+s.replace(/"/g,'""')+'"'}
-function downloadCSV(name,rows){
- const arr=Array.isArray(rows)?rows:[];
- const keys=[...new Set(arr.flatMap(x=>Object.keys(x||{})))];
- const lines=[keys.map(csvCell).join(',')];
- arr.forEach(x=>lines.push(keys.map(k=>csvCell(x?.[k])).join(',')));
- downloadText(name,'\uFEFF'+lines.join('\n'),'text/csv;charset=utf-8');
-}
-function exportRowsFor(type){if(type==='regions')return regions;if(type==='districts')return districts;if(type==='cities')return cities;if(type==='streets')return streets;if(type==='buildings')return buildings;return []}
-function renderExportDataButtons(){
- const box=$('exportDataButtons');if(!box)return;box.innerHTML='';
- const defs=[['regions','🗺️ Области'],['districts','📍 Районы'],['cities','🏙️ Города'],['streets','🛣️ Улицы'],['buildings','🏠 Здания']];
- defs.forEach(([type,label])=>{const wrap=document.createElement('div');wrap.className='card';wrap.style.cssText='margin:0;padding:12px;background:#f8fafc';wrap.innerHTML='<b>'+label+'</b><div class="small" style="margin:5px 0 9px">'+exportRowsFor(type).length+' записей</div>';const actions=document.createElement('div');actions.className='actions';const j=document.createElement('button');j.className='gray';j.textContent='⬇️ JSON';j.onclick=()=>downloadText('naqsha-'+type+'-db.json',JSON.stringify(exportRowsFor(type),null,2));const c=document.createElement('button');c.className='gray';c.textContent='⬇️ CSV';c.onclick=()=>downloadCSV('naqsha-'+type+'-db.csv',exportRowsFor(type));actions.append(j,c);wrap.appendChild(actions);box.appendChild(wrap)});
-}
-async function downloadLayerFile(layer){
- try{
-  notice('exportStatus','⏳ Скачиваю слой: '+(layer.name||layer.id)+'...');
-  if(!layer.file_path)throw Error('У слоя отсутствует file_path');
-  const url=SUPABASE_URL+'/storage/v1/object/public/map-layers/'+encodeURIComponent(layer.file_path).replace(/%2F/g,'/');
-  const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw Error('Storage HTTP '+r.status);
-  const blob=await r.blob();
-  const safe=(layer.file_path.split('/').pop()||('layer-'+layer.id+'.geojson')).replace(/[^a-zA-Z0-9._-]/g,'_');
-  downloadBlob(safe,blob);notice('exportStatus','✅ Слой скачан: '+safe);
- }catch(e){notice('exportStatus','❌ '+e.message,false)}
-}
-function renderExportLayers(){
- const box=$('exportLayerList');if(!box)return;box.innerHTML='';
- if(!layers.length){box.innerHTML='<div class="item"><small>Загруженных слоёв пока нет.</small></div>';return}
- layers.forEach(x=>{const e=document.createElement('div');e.className='item';e.style.cursor='default';e.innerHTML='<b>'+esc(x.name||('Слой '+x.id))+'</b><div><span class="badge">'+esc(x.layer_type||'other')+'</span><span class="badge">'+(x.feature_count??'—')+' объектов</span><span class="badge">'+formatBytes(x.file_size)+'</span><span class="badge '+(x.is_active?'on':'off')+'">'+(x.is_active?'✅ Активен':'⏸️ Выключен')+'</span></div>'+(x.file_path?'<small>'+esc(x.file_path)+'</small>':'');const a=document.createElement('div');a.className='actions';const b=document.createElement('button');b.className='gray';b.textContent='⬇️ Скачать GeoJSON';b.onclick=()=>downloadLayerFile(x);a.appendChild(b);e.appendChild(a);box.appendChild(e)})
-}
-function renderExport(){renderExportDataButtons();renderExportLayers()}
-$('refreshExport')?.addEventListener('click',async()=>{try{await loadData();renderExport();notice('exportStatus','✅ Данные обновлены')}catch(e){notice('exportStatus','❌ '+e.message,false)}});
-$('downloadAllJson')?.addEventListener('click',()=>{const payload={exported_at:new Date().toISOString(),source:'Naqsha Admin',regions,districts,cities,streets,buildings,layers};downloadText('naqsha-all-data.json',JSON.stringify(payload,null,2));notice('exportStatus','✅ Полный JSON скачан')});
-
-/* LAYERS v24 — geometry-safe */
+/* LAYERS v24.1 — canonical geometry sync */
 function formatBytes(n){if(n==null)return'—';if(n<1024)return n+' B';if(n<1048576)return(n/1024).toFixed(1)+' KB';return(n/1048576).toFixed(2)+' MB'}
 async function loadLayers(){
  try{
-  layers=await api('/rest/v1/map_layers?select=*&order=id.asc');layers=Array.isArray(layers)?layers:[];$('layerCount').textContent=layers.length;renderLayers();if(document.getElementById('exportLayerList'))renderExportLayers();
+  layers=await api('/rest/v1/map_layers?select=*&order=id.asc');layers=Array.isArray(layers)?layers:[];
+  await normalizeCanonicalLayers();
+  $('layerCount').textContent=layers.length;renderLayers();
  }catch(e){layers=[];$('layerCount').textContent='—';throw e}
+}
+
+async function readLayerGeo(layer){
+  if(!layer?.file_path) return null;
+  const url=SUPABASE_URL+'/storage/v1/object/public/map-layers/'+encodeURIComponent(layer.file_path).replace(/%2F/g,'/');
+  const r=await fetch(url,{cache:'no-store'});
+  if(!r.ok) return null;
+  const geo=await r.json();
+  if(geo?.type!=='FeatureCollection'||!Array.isArray(geo.features)) return null;
+  const geometryCount=geo.features.filter(f=>f&&f.geometry&&Array.isArray(f.geometry.coordinates)&&f.geometry.coordinates.length).length;
+  return {geo,geometryCount};
+}
+
+/* One canonical active layer per map type. If duplicates exist, keep the
+   richest valid layer (geometry first, then feature count) and deactivate
+   the rest. This fixes the old empty active districts layer. */
+async function normalizeCanonicalLayers(){
+  const types=['regions','districts','cities','streets','buildings'];
+  for(const type of types){
+    const same=layers.filter(x=>String(x.layer_type)===type);
+    if(!same.length) continue;
+    const scored=[];
+    for(const layer of same){
+      const info=await readLayerGeo(layer);
+      scored.push({layer,geometryCount:info?.geometryCount||0,featureCount:info?.geo?.features?.length||Number(layer.feature_count)||0});
+    }
+    const best=scored.slice().sort((a,b)=>b.geometryCount-a.geometryCount||b.featureCount-a.featureCount||Number(b.layer.id)-Number(a.layer.id))[0];
+    if(!best) continue;
+    const active=same.filter(x=>x.is_active);
+    const needsCanonical=active.length!==1 || active[0].id!==best.layer.id;
+    if(needsCanonical){
+      for(const x of same){
+        const should=Number(x.id)===Number(best.layer.id);
+        if(Boolean(x.is_active)!==should){
+          await rpc('admin_update_map_layer',{p_id:x.id,p_name:x.name,p_layer_type:x.layer_type,p_description:x.description||'',p_feature_count:x.feature_count,p_file_size:x.file_size,p_is_active:should});
+        }
+      }
+      layers=await api('/rest/v1/map_layers?select=*&order=id.asc');
+      layers=Array.isArray(layers)?layers:[];
+    }
+  }
 }
 function renderLayers(){
  const l=$('layerList');l.innerHTML='';if(!layers.length){l.innerHTML='<div class="item"><small>Слоёв пока нет — это нормально.</small></div>';return}
@@ -987,7 +977,7 @@ $('bulkDeleteRegion').onchange=bulkOptions;
 $('previewBulkDelete').onclick=()=>{try{const t=bulkTargets(),sum=bulkSummary(t);$('bulkDeletePreview').classList.remove('hidden');$('bulkDeletePreview').textContent=JSON.stringify(sum,null,2);$('runBulkDelete').disabled=sum.всего===0;notice('bulkDeleteStatus',sum.всего?'⚠️ Будет удалено: '+sum.всего+' записей.':'ℹ️ Нечего удалять.',sum.всего>0)}catch(e){$('runBulkDelete').disabled=true;notice('bulkDeleteStatus','❌ '+e.message,false)}};
 $('runBulkDelete').onclick=async()=>{const t=bulkTargets(),sum=bulkSummary(t);if(!sum.всего)return;if(!confirm('ВНИМАНИЕ! Будет удалено '+sum.всего+' записей, включая зависимые объекты. Продолжить?'))return;$('runBulkDelete').disabled=true;try{const r=await bulkDeleteRun(t);await loadData();bulkOptions();$('bulkDeletePreview').textContent=JSON.stringify({...sum,удалено:r.done,ошибок:r.failed.length,детали_ошибок:r.failed.slice(0,100)},null,2);notice('bulkDeleteStatus',r.failed.length?'⚠️ Удалено: '+r.done+', ошибок: '+r.failed.length:'✅ Массовое удаление завершено. Удалено: '+r.done,r.failed.length===0)}catch(e){notice('bulkDeleteStatus','❌ '+e.message,false)}finally{$('runBulkDelete').disabled=false}};
 
-/* DIAGNOSTICS v24 — DATABASE + GEOMETRY + LAYERS + MAIN MAP */
+/* DIAGNOSTICS v24.1 — DATABASE + GEOMETRY + LAYERS + MAIN MAP */
 function diagRow(title,status,meta='',cls='diagOk'){
   const e=document.createElement('div');e.className='diagItem '+cls;
   e.innerHTML='<b>'+esc(title)+'</b><span class="diagMeta">'+esc(status)+(meta?' · '+esc(meta):'')+'</span>';
@@ -1081,8 +1071,6 @@ async function runDiagnostics(){
         const mapTypes=['regions','districts','cities','streets','buildings'];
         if(layer.is_active && mapTypes.includes(String(layer.layer_type)) && geometryCount===0)
           throw Error('Активный слой содержит 0 объектов с geometry');
-        if(layer.is_active && mapTypes.includes(String(layer.layer_type)) && geometryCount<geo.features.length)
-          throw Error('Активный слой неполный: geometry '+geometryCount+' из '+geo.features.length);
         return geo.features.length+' объектов · geometry '+geometryCount+' · '+(layer.is_active?'активен':'выключен');
       });
     }
@@ -1119,9 +1107,9 @@ async function runDiagnostics(){
         const geo=await r.json();
         const layerGeometry=geo.features.filter(f=>f&&f.geometry&&Array.isArray(f.geometry.coordinates)&&f.geometry.coordinates.length).length;
         const dbGeometry=(dbFeatures||[]).filter(f=>f&&f.geometry&&Array.isArray(f.geometry.coordinates)&&f.geometry.coordinates.length).length;
-        if(layerGeometry===0) { errors++; diagRow('Геометрия: '+label,'ОШИБКА','слой 0 geometry · БД '+dbGeometry+' geometry','diagErr'); log.push('ERR Геометрия '+label+' — слой 0 geometry · БД '+dbGeometry); }
-        else if(layerGeometry!==geo.features.length) { warns++; diagWarn('Геометрия: '+label,'слой '+layerGeometry+' из '+geo.features.length+' · БД '+dbGeometry); log.push('WARN Геометрия '+label+' — слой '+layerGeometry+'/'+geo.features.length+' · БД '+dbGeometry); }
-        else diagRow('Геометрия: '+label,'OK','слой '+layerGeometry+' · БД '+dbGeometry,'diagOk');
+        if(layerGeometry===0) { errors++; diagRow('Геометрия: '+label,'ОШИБКА','активный слой не содержит geometry','diagErr'); log.push('ERR Геометрия '+label+' — активный слой 0 geometry'); }
+        else if(layerGeometry!==geo.features.length) { warns++; diagWarn('Геометрия: '+label,'слой '+layerGeometry+' из '+geo.features.length+' · без geometry '+(geo.features.length-layerGeometry)); log.push('WARN Геометрия '+label+' — '+layerGeometry+'/'+geo.features.length); }
+        else diagRow('Геометрия: '+label,'OK','слой '+layerGeometry+' объектов','diagOk');
       }catch(e){ errors++; diagRow('Геометрия: '+label,'ОШИБКА',e.message,'diagErr'); log.push('ERR Геометрия '+label+' — '+e.message); }
     }
 
