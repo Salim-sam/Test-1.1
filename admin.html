@@ -133,7 +133,7 @@ pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-w
     области, обязательные языки и покажет результат.
   </div>
   <label>Файл городов</label>
-  <input id="cityImportFile" type="file" accept=".csv,.json,text/csv,application/json">
+  <input id="cityImportFile" type="file" accept=".csv,.json,.geojson,text/csv,application/json,application/geo+json">
   <div id="cityImportInfo" class="small" style="margin-top:7px">Формат CSV: id,name,name_ru,name_uz,name_uz_cy,region_id,district_id,population,description (name = EN)</div>
   <div class="actions">
     <button id="previewCityImport" class="gray">🔎 Проверить файл</button>
@@ -217,11 +217,11 @@ pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-w
       </div>
       <div>
         <label>Файл</label>
-        <input id="importFile" type="file" accept=".csv,.json,text/csv,application/json">
+        <input id="importFile" type="file" accept=".csv,.json,.geojson,text/csv,application/json,application/geo+json">
       </div>
     </div>
     <div class="small" style="margin-top:8px">
-      CSV должен иметь строку заголовков. JSON — массив объектов. Сначала выполняется полная проверка, затем запись. Для районов используется область + все языки + нормализация вариантов написания. Очень близкие варианты проверяются отдельно; сомнительные записи не импортируются автоматически.
+      CSV должен иметь строку заголовков. JSON/GeoJSON — массив объектов или GeoJSON FeatureCollection. Для GeoJSON берутся properties, а id при необходимости берётся из Feature.id. Сначала выполняется полная проверка, затем запись. Для районов используется область + все языки + нормализация вариантов написания. Очень близкие варианты проверяются отдельно; сомнительные записи не импортируются автоматически.
     </div>
     <div class="actions">
       <button id="checkImport" class="gray">🔎 Проверить</button>
@@ -398,7 +398,7 @@ function importVal(obj,key){
   return obj && obj[key] !== undefined && obj[key] !== null
     ? String(obj[key]).trim() : '';
 }
-/* UNIVERSAL MASS IMPORT v11 — SAFE REGION + DISTRICT NAME */
+/* UNIVERSAL MASS IMPORT v20 — CSV + JSON + GEOJSON + BULK DELETE */
 let universalImportRows=[];
 let universalImportType='cities';
 
@@ -426,6 +426,7 @@ function closeImport(){$('importModal').classList.add('hidden')}
 document.querySelectorAll('.importOpen').forEach(b=>b.onclick=()=>openImport(b.dataset.importType));
 $('closeImport').onclick=closeImport;
 $('importType').onchange=()=>setImportType($('importType').value);
+$('importFile').onchange=()=>{const f=$('importFile').files[0];if(f){$('importStatus').style.display='block';$('importStatus').style.background='#eef5ff';$('importStatus').style.color='#175ea8';$('importStatus').textContent='📄 '+f.name+' · '+formatBytes(f.size)+' · формат будет определён автоматически.';}};
 $('importModal').onclick=e=>{if(e.target===$('importModal'))closeImport()};
 
 function normalizeImportObject(x){
@@ -734,15 +735,38 @@ function parseCSV(text){
 
 async function parseUniversalFile(){
  const f=$('importFile').files[0];
- if(!f)throw Error('Выберите CSV или JSON файл.');
+ if(!f)throw Error('Выберите CSV, JSON или GeoJSON файл.');
  if(f.size>20*1048576)throw Error('Максимальный размер файла — 20 MB.');
  const text=await f.text();
+ const isGeo=/\.geojson$/i.test(f.name)||/geo\+json/i.test(f.type);
+ const isJson=isGeo||/\.json$/i.test(f.name)||/json/i.test(f.type);
  let rows;
- if(/\.json$/i.test(f.name)){
-   const d=JSON.parse(text.replace(/^\uFEFF/,''));
-   rows=Array.isArray(d)?d:(Array.isArray(d.districts)?d.districts:null);
-   if(!rows)throw Error('JSON должен быть массивом объектов.');
- }else rows=parseCSV(text);
+ if(isJson){
+   let d;
+   try{d=JSON.parse(text.replace(/^\uFEFF/,''));}catch(e){throw Error('Некорректный JSON/GeoJSON: '+e.message)}
+   if(d&&d.type==='FeatureCollection'&&Array.isArray(d.features)){
+     rows=d.features.map((feature,i)=>{
+       const props=(feature&&feature.properties&&typeof feature.properties==='object')?feature.properties:{};
+       const merged={...props};
+       if((merged.id===undefined||merged.id===null||String(merged.id).trim()==='')&&feature.id!==undefined&&feature.id!==null)merged.id=feature.id;
+       return merged;
+     });
+   }else if(d&&d.type==='Feature'){
+     const props=(d.properties&&typeof d.properties==='object')?d.properties:{};
+     const merged={...props};
+     if((merged.id===undefined||merged.id===null||String(merged.id).trim()==='')&&d.id!==undefined&&d.id!==null)merged.id=d.id;
+     rows=[merged];
+   }else if(Array.isArray(d)){
+     rows=d;
+   }else if(d&&Array.isArray(d.districts)){
+     rows=d.districts;
+   }else{
+     throw Error('JSON должен быть массивом объектов или GeoJSON FeatureCollection.');
+   }
+ }else{
+   rows=parseCSV(text);
+ }
+ if(!Array.isArray(rows)||!rows.length)throw Error('Файл не содержит записей.');
  return rows.map((x,i)=>({...normalizeImportObject(x),__line:i+2}));
 }
 
