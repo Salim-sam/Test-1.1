@@ -1091,7 +1091,7 @@ function mergeFeatureWithDB(feature, dbRows, type) {
     const pid = String(p.id ?? feature.id ?? "").trim();
     let row = null;
 
-    if (pid) row = dbRows.find(x => String(x.id) === pid);
+    if (pid) row = dbRows.find(x => String(x.id) === pid || String(x.id ?? "").toUpperCase() === pid.toUpperCase());
 
     if (!row && type === "districts") {
         const rn = normLayerValue(p.name_ru || p.name || p.name_uz);
@@ -1125,62 +1125,82 @@ function mergeFeatureWithDB(feature, dbRows, type) {
 }
 
 async function buildSynchronizedMapLayers() {
-    // Всегда начинаем с валидного FeatureCollection.
-    // Если слой улиц/районов не загружен, карта всё равно должна запускаться.
     streetsData = {type: "FeatureCollection", features: []};
     await loadActiveNaqshaLayers();
 
-    // Districts: geometry comes from the active GeoJSON layer, attributes from DB.
-    const districtLayer = activeMapLayers.find(x =>
-        String(x.layer_type || "").toLowerCase() === "districts"
-    );
+    console.log("🧩 Naqsha: активные слои", activeMapLayers.map(x => ({
+        id:x.id, name:x.name, type:x.layer_type, active:x.is_active, file:x.file_path
+    })));
 
-    if (districtLayer) {
+    // Regions: if an active GeoJSON regions layer exists, use its geometry
+    // and keep attributes synchronized with the regions table.
+    const regionLayer = activeMapLayers.find(x =>
+        String(x.layer_type || "").toLowerCase() === "regions"
+    );
+    if (regionLayer) {
         try {
-            const geo = await loadLayerGeoJSON(districtLayer);
-            districtsData = {
+            const geo = await loadLayerGeoJSON(regionLayer);
+            const dbRows = Array.isArray(regionsData?.features) ? regionsData.features.map(f => f.properties || {}) : [];
+            regionsData = {
                 type: "FeatureCollection",
-                features: geo.features
-                    .map(f => mergeFeatureWithDB(f, districtsData.features, "districts"))
+                features: geo.features.map(f => mergeFeatureWithDB(f, dbRows, "regions"))
                     .filter(f => f.geometry && f.geometry.coordinates)
             };
-            console.log("🗺️ Районы: активный слой синхронизирован с БД", districtsData.features.length);
-        } catch (e) {
-            console.warn("⚠️ Слой районов не загрузился, используем геометрию БД:", e);
+            console.log("🗺️ Области: активный слой загружен", regionsData.features.length);
+        } catch(e) {
+            console.warn("⚠️ Слой областей не загрузился, используем БД:", e);
         }
     }
 
-    // Streets: geometry comes from active GeoJSON layer, attributes from streets table.
+    // Districts: geometry from active GeoJSON, attributes from DB.
+    const districtLayer = activeMapLayers.find(x =>
+        String(x.layer_type || "").toLowerCase() === "districts"
+    );
+    if (districtLayer) {
+        try {
+            const geo = await loadLayerGeoJSON(districtLayer);
+            const dbRows = Array.isArray(districtsData?.features) ? districtsData.features.map(f => f.properties || {}) : [];
+            districtsData = {
+                type: "FeatureCollection",
+                features: geo.features.map(f => mergeFeatureWithDB(f, dbRows, "districts"))
+                    .filter(f => f.geometry && f.geometry.coordinates)
+            };
+            console.log("📍 Районы: активный слой загружен", districtsData.features.length);
+        } catch (e) {
+            console.warn("⚠️ Слой районов не загрузился, используем БД:", e);
+        }
+    }
+
+    // Streets: geometry from active GeoJSON, attributes from streets table.
     const streetLayer = activeMapLayers.find(x =>
         String(x.layer_type || "").toLowerCase() === "streets"
     );
-
     if (streetLayer) {
         try {
             const streetRowsResponse = await fetch(
                 SUPABASE_URL + "/rest/v1/streets?select=*&order=id.asc",
-                {
-                    headers: {
-                        "apikey": SUPABASE_KEY,
-                        "Authorization": "Bearer " + SUPABASE_KEY,
-                        "Accept": "application/json"
-                    }
-                }
+                {headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,"Accept":"application/json"}}
             );
-            const streetRows = streetRowsResponse.ok ? await streetRowsResponse.json() : [];
+            if (!streetRowsResponse.ok) throw new Error("streets HTTP " + streetRowsResponse.status);
+            const streetRows = await streetRowsResponse.json();
             const geo = await loadLayerGeoJSON(streetLayer);
             streetsData = {
                 type: "FeatureCollection",
-                features: geo.features
-                    .map(f => mergeFeatureWithDB(f, streetRows, "streets"))
+                features: geo.features.map(f => mergeFeatureWithDB(f, streetRows, "streets"))
                     .filter(f => f.geometry && f.geometry.coordinates)
             };
-            console.log("🛣️ Улицы: активный слой синхронизирован с БД", streetsData.features.length);
+            console.log("🛣️ Улицы: активный слой загружен", streetsData.features.length);
         } catch (e) {
             console.warn("⚠️ Слой улиц не загрузился:", e);
-            streetsData = {type:"FeatureCollection",features:[]};
         }
     }
+
+    console.log("✅ Naqsha layers ready:", {
+        regions: regionsData?.features?.length || 0,
+        districts: districtsData?.features?.length || 0,
+        streets: streetsData?.features?.length || 0,
+        activeLayers: activeMapLayers.length
+    });
 }
 
 /* =====================================================
@@ -1307,6 +1327,26 @@ map.on(
 
 
             /* =================================================
+               REGION FILL / CLICK
+            ================================================= */
+            map.addLayer({
+                id: "naqsha-region-fill",
+                type: "fill",
+                source: "naqsha-regions",
+                paint: {
+                    "fill-color": "#1677ff",
+                    "fill-opacity": 0.08
+                }
+            });
+
+            map.addLayer({
+                id: "naqsha-region-click",
+                type: "fill",
+                source: "naqsha-regions",
+                paint: {"fill-color":"#ffffff", "fill-opacity":0.001}
+            });
+
+            /* =================================================
                DISTRICTS SOURCE
             ================================================= */
 
@@ -1326,6 +1366,21 @@ map.on(
 
             );
 
+
+            /* =================================================
+               DISTRICT DEFAULT FILL
+            ================================================= */
+            map.addLayer({
+                id: "naqsha-district-fill",
+                type: "fill",
+                source: "naqsha-districts",
+                minzoom: 5,
+                maxzoom: 14,
+                paint: {
+                    "fill-color": "#1677ff",
+                    "fill-opacity": 0.07
+                }
+            });
 
             /* =================================================
                SELECTED DISTRICT
@@ -1381,6 +1436,15 @@ map.on(
 
             });
 
+
+            map.on("click", "naqsha-region-click", function(event) {
+                if (!event.features || !event.features.length) return;
+                const p = event.features[0].properties || {};
+                const name = p.name_ru || p.name || p.name_uz || "Область";
+                showInfo("🗺️ " + name, "Область: " + name);
+            });
+            map.on("mouseenter", "naqsha-region-click", function(){ map.getCanvas().style.cursor="pointer"; });
+            map.on("mouseleave", "naqsha-region-click", function(){ map.getCanvas().style.cursor=""; });
 
             /* =================================================
                DISTRICT CLICK
@@ -1918,6 +1982,15 @@ map.on(
 
             );
 
+
+            map.on("click", "naqsha-region-click", function(event) {
+                if (!event.features || !event.features.length) return;
+                const p = event.features[0].properties || {};
+                const name = p.name_ru || p.name || p.name_uz || "Область";
+                showInfo("🗺️ " + name, "Область: " + name);
+            });
+            map.on("mouseenter", "naqsha-region-click", function(){ map.getCanvas().style.cursor="pointer"; });
+            map.on("mouseleave", "naqsha-region-click", function(){ map.getCanvas().style.cursor=""; });
 
             /* =================================================
                DISTRICT CLICK
