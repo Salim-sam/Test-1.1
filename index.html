@@ -1069,6 +1069,58 @@ function publicLayerUrl(filePath) {
         encodeURIComponent(String(filePath || "")).replace(/%2F/g, "/");
 }
 
+// Some older uploads were saved with layer_type=other.  Do not make the
+// public map depend on the exact admin dropdown value: identify a layer by
+// its type first, then by its name/file name, and finally by GeoJSON hints.
+function layerText(layer) {
+    return normLayerValue([layer?.layer_type, layer?.name, layer?.file_path].join(" "));
+}
+
+function layerTypeAliases(type) {
+    if (type === "regions") return ["regions", "region", "области", "область", "oblast", "viloyat", "adm1"];
+    if (type === "districts") return ["districts", "district", "районы", "район", "rayon", "tuman", "tumani", "adm2"];
+    if (type === "streets") return ["streets", "street", "улицы", "улица", "kocha", "kochalar"];
+    return [type];
+}
+
+function layerLooksLike(layer, type) {
+    const rawType = normLayerValue(layer?.layer_type);
+    const aliases = layerTypeAliases(type);
+    if (aliases.includes(rawType)) return true;
+    const text = layerText(layer);
+    return aliases.some(a => text.includes(a));
+}
+
+async function findActiveLayer(type) {
+    // 1. Prefer an explicitly typed layer.
+    const exact = activeMapLayers.find(x =>
+        layerTypeAliases(type).includes(normLayerValue(x?.layer_type))
+    );
+    if (exact) return exact;
+
+    // 2. Then use name/file-name hints.
+    const hinted = activeMapLayers.find(x => layerLooksLike(x, type));
+    if (hinted) return hinted;
+
+    // 3. Finally inspect small GeoJSON samples. This handles legacy layers
+    // uploaded as "other" when their file name is not descriptive.
+    for (const layer of activeMapLayers) {
+        try {
+            const geo = await loadLayerGeoJSON(layer);
+            const f = geo?.features?.[0];
+            const p = f?.properties || {};
+            const keys = Object.keys(p).map(k => normLayerValue(k));
+            const admin = String(p.admin_level ?? p.adminLevel ?? "").trim();
+            if (type === "regions" && (admin === "1" || keys.includes("region_id") || keys.includes("region_name"))) return layer;
+            if (type === "districts" && (admin === "2" || keys.includes("district_id") || keys.includes("district_name") || keys.includes("district"))) return layer;
+            if (type === "streets" && (keys.includes("street_id") || keys.includes("street_type") || keys.includes("city_id"))) return layer;
+        } catch (e) {
+            console.warn("⚠️ Не удалось проверить слой", layer?.name, e);
+        }
+    }
+    return null;
+}
+
 async function loadLayerGeoJSON(layer) {
     const url = publicLayerUrl(layer.file_path);
     const response = await fetch(url, {cache: "no-store"});
@@ -1134,9 +1186,7 @@ async function buildSynchronizedMapLayers() {
 
     // Regions: if an active GeoJSON regions layer exists, use its geometry
     // and keep attributes synchronized with the regions table.
-    const regionLayer = activeMapLayers.find(x =>
-        String(x.layer_type || "").toLowerCase() === "regions"
-    );
+    const regionLayer = await findActiveLayer("regions");
     if (regionLayer) {
         try {
             const geo = await loadLayerGeoJSON(regionLayer);
@@ -1153,9 +1203,7 @@ async function buildSynchronizedMapLayers() {
     }
 
     // Districts: geometry from active GeoJSON, attributes from DB.
-    const districtLayer = activeMapLayers.find(x =>
-        String(x.layer_type || "").toLowerCase() === "districts"
-    );
+    const districtLayer = await findActiveLayer("districts");
     if (districtLayer) {
         try {
             const geo = await loadLayerGeoJSON(districtLayer);
@@ -1165,16 +1213,21 @@ async function buildSynchronizedMapLayers() {
                 features: geo.features.map(f => mergeFeatureWithDB(f, dbRows, "districts"))
                     .filter(f => f.geometry && f.geometry.coordinates)
             };
-            console.log("📍 Районы: активный слой загружен", districtsData.features.length);
+            console.log("📍 Районы: активный слой загружен", {
+                layer: districtLayer.name,
+                file: districtLayer.file_path,
+                type: districtLayer.layer_type,
+                features: districtsData.features.length,
+                dbRows: dbRows.length
+            });
         } catch (e) {
-            console.warn("⚠️ Слой районов не загрузился, используем БД:", e);
+            console.error("❌ Слой районов не загрузился:", districtLayer, e);
+            console.warn("⚠️ Используем геометрию районов из БД, если она доступна.");
         }
     }
 
     // Streets: geometry from active GeoJSON, attributes from streets table.
-    const streetLayer = activeMapLayers.find(x =>
-        String(x.layer_type || "").toLowerCase() === "streets"
-    );
+    const streetLayer = await findActiveLayer("streets");
     if (streetLayer) {
         try {
             const streetRowsResponse = await fetch(
@@ -1201,6 +1254,10 @@ async function buildSynchronizedMapLayers() {
         streets: streetsData?.features?.length || 0,
         activeLayers: activeMapLayers.length
     });
+
+    if (!districtLayer) {
+        console.warn("⚠️ Naqsha: активный слой районов не найден. Проверьте layer_type или имя файла в админке.");
+    }
 }
 
 /* =====================================================
