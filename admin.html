@@ -98,7 +98,7 @@ pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-w
 
 <!-- DIAGNOSTICS -->
 <section id="diagnosticsTab" class="card hidden">
-<div class="sectionHead"><div><h2>🧪 Диагностика Naqsha</h2><div class="small">Безопасная проверка подключения, данных, слоёв и синхронизации. Ничего не изменяет в базе.</div></div><button id="runDiagnostics" class="primary">▶️ Запустить тест</button></div>
+<div class="sectionHead"><div><h2>🧪 Диагностика Naqsha</h2><div class="small">Проверяет Supabase, записи, GeoJSON, синхронизацию и саму опубликованную основную карту. Ничего не изменяет в базе.</div></div><button id="runDiagnostics" class="primary">▶️ Полная проверка</button></div>
 <div id="diagnosticsStatus" class="notice"></div>
 <div id="diagnosticsResults" class="diagList"></div>
 <pre id="diagnosticsLog" class="hidden"></pre>
@@ -934,15 +934,55 @@ $('bulkDeleteRegion').onchange=bulkOptions;
 $('previewBulkDelete').onclick=()=>{try{const t=bulkTargets(),sum=bulkSummary(t);$('bulkDeletePreview').classList.remove('hidden');$('bulkDeletePreview').textContent=JSON.stringify(sum,null,2);$('runBulkDelete').disabled=sum.всего===0;notice('bulkDeleteStatus',sum.всего?'⚠️ Будет удалено: '+sum.всего+' записей.':'ℹ️ Нечего удалять.',sum.всего>0)}catch(e){$('runBulkDelete').disabled=true;notice('bulkDeleteStatus','❌ '+e.message,false)}};
 $('runBulkDelete').onclick=async()=>{const t=bulkTargets(),sum=bulkSummary(t);if(!sum.всего)return;if(!confirm('ВНИМАНИЕ! Будет удалено '+sum.всего+' записей, включая зависимые объекты. Продолжить?'))return;$('runBulkDelete').disabled=true;try{const r=await bulkDeleteRun(t);await loadData();bulkOptions();$('bulkDeletePreview').textContent=JSON.stringify({...sum,удалено:r.done,ошибок:r.failed.length,детали_ошибок:r.failed.slice(0,100)},null,2);notice('bulkDeleteStatus',r.failed.length?'⚠️ Удалено: '+r.done+', ошибок: '+r.failed.length:'✅ Массовое удаление завершено. Удалено: '+r.done,r.failed.length===0)}catch(e){notice('bulkDeleteStatus','❌ '+e.message,false)}finally{$('runBulkDelete').disabled=false}};
 
-/* DIAGNOSTICS v22.1 — accurate, authenticated, no false 401 */
+/* DIAGNOSTICS v23 — DATABASE + LAYERS + MAIN MAP */
 function diagRow(title,status,meta='',cls='diagOk'){
   const e=document.createElement('div');e.className='diagItem '+cls;
   e.innerHTML='<b>'+esc(title)+'</b><span class="diagMeta">'+esc(status)+(meta?' · '+esc(meta):'')+'</span>';
   $('diagnosticsResults').appendChild(e);
 }
-function diagInfo(title,meta=''){
-  diagRow(title,'ИНФОРМАЦИЯ',meta,'diagInfo');
+function diagInfo(title,meta=''){diagRow(title,'ИНФОРМАЦИЯ',meta,'diagInfo')}
+function diagWarn(title,meta=''){diagRow(title,'ПРЕДУПРЕЖДЕНИЕ',meta,'diagWarn')}
+
+async function checkMainMapSource(){
+  const url=new URL('index.html',location.href).href;
+  const r=await fetch(url,{cache:'no-store'});
+  if(!r.ok)throw Error('index.html HTTP '+r.status);
+  const html=await r.text();
+  const required=[
+    ['streetsData','объявление streetsData'],
+    ['buildingsData','объявление buildingsData'],
+    ['refreshNaqshaMap','автоматическая синхронизация'],
+    ['reportMapStatus','канал ошибок карты'],
+    ['get_streets_admin','загрузка улиц из Supabase'],
+    ['get_buildings_admin','загрузка зданий из Supabase']
+  ];
+  const missing=required.filter(([needle])=>!html.includes(needle));
+  if(missing.length)throw Error('В index.html отсутствует: '+missing.map(x=>x[1]).join(', '));
+  return url;
 }
+
+async function checkMainMapRuntime(){
+  const url=new URL('index.html',location.href).href;
+  return await new Promise((resolve,reject)=>{
+    let done=false;
+    const frame=document.createElement('iframe');
+    frame.style.cssText='position:fixed;width:1px;height:1px;left:-10px;top:-10px;opacity:0;pointer-events:none;border:0;';
+    const cleanup=()=>{window.removeEventListener('message',onMessage);frame.remove();clearTimeout(timer)};
+    const finish=(fn,v)=>{if(done)return;done=true;cleanup();fn(v)};
+    const onMessage=e=>{
+      if(e.source!==frame.contentWindow)return;
+      const d=e.data||{};
+      if(d.source!=='naqsha-map')return;
+      if(d.type==='ready'||d.type==='sync')finish(resolve,'runtime '+d.type+(d.counts?' · '+JSON.stringify(d.counts):''));
+      if(d.type==='error')finish(reject,Error(d.message||'Основная карта сообщила ошибку'));
+    };
+    window.addEventListener('message',onMessage);
+    const timer=setTimeout(()=>finish(reject,Error('Основная карта не ответила за 15 секунд. Проверь опубликованный index.html и консоль браузера.')),15000);
+    frame.src=url+'?diag='+Date.now();
+    document.body.appendChild(frame);
+  });
+}
+
 async function runDiagnostics(){
   const btn=$('runDiagnostics');btn.disabled=true;$('diagnosticsResults').innerHTML='';$('diagnosticsLog').classList.add('hidden');
   const log=[];let errors=0,warns=0,infos=0;
@@ -951,9 +991,6 @@ async function runDiagnostics(){
     catch(e){errors++;diagRow(title,'ОШИБКА',e.message||String(e),'diagErr');log.push('ERR '+title+' — '+(e.message||String(e)));return false}
   };
   try{
-    /* Не проверяем /rest/v1/ напрямую: у Supabase этот endpoint может вернуть 401,
-       даже когда авторизованный RPC/API работает нормально. Проверяем реального
-       авторизованного пользователя через api(), который умеет обновлять сессию. */
     await test('Подключение к Supabase',async()=>{
       const user=await api('/auth/v1/user');
       if(!user?.id)throw Error('Авторизованный пользователь не определён');
@@ -961,20 +998,23 @@ async function runDiagnostics(){
     });
 
     const checks=[
-      ['Области','get_regions_geojson',x=>(x.features||[]).length],
-      ['Районы','get_districts_geojson',x=>(x.features||[]).length],
-      ['Города','get_cities_geojson',x=>(x.features||[]).length],
-      ['Улицы','get_streets_admin',x=>Array.isArray(x)?x.length:0],
-      ['Здания','get_buildings_admin',x=>Array.isArray(x)?x.length:0]
+      ['Области','get_regions_geojson',x=>(x.features||[])],
+      ['Районы','get_districts_geojson',x=>(x.features||[])],
+      ['Города','get_cities_geojson',x=>(x.features||[])],
+      ['Улицы','get_streets_admin',x=>Array.isArray(x)?x:[]],
+      ['Здания','get_buildings_admin',x=>Array.isArray(x)?x:[]]
     ];
     const counts={};
-    for(const [label,fn,countFn] of checks){
-      await test(label,async()=>{const x=await rpc(fn,{});const n=countFn(x);counts[label]=n;return n+' объектов'});
+    const rawData={};
+    for(const [label,fn,toFeatures] of checks){
+      await test(label,async()=>{
+        const x=await rpc(fn,{});const features=toFeatures(x);rawData[label]=features;
+        const n=features.length;counts[label]=n;return n+' объектов';
+      });
     }
 
     await test('Слои карты',async()=>{await loadLayers();return layers.length+' слоёв'});
 
-    /* Проверяем каждый загруженный слой: доступность файла, GeoJSON и количество. */
     for(const layer of layers){
       await test('Слой: '+(layer.name||layer.id),async()=>{
         if(!layer.file_path)throw Error('Нет file_path');
@@ -983,15 +1023,14 @@ async function runDiagnostics(){
         if(!r.ok)throw Error('GeoJSON недоступен, HTTP '+r.status);
         const geo=await r.json();
         if(geo.type!=='FeatureCollection'||!Array.isArray(geo.features))throw Error('Неверный GeoJSON');
-        if(Number(layer.feature_count)!==geo.features.length)
-          throw Error('Ожидалось '+layer.feature_count+', найдено '+geo.features.length);
-        return geo.features.length+' объектов · '+(layer.is_active?'активен':'выключен');
+        if(Number(layer.feature_count)!==geo.features.length)throw Error('Метаданные: '+layer.feature_count+', файл: '+geo.features.length);
+        const geometryCount=geo.features.filter(f=>f&&f.geometry&&f.geometry.coordinates).length;
+        if(layer.is_active && ['regions','districts','cities','streets','buildings'].includes(String(layer.layer_type)) && geometryCount===0)
+          throw Error('Активный слой содержит 0 объектов с geometry');
+        return geo.features.length+' объектов · geometry '+geometryCount+' · '+(layer.is_active?'активен':'выключен');
       });
     }
 
-    /* Синхронизация: отсутствие слоя ещё не является ошибкой — слой может быть
-       следующим этапом загрузки. Ошибкой/предупреждением считается только реально
-       существующий активный слой с неверным количеством объектов. */
     const pairs=[
       ['Области','regions',counts['Области']??regions.length],
       ['Районы','districts',counts['Районы']??districts.length],
@@ -999,38 +1038,22 @@ async function runDiagnostics(){
       ['Улицы','streets',counts['Улицы']??streets.length],
       ['Здания','buildings',counts['Здания']??buildings.length]
     ];
-
     for(const [label,key,count] of pairs){
       const active=layers.filter(x=>x.is_active&&x.layer_type===key);
-      if(active.length===0){
-        infos++;
-        diagInfo('Синхронизация: '+label,'активный слой пока не загружен');
-        log.push('INFO '+label+' — активный слой пока не загружен');
-        continue;
-      }
-      if(active.length>1){
-        warns++;
-        diagRow('Синхронизация: '+label,'ПРЕДУПРЕЖДЕНИЕ','активных слоёв: '+active.length,'diagWarn');
-        log.push('WARN '+label+' — активных слоёв: '+active.length);
-      }
-      const layer=active[0];
-      const layerCount=Number(layer.feature_count)||0;
-      if(layerCount!==Number(count)){
-        warns++;
-        diagRow('Синхронизация: '+label,'ПРЕДУПРЕЖДЕНИЕ','БД: '+count+' · слой: '+layerCount,'diagWarn');
-        log.push('WARN '+label+' — БД '+count+' · слой '+layerCount);
-      }else{
-        diagRow('Синхронизация: '+label,'OK',count+' записей · слой '+layerCount,'diagOk');
-        log.push('OK  Синхронизация: '+label+' — '+count);
-      }
+      if(active.length===0){infos++;diagInfo('Синхронизация: '+label,'активный слой пока не загружен; записи БД остаются источником данных');log.push('INFO '+label+' — активный слой отсутствует');continue;}
+      if(active.length>1){warns++;diagWarn('Синхронизация: '+label,'активных слоёв: '+active.length);log.push('WARN '+label+' — активных слоёв: '+active.length);}
+      const layer=active[0];const layerCount=Number(layer.feature_count)||0;
+      if(layerCount!==Number(count)){warns++;diagWarn('Синхронизация: '+label,'БД: '+count+' · слой: '+layerCount);log.push('WARN '+label+' — БД '+count+' · слой '+layerCount);}
+      else{diagRow('Синхронизация: '+label,'OK',count+' записей · слой '+layerCount,'diagOk');log.push('OK  Синхронизация: '+label+' — '+count);}
     }
 
-    const summary='Тест завершён: '+errors+' ошибок, '+warns+' предупреждений'+(infos?' · '+infos+' информационных':'');
+    await test('Основная карта: исходный код',checkMainMapSource);
+    await test('Основная карта: runtime',checkMainMapRuntime);
+
+    const summary='Полная проверка: '+errors+' ошибок, '+warns+' предупреждений'+(infos?' · '+infos+' информационных':'');
     notice('diagnosticsStatus',errors?('❌ '+summary):warns?('⚠️ '+summary):('✅ '+summary),errors===0&&warns===0);
   }catch(e){
-    errors++;
-    notice('diagnosticsStatus','❌ Тестер остановлен: '+e.message,false);
-    log.push('ERR '+(e.message||String(e)));
+    errors++;notice('diagnosticsStatus','❌ Тестер остановлен: '+e.message,false);log.push('ERR '+(e.message||String(e)));
   }
   $('diagnosticsLog').textContent=log.join('\n');$('diagnosticsLog').classList.remove('hidden');btn.disabled=false;
 }
