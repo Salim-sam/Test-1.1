@@ -66,6 +66,25 @@ pre{background:#111;color:#eee;padding:14px;border-radius:10px;white-space:pre-w
 <div id="globalStatus" class="notice"></div>
 </section>
 
+<section class="card" id="bulkDeleteCard">
+  <div class="sectionHead"><h2>🗑️ Массовое удаление</h2><span class="badge">Осторожно</span></div>
+  <p class="small">Удаление выполняется из базы через существующие административные RPC. Для родительского объекта сначала удаляются зависимые записи.</p>
+  <div class="grid3">
+    <div><label>Что удалить</label><select id="bulkDeleteType">
+      <option value="regions">🗺️ Области</option>
+      <option value="districts">📍 Районы</option>
+      <option value="cities">🏙️ Города</option>
+      <option value="streets">🛣️ Улицы</option>
+      <option value="buildings">🏠 Здания / дома</option>
+    </select></div>
+    <div><label>Область</label><select id="bulkDeleteRegion"><option value="">Все области</option></select></div>
+    <div><label>Район / город</label><select id="bulkDeleteScope"><option value="">Все</option></select></div>
+  </div>
+  <div class="actions"><button id="previewBulkDelete" class="gray">🔎 Проверить</button><button id="runBulkDelete" class="danger" disabled>🗑️ Удалить выбранное</button></div>
+  <div id="bulkDeleteStatus" class="notice"></div>
+  <pre id="bulkDeletePreview" class="hidden"></pre>
+</section>
+
 <div class="tabs">
 <button class="tab active" data-tab="regions">🗺️ Области</button>
 <button class="tab" data-tab="districts">📍 Районы</button>
@@ -275,7 +294,7 @@ async function loadData(){
  regions=(r.features||[]).map(parseFeature);districts=(d.features||[]).map(parseFeature);cities=(c.features||[]).map(parseFeature);
  streets=(Array.isArray(s)?s:[]).map(x=>parseFeature({properties:x}));buildings=(Array.isArray(b)?b:[]).map(x=>parseFeature({properties:x}));
  $('regionCount').textContent=regions.length;$('districtCount').textContent=districts.length;$('cityCount').textContent=cities.length;$('streetCount').textContent=streets.length;$('buildingCount').textContent=buildings.length;
- fillAllSelects();renderAll();await loadLayers();$('preview').textContent=JSON.stringify({regions:regions.length,districts:districts.length,cities:cities.length,streets:streets.length,buildings:buildings.length,layers:layers.length},null,2);
+ fillAllSelects();renderAll();bulkOptions();await loadLayers();$('preview').textContent=JSON.stringify({regions:regions.length,districts:districts.length,cities:cities.length,streets:streets.length,buildings:buildings.length,layers:layers.length},null,2);
 }
 
 function setOptions(id,items,placeholder,selected=''){
@@ -843,6 +862,43 @@ function renderLayers(){
 $('layerFile').onchange=()=>{const f=$('layerFile').files[0];$('fileInfo').textContent=f?f.name+' · '+formatBytes(f.size):'Выбери файл GeoJSON (до 20 MB)'};
 $('uploadLayer').onclick=async()=>{const f=$('layerFile').files[0],name=$('layerName').value.trim();if(!f||!name)return notice('layerStatus','❌ Укажи название и выбери файл.',false);if(f.size>20*1048576)return notice('layerStatus','❌ Максимальный размер — 20 MB.',false);try{const geo=JSON.parse(await f.text());if(geo.type!=='FeatureCollection'||!Array.isArray(geo.features))throw Error('Нужен GeoJSON FeatureCollection');const safe=f.name.replace(/[^a-zA-Z0-9._-]/g,'_'),path=Date.now()+'_'+safe;await api('/storage/v1/object/map-layers/'+encodeURIComponent(path),{method:'POST',headers:{'Content-Type':'application/geo+json','x-upsert':'false'},body:f});await rpc('admin_create_map_layer',{p_name:name,p_layer_type:$('layerType').value,p_file_path:path,p_description:$('layerDescription').value.trim(),p_feature_count:geo.features.length,p_file_size:f.size});$('layerName').value='';$('layerDescription').value='';$('layerFile').value='';await loadLayers();notice('layerStatus','✅ Слой загружен: '+geo.features.length+' объектов')}catch(e){notice('layerStatus','❌ '+e.message,false)}};
 $('refreshLayers').onclick=async()=>{try{await loadLayers();notice('layerStatus','✅ Список обновлён')}catch(e){notice('layerStatus','❌ '+e.message,false)}};
+
+/* BULK DELETE */
+function bulkOptions(){
+  const type=$('bulkDeleteType').value, r=$('bulkDeleteRegion'), sc=$('bulkDeleteScope');
+  r.innerHTML='<option value="">Все области</option>';
+  regions.forEach(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=x.name_ru||x.name||x.id;r.appendChild(o)});
+  sc.innerHTML='<option value="">Все</option>';
+  const rid=r.value;
+  if(type==='districts') districts.filter(x=>!rid||String(x.region_id)===String(rid)).forEach(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=x.name_ru||x.name||x.id;sc.appendChild(o)});
+  if(type==='cities') cities.filter(x=>!rid||String(x.region_id)===String(rid)).forEach(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=x.name_ru||x.name||x.id;sc.appendChild(o)});
+  if(type==='streets') streets.filter(x=>!rid||String(x.region_id)===String(rid)).forEach(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=(x.name_ru||x.name||x.id)+' · '+(x.city_name||'');sc.appendChild(o)});
+  if(type==='buildings') buildings.filter(x=>!rid||String(x.region_id)===String(rid)).forEach(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=(x.house_number||x.name||x.id)+' · '+(x.address||x.city_name||'');sc.appendChild(o)});
+}
+function bulkTargets(){
+  const type=$('bulkDeleteType').value,rid=$('bulkDeleteRegion').value,scope=$('bulkDeleteScope').value;
+  if(type==='regions') return {type,regions:regions.filter(x=>!rid||String(x.id)===String(rid)),districts:districts.filter(x=>!rid||String(x.region_id)===String(rid)),cities:cities.filter(x=>!rid||String(x.region_id)===String(rid)),streets:streets.filter(x=>!rid||String(x.region_id)===String(rid)),buildings:buildings.filter(x=>!rid||String(x.region_id)===String(rid))};
+  if(type==='districts') {const ds=districts.filter(x=>(!rid||String(x.region_id)===String(rid))&&(!scope||String(x.id)===String(scope))); const ids=new Set(ds.map(x=>String(x.id))); return {type,districts:ds,cities:cities.filter(x=>ids.has(String(x.district_id))),streets:streets.filter(x=>ids.has(String(x.district_id))),buildings:buildings.filter(x=>ids.has(String(x.district_id)))};}
+  if(type==='cities') {const cs=cities.filter(x=>(!rid||String(x.region_id)===String(rid))&&(!scope||String(x.id)===String(scope))); const ids=new Set(cs.map(x=>String(x.id))); return {type,cities:cs,streets:streets.filter(x=>ids.has(String(x.city_id))),buildings:buildings.filter(x=>ids.has(String(x.city_id)))};}
+  if(type==='streets') {const ss=streets.filter(x=>(!rid||String(x.region_id)===String(rid))&&(!scope||String(x.id)===String(scope))); const ids=new Set(ss.map(x=>String(x.id))); return {type,streets:ss,buildings:buildings.filter(x=>ids.has(String(x.street_id)))};}
+  return {type,buildings:buildings.filter(x=>(!rid||String(x.region_id)===String(rid))&&(!scope||String(x.id)===String(scope)))};
+}
+function bulkCount(t){return ['regions','districts','cities','streets','buildings'].reduce((n,k)=>n+(t[k]?.length||0),0)}
+function bulkSummary(t){return {области:t.regions?.length||0,районы:t.districts?.length||0,города:t.cities?.length||0,улицы:t.streets?.length||0,здания:t.buildings?.length||0,всего:bulkCount(t)}}
+async function bulkDeleteRun(t){
+  let done=0,failed=[];
+  const run=async(arr,fn)=>{for(const x of (arr||[])){try{await rpc(fn,{p_id:Number(x.id)});done++}catch(e){failed.push({тип:fn,id:x.id,имя:x.name_ru||x.name||x.house_number||'',ошибка:e.message})}}};
+  await run(t.buildings,'admin_delete_building');
+  await run(t.streets,'admin_delete_street');
+  await run(t.cities,'admin_delete_city');
+  await run(t.districts,'admin_delete_district');
+  await run(t.regions,'admin_delete_region');
+  return {done,failed};
+}
+$('bulkDeleteType').onchange=bulkOptions;
+$('bulkDeleteRegion').onchange=bulkOptions;
+$('previewBulkDelete').onclick=()=>{try{const t=bulkTargets(),sum=bulkSummary(t);$('bulkDeletePreview').classList.remove('hidden');$('bulkDeletePreview').textContent=JSON.stringify(sum,null,2);$('runBulkDelete').disabled=sum.всего===0;notice('bulkDeleteStatus',sum.всего?'⚠️ Будет удалено: '+sum.всего+' записей.':'ℹ️ Нечего удалять.',sum.всего>0)}catch(e){$('runBulkDelete').disabled=true;notice('bulkDeleteStatus','❌ '+e.message,false)}};
+$('runBulkDelete').onclick=async()=>{const t=bulkTargets(),sum=bulkSummary(t);if(!sum.всего)return;if(!confirm('ВНИМАНИЕ! Будет удалено '+sum.всего+' записей, включая зависимые объекты. Продолжить?'))return;$('runBulkDelete').disabled=true;try{const r=await bulkDeleteRun(t);await loadData();bulkOptions();$('bulkDeletePreview').textContent=JSON.stringify({...sum,удалено:r.done,ошибок:r.failed.length,детали_ошибок:r.failed.slice(0,100)},null,2);notice('bulkDeleteStatus',r.failed.length?'⚠️ Удалено: '+r.done+', ошибок: '+r.failed.length:'✅ Массовое удаление завершено. Удалено: '+r.done,r.failed.length===0)}catch(e){notice('bulkDeleteStatus','❌ '+e.message,false)}finally{$('runBulkDelete').disabled=false}};
 
 /* TABS */
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('main>section.card').forEach(x=>x.classList.add('hidden'));b.classList.add('active');$(b.dataset.tab+'Tab').classList.remove('hidden')});
